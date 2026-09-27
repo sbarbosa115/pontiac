@@ -107,6 +107,72 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/contacts/{id}/files": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Every file of theirs, turned-off ones too, newest first. */
+        get: operations["get_api_admin_client_file_list"];
+        put?: never;
+        /** Multipart: `file`, and `shared` ("1": the client sees it). */
+        post: operations["post_api_admin_client_file_upload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/client-files/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["delete_api_admin_client_file_disable"];
+        options?: never;
+        head?: never;
+        patch: operations["patch_api_admin_client_file_update"];
+        trace?: never;
+    };
+    "/api/admin/client-files/{id}/enable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post_api_admin_client_file_enable"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/client-files/{id}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_api_admin_client_file_download"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/contacts": {
         parameters: {
             query?: never;
@@ -567,6 +633,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/contacts/{id}/portal/invitation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post_api_admin_portal_access_invite"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/contacts/{id}/portal/disable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post_api_admin_portal_access_disable"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/contacts/{id}/portal/enable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post_api_admin_portal_access_enable"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/privacy": {
         parameters: {
             query?: never;
@@ -901,6 +1015,56 @@ export interface paths {
         patch: operations["patch_api_me_preferences"];
         trace?: never;
     };
+    "/api/password-reset/request": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Always 204, whether the email has an account or not. */
+        post: operations["post_api_password_reset_request"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/password-reset/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post_api_password_reset_confirm"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** "Mi cuenta › Cambiar contraseña". */
+        post: operations["post_api_me_password"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/platform/accounts": {
         parameters: {
             query?: never;
@@ -1202,6 +1366,170 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/portal/files": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_api_portal_file_list"];
+        put?: never;
+        /** Multipart `file`: theirs, so the consultant sees it and so do they. */
+        post: operations["post_api_portal_file_upload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portal/files/{id}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_api_portal_file_download"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portal/notes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_api_portal_notes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portal/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_api_portal_overview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portal/plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_api_portal_plan_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portal/plans/{id}/pay": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** "Pagar": Wompi's checkout for a plan waiting for its payment; Wompi brings them back to the result page. */
+        post: operations["post_api_portal_plan_pay"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portal/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Every session of theirs, the latest first. */
+        get: operations["get_api_portal_session_list"];
+        put?: never;
+        post: operations["post_api_portal_session_book"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portal/slots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The free slots for a session of one of their plans (?enrollmentId=), or to move one (?sessionId=). */
+        get: operations["get_api_portal_session_slots"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portal/sessions/{id}/reschedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post_api_portal_session_reschedule"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portal/sessions/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post_api_portal_session_cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/portal-login": {
         parameters: {
             query?: never;
@@ -1264,6 +1592,20 @@ export interface components {
             name: string;
             color: string;
             active: boolean;
+        };
+        ClientFileOutput: {
+            id: string;
+            name: string;
+            contentType: string;
+            sizeBytes: number;
+            /** The client sees it (always true for what they uploaded). */
+            shared: boolean;
+            active: boolean;
+            /** Uploaded by the client, from the portal. */
+            byClient: boolean;
+            uploadedBy: string;
+            /** ISO 8601. */
+            createdAt: string;
         };
         CategoryRefOutput: {
             id: string;
@@ -1385,6 +1727,12 @@ export interface components {
             /** newest first */
             payments: components["schemas"]["PaymentOutput"][];
         };
+        PortalAccessOutput: {
+            /** "none", "invited", "active" or "disabled". */
+            status: string;
+            /** ISO 8601. */
+            lastSignInAt?: string | null;
+        };
         ContactDetailOutput: {
             id: string;
             fullName: string;
@@ -1406,6 +1754,7 @@ export interface components {
             sessions: components["schemas"]["SessionOutput"][];
             /** newest first */
             enrollments: components["schemas"]["EnrollmentOutput"][];
+            portal: components["schemas"]["PortalAccessOutput"];
         };
         AdminDashboardOutput: {
             newLeadsLast7Days: number;
@@ -1623,6 +1972,10 @@ export interface components {
             /** "light", "dark" or "system" (follow the device). */
             uiTheme: string;
         };
+        PasswordResetOutput: {
+            /** Where they sign in now: "/login" or "/<consultant>/portal/ingresar". */
+            loginPath: string;
+        };
         AccountOwnerOutput: {
             id: string;
             fullName: string;
@@ -1751,6 +2104,75 @@ export interface components {
             changedAt: string;
             changedBy: components["schemas"]["PersonOutput"];
             changes: components["schemas"]["SettingChangeOutput"][];
+        };
+        PortalNoteOutput: {
+            id: string;
+            body: string;
+            author: string;
+            /** ISO 8601. */
+            createdAt: string;
+            sessionId: string;
+            /** ISO 8601 (UTC). */
+            sessionStartsAt: string;
+            planName: string;
+        };
+        PortalSessionOutput: {
+            id: string;
+            /** ISO 8601 (UTC). */
+            startsAt: string;
+            /** ISO 8601 (UTC). */
+            endsAt: string;
+            /** "scheduled", "done", "no_show" or "cancelled". */
+            status: string;
+            planName: string;
+            durationMinutes: number;
+            meetingLink: string;
+            cancelReason?: string | null;
+            /** Before the consultant's cancellation limit: they may move or cancel it. */
+            canChange: boolean;
+        };
+        PortalPaymentOutput: {
+            reference: string;
+            amount: components["schemas"]["MoneyOutput"];
+            /** "pending", "approved", "declined", "voided" or "error". */
+            status: string;
+            method?: string | null;
+            /** ISO 8601. */
+            createdAt: string;
+            /** ISO 8601. */
+            paidAt?: string | null;
+        };
+        PortalPlanOutput: {
+            id: string;
+            planName: string;
+            price: components["schemas"]["MoneyOutput"];
+            free: boolean;
+            sessionsIncluded: number;
+            /** Booked, done or no-show. */
+            sessionsTaken: number;
+            /** Done or no-show. */
+            sessionsUsed: number;
+            durationMinutes: number;
+            /** "pending_payment", "active", "completed" or "cancelled". */
+            status: string;
+            /** Waiting for payment, and the consultant takes online payments. */
+            payable: boolean;
+            /** ISO 8601. */
+            createdAt: string;
+            /** newest first */
+            payments: components["schemas"]["PortalPaymentOutput"][];
+        };
+        PortalOverviewOutput: {
+            /** The next scheduled session. */
+            nextSession?: components["schemas"]["PortalSessionOutput"] | null;
+            /** active and waiting for payment, newest first */
+            plans: components["schemas"]["PortalPlanOutput"][];
+            /** Hours before a session until which they may move or cancel it. */
+            cancelHours: number;
+        };
+        CheckoutOutput: {
+            /** Wompi's checkout. */
+            checkoutUrl: string;
         };
         TokenOutput: {
             token: string;
@@ -1956,6 +2378,137 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["LeadCategoryOutput"];
                 };
+            };
+        };
+    };
+    get_api_admin_client_file_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["ClientFileOutput"][];
+                    };
+                };
+            };
+        };
+    };
+    post_api_admin_client_file_upload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Created. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClientFileOutput"];
+                };
+            };
+        };
+    };
+    delete_api_admin_client_file_disable: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClientFileOutput"];
+                };
+            };
+        };
+    };
+    patch_api_admin_client_file_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClientFileOutput"];
+                };
+            };
+        };
+    };
+    post_api_admin_client_file_enable: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClientFileOutput"];
+                };
+            };
+        };
+    };
+    get_api_admin_client_file_download: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -2731,6 +3284,72 @@ export interface operations {
             };
         };
     };
+    post_api_admin_portal_access_invite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContactDetailOutput"];
+                };
+            };
+        };
+    };
+    post_api_admin_portal_access_disable: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContactDetailOutput"];
+                };
+            };
+        };
+    };
+    post_api_admin_portal_access_enable: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContactDetailOutput"];
+                };
+            };
+        };
+    };
     get_api_admin_privacy_show: {
         parameters: {
             query?: never;
@@ -3264,6 +3883,60 @@ export interface operations {
             };
         };
     };
+    post_api_password_reset_request: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    post_api_password_reset_confirm: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PasswordResetOutput"];
+                };
+            };
+        };
+    };
+    post_api_me_password: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     get_api_platform_account_list: {
         parameters: {
             query?: never;
@@ -3749,6 +4422,261 @@ export interface operations {
                         page: number;
                         perPage: number;
                     };
+                };
+            };
+        };
+    };
+    get_api_portal_file_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["ClientFileOutput"][];
+                    };
+                };
+            };
+        };
+    };
+    post_api_portal_file_upload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Created. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClientFileOutput"];
+                };
+            };
+        };
+    };
+    get_api_portal_file_download: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    get_api_portal_notes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["PortalNoteOutput"][];
+                    };
+                };
+            };
+        };
+    };
+    get_api_portal_overview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortalOverviewOutput"];
+                };
+            };
+        };
+    };
+    get_api_portal_plan_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["PortalPlanOutput"][];
+                    };
+                };
+            };
+        };
+    };
+    post_api_portal_plan_pay: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CheckoutOutput"];
+                };
+            };
+        };
+    };
+    get_api_portal_session_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["PortalSessionOutput"][];
+                    };
+                };
+            };
+        };
+    };
+    post_api_portal_session_book: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Created. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortalSessionOutput"];
+                };
+            };
+        };
+    };
+    get_api_portal_session_slots: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        days: components["schemas"]["SlotDayOutput"][];
+                    };
+                };
+            };
+        };
+    };
+    post_api_portal_session_reschedule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortalSessionOutput"];
+                };
+            };
+        };
+    };
+    post_api_portal_session_cancel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortalSessionOutput"];
                 };
             };
         };

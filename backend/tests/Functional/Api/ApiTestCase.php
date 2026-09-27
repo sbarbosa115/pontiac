@@ -98,6 +98,14 @@ abstract class ApiTestCase extends WebTestCase
         return $this->withPassword(User::createClient($account, $email, $fullName));
     }
 
+    /** A client of $contact's who set their password: they sign in at the consultant's portal. */
+    protected function createClientFor(Contact $contact): User
+    {
+        $account = $contact->getAccount() ?? throw new \LogicException('A contact belongs to an account.');
+
+        return $this->withPassword(User::createClient($account, $contact->getEmail(), $contact->getFullName(), $contact));
+    }
+
     protected function createSuperAdmin(string $email = 'ops@pontiac.test'): User
     {
         return $this->withPassword(User::createSuperAdmin($email, 'Paula Plataforma'));
@@ -312,6 +320,15 @@ abstract class ApiTestCase extends WebTestCase
         imagejpeg($image, $path, 85);
 
         return new UploadedFile($path, $name, 'image/jpeg', null, true);
+    }
+
+    /** A small but real PDF, as a client would upload it. */
+    protected function pdfFile(string $name = 'extracto.pdf'): UploadedFile
+    {
+        $path = (string) tempnam(sys_get_temp_dir(), 'pdf');
+        file_put_contents($path, "%PDF-1.4\n1 0 obj << /Type /Catalog >> endobj\ntrailer << /Root 1 0 R >>\n%%EOF\n");
+
+        return new UploadedFile($path, $name, 'application/pdf', null, true);
     }
 
     protected function pngFile(string $name = 'foto.png'): UploadedFile

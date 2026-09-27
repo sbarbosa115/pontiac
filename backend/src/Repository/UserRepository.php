@@ -7,6 +7,7 @@ namespace App\Repository;
 use App\Api\Page;
 use App\Api\Pagination;
 use App\Entity\Account;
+use App\Entity\Contact;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\ArrayParameterType;
@@ -65,6 +66,17 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
     public function findClient(Account $account, string $email): ?User
     {
         return $this->findOneBy(['email' => User::normalizeEmail($email), 'loginScope' => User::clientScope($account)]);
+    }
+
+    public function findOneByPasswordResetToken(string $token): ?User
+    {
+        return $this->findOneBy(['passwordResetTokenHash' => User::hashInvitationToken($token)]);
+    }
+
+    /** The client login of a contact, if they were ever invited to the portal. */
+    public function findClientOf(Contact $contact): ?User
+    {
+        return $this->findOneBy(['contact' => $contact]);
     }
 
     public function findOneByInvitationToken(string $token): ?User

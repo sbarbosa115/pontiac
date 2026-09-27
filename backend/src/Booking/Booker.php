@@ -54,9 +54,10 @@ final class Booker
     }
 
     /**
-     * A session of a plan the person has (a paid one, once paid): while it is active and has sessions left.
+     * A session of a plan the person has (a paid one, once paid): while it is active and has sessions left. Booked by
+     * the team, or by the client from the portal (then only at a free slot, like a visitor).
      */
-    public function bookForEnrollment(Account $account, Enrollment $enrollment, \DateTimeImmutable $startsAt): BookingSession
+    public function bookForEnrollment(Account $account, Enrollment $enrollment, \DateTimeImmutable $startsAt, string $bookedBy = BookingSession::BOOKED_BY_STAFF): BookingSession
     {
         if (EnrollmentStatus::Active !== $enrollment->getStatus()) {
             throw ApiException::conflict('enrollment_not_active', 'Only an active plan is booked: a paid one after its payment.');
@@ -66,7 +67,7 @@ final class Booker
             throw ApiException::conflict('no_sessions_left', 'Every session of this plan is already booked or used.');
         }
 
-        return $this->book($account, $enrollment, $startsAt, BookingSession::BOOKED_BY_STAFF);
+        return $this->book($account, $enrollment, $startsAt, $bookedBy);
     }
 
     /**
@@ -155,7 +156,7 @@ final class Booker
         $lock->acquire(true);
         try {
             $availability = $this->availability->forAccount($account);
-            $free = BookingSession::BOOKED_BY_VISITOR === $bookedBy
+            $free = BookingSession::BOOKED_BY_STAFF !== $bookedBy
                 ? $this->slots->isFree($account, $availability, $enrollment->getDurationMinutes(), $startsAt, new \DateTimeImmutable())
                 : !$this->overlapsAt($startsAt, $enrollment->getDurationMinutes(), $availability->getBufferMinutes());
             if (!$free) {

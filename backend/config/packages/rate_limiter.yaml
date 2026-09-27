@@ -24,6 +24,11 @@ framework:
             policy: sliding_window
             limit: 10
             interval: '10 minutes'
+        # "¿Olvidaste tu contraseña?" and changing one's password, per client IP.
+        password_reset:
+            policy: sliding_window
+            limit: 10
+            interval: '15 minutes'
         # Starting a payment (a page's payment section, a payment link), per client IP.
         payment_start:
             policy: sliding_window
@@ -57,3 +62,7 @@ when@test:
                 policy: sliding_window
                 limit: 1000
                 interval: '10 minutes'
+            password_reset:
+                policy: sliding_window
+                limit: 1000
+                interval: '15 minutes'

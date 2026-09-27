@@ -18,6 +18,7 @@ use App\Enum\PaymentStatus;
 use App\Payment\WompiSignature;
 use App\Tests\Functional\Api\ApiTestCase;
 use App\Tests\Support\FakeWompi;
+use Symfony\Component\Mailer\Event\MessageEvent;
 use Symfony\Component\Mime\Email;
 
 /**
@@ -90,7 +91,8 @@ final class PublicPaymentTest extends ApiTestCase
         $answer = $this->event($this->wompiEvent($this->wompiTransaction($payment)));
 
         self::assertSame(['status' => 'applied'], $answer);
-        self::assertSame(['Recibimos tu pago: Plan A', 'Nuevo pago: Laura Gómez · Plan A'], $this->subjects());
+        // The receipt, the consultant's notice and, a first paid plan, the portal invitation.
+        self::assertEqualsCanonicalizing(['Recibimos tu pago: Plan A', 'Nuevo pago: Laura Gómez · Plan A', 'Finanzas Claras te dio acceso a tu portal de cliente'], $this->subjects());
         $payment = $this->onlyPayment();
         self::assertSame([PaymentStatus::Approved, 'CARD', 'tx-1'], [$payment->getStatus(), $payment->getMethod(), $payment->getWompiTransactionId()]);
         self::assertNotNull($payment->getPaidAt());
@@ -242,10 +244,15 @@ final class PublicPaymentTest extends ApiTestCase
         return $answer;
     }
 
-    /** @return list<string> the subjects of the emails the last request queued */
+    /**
+     * The subjects of the emails the last request queued or sent. From the events, not getMailerMessages(): that one
+     * takes an email sent at once (the portal invitation) for the queued email before it, and drops that one.
+     *
+     * @return list<string>
+     */
     private function subjects(): array
     {
-        return array_values(array_map(static fn (Email $e) => (string) $e->getSubject(), array_filter(self::getMailerMessages(), static fn ($m) => $m instanceof Email)));
+        return array_values(array_filter(array_map(static fn (MessageEvent $e) => $e->getMessage() instanceof Email ? (string) $e->getMessage()->getSubject() : null, self::getMailerEvents())));
     }
 
     private function emailTo(string $address): Email

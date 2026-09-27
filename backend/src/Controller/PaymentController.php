@@ -24,6 +24,7 @@ use App\Payment\WompiClient;
 use App\Repository\EnrollmentRepository;
 use App\Repository\PaymentRepository;
 use App\Repository\PlanRepository;
+use App\Repository\UserRepository;
 use App\Repository\WompiSettingsRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -124,7 +125,7 @@ final class PaymentController extends AbstractController
      * result.
      */
     #[Route('/{slug}/pago/{reference}', name: 'public_payment_result', requirements: ['slug' => self::SLUG, 'reference' => self::REFERENCE], methods: ['GET'], priority: 5)]
-    public function result(string $slug, string $reference, Request $request, PaymentRepository $payments, WompiSettingsRepository $wompi, WompiClient $client, PaymentApplier $applier): Response
+    public function result(string $slug, string $reference, Request $request, PaymentRepository $payments, WompiSettingsRepository $wompi, WompiClient $client, PaymentApplier $applier, UserRepository $users): Response
     {
         $account = $this->resolver->enter($slug, $request);
         if ($account instanceof Response) {
@@ -148,6 +149,8 @@ final class PaymentController extends AbstractController
             'amount' => MoneyText::format($account, $payment->getAmount(), $payment->getCurrency()),
             'paidOn' => null === $payment->getPaidAt() ? null : SessionTime::date($account, $payment->getPaidAt()),
             'retryUrl' => $this->retryUrl($account, $payment),
+            // Someone who can sign in to the portal goes back there to book their sessions.
+            'portalUrl' => null === $users->findClientOf($payment->getContact()) ? null : '/'.$account->getSlug().'/portal',
         ]);
     }
 

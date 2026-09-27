@@ -5,6 +5,13 @@ declare(strict_types=1);
 namespace App\Api;
 
 use App\Api\Output\AccentOutput;
+use App\Api\Output\ClientFileOutput;
+use App\Api\Output\PortalAccessOutput;
+use App\Api\Output\PortalNoteOutput;
+use App\Api\Output\PortalPaymentOutput;
+use App\Api\Output\PortalPlanOutput;
+use App\Api\Output\PortalSessionOutput;
+use App\Entity\ClientFile;
 use App\Api\Output\EnrollmentOutput;
 use App\Api\Output\PaymentOutput;
 use App\Api\Output\SessionNoteOutput;
@@ -403,7 +410,7 @@ final class Presenter
      * @param list<BookingSession>   $sessions
      * @param list<EnrollmentOutput> $enrollments
      */
-    public static function contactDetail(Contact $contact, array $submissions, array $sessions = [], array $enrollments = []): ContactDetailOutput
+    public static function contactDetail(Contact $contact, array $submissions, array $sessions = [], array $enrollments = [], ?PortalAccessOutput $portal = null): ContactDetailOutput
     {
         return new ContactDetailOutput(
             id: (string) $contact->getId(),
@@ -427,6 +434,81 @@ final class Presenter
             ), $submissions),
             sessions: array_map(self::session(...), $sessions),
             enrollments: $enrollments,
+            portal: $portal ?? new PortalAccessOutput(status: 'none', lastSignInAt: null),
+        );
+    }
+
+    public static function clientFile(ClientFile $file): ClientFileOutput
+    {
+        return new ClientFileOutput(
+            id: (string) $file->getId(),
+            name: $file->getName(),
+            contentType: $file->getContentType(),
+            sizeBytes: $file->getSizeBytes(),
+            shared: $file->isShared(),
+            active: $file->isActive(),
+            byClient: $file->isByClient(),
+            uploadedBy: $file->getUploadedBy()->getFullName(),
+            createdAt: (string) self::timestamp($file->getCreatedAt()),
+        );
+    }
+
+    public static function portalSession(BookingSession $session, bool $canChange): PortalSessionOutput
+    {
+        return new PortalSessionOutput(
+            id: (string) $session->getId(),
+            startsAt: (string) self::timestamp($session->getStartsAt()),
+            endsAt: (string) self::timestamp($session->getEndsAt()),
+            status: $session->getStatus()->value,
+            planName: $session->getEnrollment()->getPlanName(),
+            durationMinutes: $session->getEnrollment()->getDurationMinutes(),
+            meetingLink: $session->getMeetingLink(),
+            cancelReason: $session->getCancelReason(),
+            canChange: $canChange,
+        );
+    }
+
+    /**
+     * @param array{taken: int, used: int} $counts
+     * @param list<Payment>                $payments this plan's, newest first
+     */
+    public static function portalPlan(Enrollment $enrollment, array $counts, bool $payable, array $payments): PortalPlanOutput
+    {
+        return new PortalPlanOutput(
+            id: (string) $enrollment->getId(),
+            planName: $enrollment->getPlanName(),
+            price: new MoneyOutput(amount: $enrollment->getPrice(), currency: $enrollment->getCurrency()),
+            free: $enrollment->isFree(),
+            sessionsIncluded: $enrollment->getSessionsIncluded(),
+            sessionsTaken: $counts['taken'],
+            sessionsUsed: $counts['used'],
+            durationMinutes: $enrollment->getDurationMinutes(),
+            status: $enrollment->getStatus()->value,
+            payable: $payable,
+            createdAt: (string) self::timestamp($enrollment->getCreatedAt()),
+            payments: array_map(static fn (Payment $p) => new PortalPaymentOutput(
+                reference: $p->getReference(),
+                amount: new MoneyOutput(amount: $p->getAmount(), currency: $p->getCurrency()),
+                status: $p->getStatus()->value,
+                method: $p->getMethod(),
+                createdAt: (string) self::timestamp($p->getCreatedAt()),
+                paidAt: self::timestamp($p->getPaidAt()),
+            ), $payments),
+        );
+    }
+
+    public static function portalNote(SessionNote $note): PortalNoteOutput
+    {
+        $session = $note->getSession();
+
+        return new PortalNoteOutput(
+            id: (string) $note->getId(),
+            body: $note->getBody(),
+            author: $note->getAuthor()->getFullName(),
+            createdAt: (string) self::timestamp($note->getCreatedAt()),
+            sessionId: (string) $session->getId(),
+            sessionStartsAt: (string) self::timestamp($session->getStartsAt()),
+            planName: $session->getEnrollment()->getPlanName(),
         );
     }
 

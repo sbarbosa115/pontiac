@@ -20,6 +20,7 @@ final class EmailTag
     public const TEST = 'test';
     public const NEW_LEAD = 'new_lead';
     public const RESOURCE = 'resource';
+    public const PASSWORD_RESET = 'password_reset';
 
     public static function apply(Email $email, string $kind, ?Account $account = null): Email
     {

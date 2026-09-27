@@ -19,6 +19,7 @@ use App\Enum\ContactStatus;
 use App\Repository\ContactRepository;
 use App\Repository\LeadCategoryRepository;
 use App\Repository\LeadSubmissionRepository;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -90,13 +91,15 @@ final class ContactController extends ApiController
     #[Route('/{id}/anonymize', name: 'anonymize', requirements: ['id' => Requirement::UUID], methods: ['POST'])]
     #[IsGranted(User::ROLE_OWNER)]
     #[ApiResponse(ContactDetailOutput::class)]
-    public function anonymize(string $id): JsonResponse
+    public function anonymize(string $id, UserRepository $users): JsonResponse
     {
         $contact = $this->load($id);
         if ($contact->isAnonymized()) {
             throw ApiException::conflict('already_anonymized', 'This contact\'s data was already erased.');
         }
         $contact->anonymize();
+        // Their portal login goes with their data.
+        $users->findClientOf($contact)?->setActive(false);
         $submissions = $this->submissions->findForContact($contact);
         foreach ($submissions as $submission) {
             $submission->anonymize();

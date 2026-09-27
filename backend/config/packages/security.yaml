@@ -74,6 +74,7 @@ security:
     access_control:
         - { path: ^/api/login$, roles: PUBLIC_ACCESS }
         - { path: ^/api/invitations/, roles: PUBLIC_ACCESS }
+        - { path: ^/api/password-reset/, roles: PUBLIC_ACCESS }
         - { path: ^/api/platform, roles: ROLE_SUPER_ADMIN }
         # Owner and assistant share the admin space; owner-only endpoints say so with #[IsGranted('ROLE_OWNER')].
         - { path: ^/api/admin, roles: [ROLE_OWNER, ROLE_ASSISTANT] }

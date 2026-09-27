@@ -9,7 +9,8 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Uid\Uuid;
 
 /**
- * Where images live on disk: UPLOADS_DIR/<account id>/media/<asset id>/original.<ext> and <width>.webp. Outside the web
+ * Where uploads live on disk: images at UPLOADS_DIR/<account id>/media/<asset id>/original.<ext> and <width>.webp,
+ * contacts' files at UPLOADS_DIR/<account id>/files/<file id>. Outside the web
  * root: the public controller streams them (a cPanel account serves nothing else from there).
  */
 final class MediaStorage
@@ -23,6 +24,12 @@ final class MediaStorage
     public function directory(Uuid $accountId, Uuid $assetId): string
     {
         return sprintf('%s/%s/media/%s', rtrim($this->root, '/'), $accountId->toRfc4122(), $assetId->toRfc4122());
+    }
+
+    /** A contact's file: UPLOADS_DIR/<account id>/files/<file id>. */
+    public function filePath(Uuid $accountId, Uuid $fileId): string
+    {
+        return sprintf('%s/%s/files/%s', rtrim($this->root, '/'), $accountId->toRfc4122(), $fileId->toRfc4122());
     }
 
     public function variantPath(MediaAsset $asset, int $width): string

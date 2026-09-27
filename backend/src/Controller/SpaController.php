@@ -31,11 +31,12 @@ final class SpaController extends AbstractController
 
     /**
      * A consultant's client portal. A slug that is not an active consultant is a 404 here, before any JavaScript.
+     * "api" is never a consultant (a reserved slug): /api/portal/… is the portal's API.
      */
     #[Route(
         '/{slug}/portal/{path}',
         name: 'app_portal',
-        requirements: ['slug' => Account::SLUG_PATTERN, 'path' => '.*'],
+        requirements: ['slug' => '(?!api/)'.Account::SLUG_PATTERN, 'path' => '.*'],
         defaults: ['path' => ''],
         methods: ['GET'],
         priority: 10,

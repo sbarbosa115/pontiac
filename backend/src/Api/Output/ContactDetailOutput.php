@@ -28,6 +28,7 @@ final readonly class ContactDetailOutput
         public array $sessions,
         /** @var list<EnrollmentOutput> newest first */
         public array $enrollments,
+        public PortalAccessOutput $portal,
     ) {
     }
 }

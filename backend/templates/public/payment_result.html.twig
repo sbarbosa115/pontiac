@@ -14,7 +14,12 @@
     {% set status = payment.status.value %}
     {% if status == 'approved' %}
         <h1>¡Pago aprobado!</h1>
-        <p class="notice" role="status">Gracias. {{ account.name }} te escribirá para agendar tus sesiones. Te enviamos el comprobante a tu correo.</p>
+        {% if portalUrl %}
+            <p class="notice" role="status">Gracias. Te enviamos el comprobante a tu correo. Agenda tus sesiones desde tu portal.</p>
+            <p><a class="btn" href="{{ portalUrl }}">Ir a mi portal</a></p>
+        {% else %}
+            <p class="notice" role="status">Gracias. {{ account.name }} te escribirá para agendar tus sesiones. Te enviamos el comprobante a tu correo; si es tu primer plan, también la invitación a tu portal.</p>
+        {% endif %}
     {% elseif status == 'pending' %}
         <h1>Estamos confirmando tu pago</h1>
         <p class="notice" role="status">Wompi aún no nos confirma el resultado. Esta página se actualiza sola; también te avisaremos por correo.</p>

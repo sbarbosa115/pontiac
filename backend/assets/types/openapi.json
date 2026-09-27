@@ -235,6 +235,176 @@
                 }
             }
         },
+        "/api/admin/contacts/{id}/files": {
+            "get": {
+                "summary": "Every file of theirs, turned-off ones too, newest first.",
+                "operationId": "get_api_admin_client_file_list",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "items"
+                                    ],
+                                    "properties": {
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ClientFileOutput"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "Multipart: `file`, and `shared` (\"1\": the client sees it).",
+                "operationId": "post_api_admin_client_file_upload",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ClientFileOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/client-files/{id}": {
+            "delete": {
+                "operationId": "delete_api_admin_client_file_disable",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ClientFileOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "operationId": "patch_api_admin_client_file_update",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ClientFileOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/client-files/{id}/enable": {
+            "post": {
+                "operationId": "post_api_admin_client_file_enable",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ClientFileOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/client-files/{id}/download": {
+            "get": {
+                "operationId": "get_api_admin_client_file_download",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/admin/contacts": {
             "get": {
                 "summary": "?q= searches name, email and phone; ?status=, ?category= (an id, or \"none\") and ?sourcePage= (an id) narrow it.",
@@ -1219,6 +1389,90 @@
                 }
             }
         },
+        "/api/admin/contacts/{id}/portal/invitation": {
+            "post": {
+                "operationId": "post_api_admin_portal_access_invite",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ContactDetailOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/contacts/{id}/portal/disable": {
+            "post": {
+                "operationId": "post_api_admin_portal_access_disable",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ContactDetailOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/contacts/{id}/portal/enable": {
+            "post": {
+                "operationId": "post_api_admin_portal_access_enable",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ContactDetailOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/admin/privacy": {
             "get": {
                 "operationId": "get_api_admin_privacy_show",
@@ -1823,6 +2077,45 @@
                                 }
                             }
                         }
+                    }
+                }
+            }
+        },
+        "/api/password-reset/request": {
+            "post": {
+                "summary": "Always 204, whether the email has an account or not.",
+                "operationId": "post_api_password_reset_request",
+                "responses": {
+                    "default": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/password-reset/confirm": {
+            "post": {
+                "operationId": "post_api_password_reset_confirm",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PasswordResetOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/me/password": {
+            "post": {
+                "summary": "\"Mi cuenta \u203a Cambiar contrase\u00f1a\".",
+                "operationId": "post_api_me_password",
+                "responses": {
+                    "default": {
+                        "description": ""
                     }
                 }
             }
@@ -2473,6 +2766,302 @@
                 }
             }
         },
+        "/api/portal/files": {
+            "get": {
+                "operationId": "get_api_portal_file_list",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "items"
+                                    ],
+                                    "properties": {
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ClientFileOutput"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "Multipart `file`: theirs, so the consultant sees it and so do they.",
+                "operationId": "post_api_portal_file_upload",
+                "responses": {
+                    "201": {
+                        "description": "Created.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ClientFileOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/portal/files/{id}/download": {
+            "get": {
+                "operationId": "get_api_portal_file_download",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/portal/notes": {
+            "get": {
+                "operationId": "get_api_portal_notes",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "items"
+                                    ],
+                                    "properties": {
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/PortalNoteOutput"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/portal/overview": {
+            "get": {
+                "operationId": "get_api_portal_overview",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PortalOverviewOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/portal/plans": {
+            "get": {
+                "operationId": "get_api_portal_plan_list",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "items"
+                                    ],
+                                    "properties": {
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/PortalPlanOutput"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/portal/plans/{id}/pay": {
+            "post": {
+                "summary": "\"Pagar\": Wompi's checkout for a plan waiting for its payment; Wompi brings them back to the result page.",
+                "operationId": "post_api_portal_plan_pay",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CheckoutOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/portal/sessions": {
+            "get": {
+                "summary": "Every session of theirs, the latest first.",
+                "operationId": "get_api_portal_session_list",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "items"
+                                    ],
+                                    "properties": {
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/PortalSessionOutput"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "operationId": "post_api_portal_session_book",
+                "responses": {
+                    "201": {
+                        "description": "Created.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PortalSessionOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/portal/slots": {
+            "get": {
+                "summary": "The free slots for a session of one of their plans (?enrollmentId=), or to move one (?sessionId=).",
+                "operationId": "get_api_portal_session_slots",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "days"
+                                    ],
+                                    "properties": {
+                                        "days": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/SlotDayOutput"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/portal/sessions/{id}/reschedule": {
+            "post": {
+                "operationId": "post_api_portal_session_reschedule",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PortalSessionOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/portal/sessions/{id}/cancel": {
+            "post": {
+                "operationId": "post_api_portal_session_cancel",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PortalSessionOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/portal-login": {
             "post": {
                 "operationId": "post_api_portal_login",
@@ -2643,6 +3232,52 @@
                     },
                     "active": {
                         "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "ClientFileOutput": {
+                "required": [
+                    "id",
+                    "name",
+                    "contentType",
+                    "sizeBytes",
+                    "shared",
+                    "active",
+                    "byClient",
+                    "uploadedBy",
+                    "createdAt"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "contentType": {
+                        "type": "string"
+                    },
+                    "sizeBytes": {
+                        "type": "integer"
+                    },
+                    "shared": {
+                        "title": "The client sees it (always true for what they uploaded).",
+                        "type": "boolean"
+                    },
+                    "active": {
+                        "type": "boolean"
+                    },
+                    "byClient": {
+                        "title": "Uploaded by the client, from the portal.",
+                        "type": "boolean"
+                    },
+                    "uploadedBy": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "title": "ISO 8601.",
+                        "type": "string"
                     }
                 },
                 "type": "object"
@@ -3053,6 +3688,23 @@
                 },
                 "type": "object"
             },
+            "PortalAccessOutput": {
+                "required": [
+                    "status"
+                ],
+                "properties": {
+                    "status": {
+                        "title": "\"none\", \"invited\", \"active\" or \"disabled\".",
+                        "type": "string"
+                    },
+                    "lastSignInAt": {
+                        "title": "ISO 8601.",
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
             "ContactDetailOutput": {
                 "required": [
                     "id",
@@ -3065,7 +3717,8 @@
                     "anonymized",
                     "submissions",
                     "sessions",
-                    "enrollments"
+                    "enrollments",
+                    "portal"
                 ],
                 "properties": {
                     "id": {
@@ -3135,6 +3788,9 @@
                         "items": {
                             "$ref": "#/components/schemas/EnrollmentOutput"
                         }
+                    },
+                    "portal": {
+                        "$ref": "#/components/schemas/PortalAccessOutput"
                     }
                 },
                 "type": "object"
@@ -3878,6 +4534,18 @@
                 },
                 "type": "object"
             },
+            "PasswordResetOutput": {
+                "required": [
+                    "loginPath"
+                ],
+                "properties": {
+                    "loginPath": {
+                        "title": "Where they sign in now: \"/login\" or \"/<consultant>/portal/ingresar\".",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
             "AccountOwnerOutput": {
                 "required": [
                     "id",
@@ -4342,6 +5010,229 @@
                         "items": {
                             "$ref": "#/components/schemas/SettingChangeOutput"
                         }
+                    }
+                },
+                "type": "object"
+            },
+            "PortalNoteOutput": {
+                "required": [
+                    "id",
+                    "body",
+                    "author",
+                    "createdAt",
+                    "sessionId",
+                    "sessionStartsAt",
+                    "planName"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "body": {
+                        "type": "string"
+                    },
+                    "author": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "title": "ISO 8601.",
+                        "type": "string"
+                    },
+                    "sessionId": {
+                        "type": "string"
+                    },
+                    "sessionStartsAt": {
+                        "title": "ISO 8601 (UTC).",
+                        "type": "string"
+                    },
+                    "planName": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "PortalSessionOutput": {
+                "required": [
+                    "id",
+                    "startsAt",
+                    "endsAt",
+                    "status",
+                    "planName",
+                    "durationMinutes",
+                    "meetingLink",
+                    "canChange"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "startsAt": {
+                        "title": "ISO 8601 (UTC).",
+                        "type": "string"
+                    },
+                    "endsAt": {
+                        "title": "ISO 8601 (UTC).",
+                        "type": "string"
+                    },
+                    "status": {
+                        "title": "\"scheduled\", \"done\", \"no_show\" or \"cancelled\".",
+                        "type": "string"
+                    },
+                    "planName": {
+                        "type": "string"
+                    },
+                    "durationMinutes": {
+                        "type": "integer"
+                    },
+                    "meetingLink": {
+                        "type": "string"
+                    },
+                    "cancelReason": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "canChange": {
+                        "title": "Before the consultant's cancellation limit: they may move or cancel it.",
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "PortalPaymentOutput": {
+                "required": [
+                    "reference",
+                    "amount",
+                    "status",
+                    "createdAt"
+                ],
+                "properties": {
+                    "reference": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "$ref": "#/components/schemas/MoneyOutput"
+                    },
+                    "status": {
+                        "title": "\"pending\", \"approved\", \"declined\", \"voided\" or \"error\".",
+                        "type": "string"
+                    },
+                    "method": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "createdAt": {
+                        "title": "ISO 8601.",
+                        "type": "string"
+                    },
+                    "paidAt": {
+                        "title": "ISO 8601.",
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "PortalPlanOutput": {
+                "required": [
+                    "id",
+                    "planName",
+                    "price",
+                    "free",
+                    "sessionsIncluded",
+                    "sessionsTaken",
+                    "sessionsUsed",
+                    "durationMinutes",
+                    "status",
+                    "payable",
+                    "createdAt",
+                    "payments"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "planName": {
+                        "type": "string"
+                    },
+                    "price": {
+                        "$ref": "#/components/schemas/MoneyOutput"
+                    },
+                    "free": {
+                        "type": "boolean"
+                    },
+                    "sessionsIncluded": {
+                        "type": "integer"
+                    },
+                    "sessionsTaken": {
+                        "title": "Booked, done or no-show.",
+                        "type": "integer"
+                    },
+                    "sessionsUsed": {
+                        "title": "Done or no-show.",
+                        "type": "integer"
+                    },
+                    "durationMinutes": {
+                        "type": "integer"
+                    },
+                    "status": {
+                        "title": "\"pending_payment\", \"active\", \"completed\" or \"cancelled\".",
+                        "type": "string"
+                    },
+                    "payable": {
+                        "title": "Waiting for payment, and the consultant takes online payments.",
+                        "type": "boolean"
+                    },
+                    "createdAt": {
+                        "title": "ISO 8601.",
+                        "type": "string"
+                    },
+                    "payments": {
+                        "title": "newest first",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PortalPaymentOutput"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "PortalOverviewOutput": {
+                "required": [
+                    "plans",
+                    "cancelHours"
+                ],
+                "properties": {
+                    "nextSession": {
+                        "title": "The next scheduled session.",
+                        "nullable": true,
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/PortalSessionOutput"
+                            }
+                        ]
+                    },
+                    "plans": {
+                        "title": "active and waiting for payment, newest first",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PortalPlanOutput"
+                        }
+                    },
+                    "cancelHours": {
+                        "title": "Hours before a session until which they may move or cancel it.",
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "CheckoutOutput": {
+                "required": [
+                    "checkoutUrl"
+                ],
+                "properties": {
+                    "checkoutUrl": {
+                        "title": "Wompi's checkout.",
+                        "type": "string"
                     }
                 },
                 "type": "object"

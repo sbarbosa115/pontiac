@@ -12,6 +12,7 @@ use App\Entity\User;
 use App\Enum\EnrollmentStatus;
 use App\Enum\PaymentStatus;
 use App\Mail\PaymentMailer;
+use App\Portal\PortalAccess;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Lock\LockFactory;
@@ -19,7 +20,7 @@ use Symfony\Component\Lock\LockFactory;
 /**
  * Applies a payment's result, from wherever it comes (Wompi's event, Wompi's API asked by the result page, or the
  * owner recording money received): once, under a lock per payment. An approved payment activates its plan and makes
- * the person a client (a paid plan only), and both sides are told.
+ * the person a client (a paid plan only), both sides are told, and a first paid plan invites them to the portal.
  */
 final class PaymentApplier
 {
@@ -27,6 +28,7 @@ final class PaymentApplier
         private readonly EntityManagerInterface $em,
         private readonly LockFactory $locks,
         private readonly PaymentMailer $mailer,
+        private readonly PortalAccess $portal,
         private readonly LoggerInterface $logger,
     ) {
     }
@@ -76,6 +78,7 @@ final class PaymentApplier
 
         if ($approved) {
             $this->mailer->received($account, $payment);
+            $this->welcome($account, $payment);
         }
 
         return true;
@@ -92,8 +95,17 @@ final class PaymentApplier
         $this->approve($enrollment);
         $this->em->flush();
         $this->mailer->received($account, $payment);
+        $this->welcome($account, $payment);
 
         return $payment;
+    }
+
+    /** A first paid plan opens the portal: "Accede a tu portal". */
+    private function welcome(Account $account, Payment $payment): void
+    {
+        if (!$payment->getEnrollment()->isFree()) {
+            $this->portal->inviteAfterPayment($account, $payment->getContact());
+        }
     }
 
     private function approve(Enrollment $enrollment): void

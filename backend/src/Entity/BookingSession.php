@@ -25,6 +25,8 @@ class BookingSession implements AccountOwnedInterface
 
     public const BOOKED_BY_VISITOR = 'visitor';
     public const BOOKED_BY_STAFF = 'staff';
+    // The client, from the portal: the visitor's rules (free slots, notice, cancellation limit).
+    public const BOOKED_BY_CLIENT = 'client';
 
     #[ORM\ManyToOne(targetEntity: Enrollment::class)]
     #[ORM\JoinColumn(nullable: false)]

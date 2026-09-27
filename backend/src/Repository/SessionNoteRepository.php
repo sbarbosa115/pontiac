@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\BookingSession;
+use App\Entity\Contact;
 use App\Entity\SessionNote;
 use App\Enum\NoteVisibility;
 use Doctrine\Persistence\ManagerRegistry;
@@ -38,5 +39,29 @@ class SessionNoteRepository extends AccountOwnedRepository
         }
 
         return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * The shared notes of a contact's sessions, the latest session first: what the portal shows.
+     *
+     * @return list<SessionNote>
+     */
+    public function findSharedForContact(Contact $contact): array
+    {
+        return $this->createQueryBuilder('n')
+            ->innerJoin('n.author', 'a')
+            ->addSelect('a')
+            ->innerJoin('n.session', 's')
+            ->addSelect('s')
+            ->innerJoin('s.enrollment', 'e')
+            ->addSelect('e')
+            ->andWhere('s.contact = :contact')
+            ->andWhere('n.visibility = :shared')
+            ->setParameter('contact', $contact->getId(), UuidType::NAME)
+            ->setParameter('shared', NoteVisibility::Shared)
+            ->orderBy('s.startsAt', 'DESC')
+            ->addOrderBy('n.createdAt', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 }

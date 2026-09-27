@@ -6,6 +6,7 @@ namespace App\Security;
 
 use App\Api\ApiException;
 use App\Entity\Account;
+use App\Entity\Contact;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -47,6 +48,15 @@ final class InvitationService
     {
         $this->assertStaffEmailAvailable($email);
         $user = User::createSuperAdmin($email, $fullName);
+        $this->em->persist($user);
+
+        return $this->issue($user);
+    }
+
+    /** A contact's client login, with its invitation (the portal, at /<consultant>/portal). */
+    public function inviteClient(Account $account, Contact $contact): User
+    {
+        $user = User::createClient($account, $contact->getEmail(), $contact->getFullName(), $contact);
         $this->em->persist($user);
 
         return $this->issue($user);

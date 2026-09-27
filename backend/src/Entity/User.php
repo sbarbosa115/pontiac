@@ -42,6 +42,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public const STAFF_SCOPE = 'staff';
 
     private const INVITATION_TTL = 'P7D';
+    private const PASSWORD_RESET_TTL = 'PT1H';
 
     #[ORM\Column(length: 180)]
     #[Assert\NotBlank]
@@ -76,6 +77,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $invitationExpiresAt = null;
+
+    // A client's contact: whose sessions, plans, notes and files the portal shows. Null for staff.
+    #[ORM\ManyToOne(targetEntity: Contact::class)]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?Contact $contact = null;
+
+    // "¿Olvidaste tu contraseña?": SHA-256 of the emailed token, valid for an hour.
+    #[ORM\Column(length: 64, unique: true, nullable: true)]
+    private ?string $passwordResetTokenHash = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $passwordResetExpiresAt = null;
 
     // Light, dark or the device's; null until they choose, which reads as light (uiTheme()).
     #[ORM\Column(length: 10, nullable: true, enumType: UiTheme::class)]
@@ -113,9 +126,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return new self($email, $fullName, self::ROLE_ASSISTANT, $account);
     }
 
-    public static function createClient(Account $account, string $email, string $fullName): self
+    public static function createClient(Account $account, string $email, string $fullName, ?Contact $contact = null): self
     {
-        return new self($email, $fullName, self::ROLE_CLIENT, $account);
+        $client = new self($email, $fullName, self::ROLE_CLIENT, $account);
+        $client->contact = $contact;
+
+        return $client;
     }
 
     public static function normalizeEmail(string $email): string
@@ -160,6 +176,45 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->password = $hashedPassword;
         $this->invitationTokenHash = null;
         $this->invitationExpiresAt = null;
+    }
+
+    /**
+     * @return string the plain token to email (only its hash is kept); it replaces any earlier one
+     */
+    public function issuePasswordReset(\DateTimeImmutable $now = new \DateTimeImmutable()): string
+    {
+        $token = rtrim(strtr(base64_encode(random_bytes(32)), '+/', '-_'), '=');
+        $this->passwordResetTokenHash = self::hashInvitationToken($token);
+        $this->passwordResetExpiresAt = $now->add(new \DateInterval(self::PASSWORD_RESET_TTL));
+
+        return $token;
+    }
+
+    public function hasValidPasswordReset(\DateTimeImmutable $now): bool
+    {
+        return null !== $this->passwordResetTokenHash && null !== $this->passwordResetExpiresAt && $this->passwordResetExpiresAt > $now;
+    }
+
+    /** A new password, from a reset link or from "Mi cuenta": any pending reset or invitation is spent. */
+    public function changePassword(string $hashedPassword): void
+    {
+        $this->password = $hashedPassword;
+        $this->passwordResetTokenHash = null;
+        $this->passwordResetExpiresAt = null;
+        $this->invitationTokenHash = null;
+        $this->invitationExpiresAt = null;
+    }
+
+    public function getContact(): ?Contact
+    {
+        return $this->contact;
+    }
+
+    public function linkContact(Contact $contact): static
+    {
+        $this->contact = $contact;
+
+        return $this;
     }
 
     /**

@@ -8,7 +8,6 @@ use App\Api\ApiException;
 use App\Api\ApiValidationException;
 use App\Entity\Account;
 use App\Entity\MediaAsset;
-use App\Repository\MediaAssetRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Uid\Uuid;
@@ -24,8 +23,8 @@ final class MediaUploader
 
     public function __construct(
         private readonly EntityManagerInterface $em,
-        private readonly MediaAssetRepository $media,
-        private readonly MediaStorage $storage,
+        private readonly StorageUsage $storage,
+        private readonly MediaStorage $paths,
         private readonly ImageProcessor $images,
     ) {
     }
@@ -50,12 +49,12 @@ final class MediaUploader
         }
 
         $id = Uuid::v7();
-        $directory = $this->storage->directory($account->getId(), $id);
+        $directory = $this->paths->directory($account->getId(), $id);
         $widths = $this->images->writeVariants($file->getPathname(), $type, $directory, MediaAsset::WIDTHS);
         $file->move($directory, 'original.'.self::TYPES[$type]);
 
         $total = (int) array_sum(array_map(static fn (string $path) => (int) filesize($path), glob($directory.'/*') ?: []));
-        if ($this->media->totalBytes() + $total > $account->getStorageMb() * 1024 * 1024) {
+        if ($this->storage->usedBytes() + $total > $account->getStorageMb() * 1024 * 1024) {
             self::remove($directory);
             throw ApiException::conflict('storage_limit_reached', sprintf('This consultant can store at most %d MB.', $account->getStorageMb()));
         }

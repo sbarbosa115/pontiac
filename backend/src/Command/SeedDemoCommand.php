@@ -8,7 +8,14 @@ use App\Doctrine\AccountContext;
 use App\Entity\Account;
 use App\Entity\LandingPage;
 use App\Entity\LeadCategory;
+use App\Entity\BookingSession;
+use App\Entity\Contact;
+use App\Entity\Enrollment;
+use App\Entity\Payment;
 use App\Entity\Plan;
+use App\Entity\SessionNote;
+use App\Enum\NoteVisibility;
+use App\Enum\SessionStatus;
 use App\Entity\User;
 use App\Enum\PageTemplate;
 use App\Page\TemplateCatalog;
@@ -84,6 +91,7 @@ final class SeedDemoCommand extends Command
         $this->seedPages($account);
         $this->seedPlans($account);
         $this->seedPayments($account);
+        $this->seedClient($account);
 
         $io->success('Demo data ready.');
         $io->table(['Role', 'Sign in at', 'Email', 'Password'], [
@@ -207,6 +215,39 @@ final class SeedDemoCommand extends Command
             unset($section);
             $page->saveDraft($content)->publish();
         }
+        $this->em->flush();
+    }
+
+    /**
+     * The demo client's side: Carlos paid Plan A (by transfer); his first session was last week, with a shared and a
+     * private note; the second is booked for next week.
+     */
+    private function seedClient(Account $account): void
+    {
+        $this->context->enterAccount($account);
+        $login = $this->users->findClient($account, 'cliente@pontiac.test');
+        $owner = $this->users->loadUserByIdentifier('asesor@pontiac.test');
+        $plan = array_values(array_filter($this->plans->findAllForPickers(), static fn (Plan $p) => !$p->isFree()))[0] ?? null;
+        if (null === $login || null !== $login->getContact() || !$owner instanceof User || null === $plan) {
+            return;
+        }
+
+        $contact = (new Contact($account, 'Carlos Cliente', 'cliente@pontiac.test', '310 555 0101', null, 'demo'))->becomeClient();
+        $enrollment = new Enrollment($contact, $plan, null);
+        $this->em->persist($contact);
+        $this->em->persist($enrollment);
+        $this->em->persist(Payment::manual($enrollment, 'transfer', 'Demo', $owner, new \DateTimeImmutable('-10 days')));
+        $enrollment->activate();
+
+        $zone = new \DateTimeZone($account->getTimezone());
+        [$past] = BookingSession::book($enrollment, (new \DateTimeImmutable('monday last week', $zone))->setTime(10, 0), 'https://meet.google.com/demo-pontiac', BookingSession::BOOKED_BY_STAFF);
+        $past->close(SessionStatus::Done, new \DateTimeImmutable());
+        [$next] = BookingSession::book($enrollment, (new \DateTimeImmutable('tuesday next week', $zone))->setTime(10, 0), 'https://meet.google.com/demo-pontiac', BookingSession::BOOKED_BY_STAFF);
+        $this->em->persist($past);
+        $this->em->persist($next);
+        $this->em->persist(new SessionNote($past, $owner, "Tarea para la próxima sesión:\n- Registrar todos los gastos de una semana.\n- Traer los extractos de las dos tarjetas.", NoteVisibility::Shared));
+        $this->em->persist(new SessionNote($past, $owner, 'Deuda de tarjeta alta (28 % E.A.). Proponer bola de nieve.', NoteVisibility::Private));
+        $login->linkContact($contact);
         $this->em->flush();
     }
 
