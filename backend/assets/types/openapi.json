@@ -1,0 +1,513 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Pontiac API",
+        "description": "The JSON API behind the React UI. Routes, parameters and \u2014 for endpoints that return a response DTO \u2014 the response shapes.",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/api/admin/team": {
+            "get": {
+                "summary": "?q= searches name and email.",
+                "operationId": "get_api_admin_team_list",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "items",
+                                        "total",
+                                        "page",
+                                        "perPage"
+                                    ],
+                                    "properties": {
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/TeamMemberOutput"
+                                            }
+                                        },
+                                        "total": {
+                                            "type": "integer"
+                                        },
+                                        "page": {
+                                            "type": "integer"
+                                        },
+                                        "perPage": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "Invites an assistant: they get an email to set their password.",
+                "operationId": "post_api_admin_team_invite",
+                "responses": {
+                    "201": {
+                        "description": "Created.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TeamMemberOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/team/{id}/resend-invitation": {
+            "post": {
+                "summary": "A new invitation link, for someone who has not set their password yet.",
+                "operationId": "post_api_admin_team_resend",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TeamMemberOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/team/{id}": {
+            "delete": {
+                "summary": "Disables an assistant: they are signed out at their next request. Nothing is deleted.",
+                "operationId": "delete_api_admin_team_disable",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TeamMemberOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/team/{id}/enable": {
+            "post": {
+                "operationId": "post_api_admin_team_enable",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TeamMemberOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/invitations/lookup": {
+            "post": {
+                "operationId": "post_api_invitation_lookup",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/InvitationOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/invitations/accept": {
+            "post": {
+                "operationId": "post_api_invitation_accept",
+                "responses": {
+                    "default": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/me": {
+            "get": {
+                "operationId": "get_api_me",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MeOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/me/preferences": {
+            "patch": {
+                "summary": "{uiTheme?}: \"light\", \"dark\" or \"system\".",
+                "operationId": "patch_api_me_preferences",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MePreferencesOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/platform/impersonatable-users": {
+            "get": {
+                "operationId": "get_api_platform_impersonatable_users",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "items"
+                                    ],
+                                    "properties": {
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ImpersonatableUserOutput"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/portal-login": {
+            "post": {
+                "operationId": "post_api_portal_login",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TokenOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "TeamMemberOutput": {
+                "required": [
+                    "id",
+                    "email",
+                    "fullName",
+                    "role",
+                    "active",
+                    "loginStatus"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "fullName": {
+                        "type": "string"
+                    },
+                    "role": {
+                        "title": "\"owner\" or \"assistant\".",
+                        "type": "string"
+                    },
+                    "active": {
+                        "type": "boolean"
+                    },
+                    "loginStatus": {
+                        "title": "\"active\" (has a password), \"invited\" (link sent, not used yet) or \"none\".",
+                        "type": "string"
+                    },
+                    "lastSignInAt": {
+                        "title": "ISO 8601; null until they first sign in.",
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "InvitationOutput": {
+                "required": [
+                    "email",
+                    "fullName",
+                    "role"
+                ],
+                "properties": {
+                    "email": {
+                        "type": "string"
+                    },
+                    "fullName": {
+                        "type": "string"
+                    },
+                    "role": {
+                        "title": "\"super_admin\", \"owner\", \"assistant\" or \"client\".",
+                        "type": "string"
+                    },
+                    "accountName": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "accountSlug": {
+                        "title": "A client signs in at /<slug>/portal; null for a super admin.",
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "MeAccountOutput": {
+                "required": [
+                    "id",
+                    "name",
+                    "slug",
+                    "country",
+                    "currency",
+                    "locale",
+                    "timezone"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "slug": {
+                        "title": "The first segment of its public URLs: /<slug>, /<slug>/portal.",
+                        "type": "string"
+                    },
+                    "country": {
+                        "type": "string"
+                    },
+                    "currency": {
+                        "type": "string"
+                    },
+                    "locale": {
+                        "type": "string"
+                    },
+                    "timezone": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "ImpersonatorOutput": {
+                "required": [
+                    "id",
+                    "email",
+                    "fullName"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "fullName": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "MeOutput": {
+                "required": [
+                    "id",
+                    "email",
+                    "fullName",
+                    "roles",
+                    "uiTheme"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "fullName": {
+                        "type": "string"
+                    },
+                    "roles": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "account": {
+                        "title": "The consultant's account; null for a super admin.",
+                        "nullable": true,
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/MeAccountOutput"
+                            }
+                        ]
+                    },
+                    "uiTheme": {
+                        "title": "The person at the screen's own theme: the super admin's while they act as someone.",
+                        "type": "string"
+                    },
+                    "impersonator": {
+                        "title": "null unless a super admin is acting as this user",
+                        "nullable": true,
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/ImpersonatorOutput"
+                            }
+                        ]
+                    }
+                },
+                "type": "object"
+            },
+            "MePreferencesOutput": {
+                "required": [
+                    "uiTheme"
+                ],
+                "properties": {
+                    "uiTheme": {
+                        "title": "\"light\", \"dark\" or \"system\" (follow the device).",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "ImpersonatableAccountOutput": {
+                "required": [
+                    "id",
+                    "name"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "ImpersonatableUserOutput": {
+                "required": [
+                    "id",
+                    "email",
+                    "fullName",
+                    "role",
+                    "account"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "fullName": {
+                        "type": "string"
+                    },
+                    "role": {
+                        "title": "\"owner\" or \"assistant\".",
+                        "type": "string"
+                    },
+                    "account": {
+                        "$ref": "#/components/schemas/ImpersonatableAccountOutput"
+                    }
+                },
+                "type": "object"
+            },
+            "TokenOutput": {
+                "required": [
+                    "token"
+                ],
+                "properties": {
+                    "token": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "Bearer": {
+                "type": "http",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "security": [
+        {
+            "Bearer": []
+        }
+    ]
+}

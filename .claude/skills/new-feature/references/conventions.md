@@ -5,6 +5,9 @@ code and this file disagree, the code wins — and update this file in the same 
 
 ## API
 
+The plumbing lives in `backend/src/Api` (namespace `App\Api`); Input DTOs in `Api/Input`, Output DTOs in
+`Api/Output`, entity → DTO in `Api/Presenter`. Controllers live in `src/Controller/<Space>`.
+
 - JSON, camelCase, ids as strings, dates `Y-m-d`, timestamps ISO 8601 UTC, money
   `{"amount": "2500000.00", "currency": "COP"}`. Money is a decimal string end to end, never a float.
 - `ApiException` with a stable snake_case `error` code (the UI translates by code) and named constructors
@@ -16,7 +19,10 @@ code and this file disagree, the code wins — and update this file in the same 
 - `InputMapper`: request → Input DTO, strict types (a money amount sent as a JSON number is a 422), validated.
 - `Pagination` (`?page=&perPage=`, 25 default, 100 max) and `Page::fromQuery()`; lists answer
   `{items, total, page, perPage}` through `ApiController::page()`.
-- `ApiController` with `appUser()`, `account()`, `found()` (→ 404), `page()`, `enumQuery()` (unknown filter → 400).
+- `ApiController` with `appUser()`, `account()`, `found()` (→ 404), `pagination()`, `page()`, `enumQuery()` (unknown
+  filter → 400).
+- Repositories of owned entities extend `AccountOwnedRepository` (`findOneById()`, `findByIds()`, `whereId()`);
+  every list query uses the `ListQueries` trait: `whereTerm($qb, $q, [fields])` and `paginate($qb, $pagination)`.
 - Every response is an **Output DTO** (`final readonly`, promoted properties) declared with an `#[ApiResponse]`
   attribute; a dev/test-only Nelmio describer turns it into OpenAPI, and `openapi-typescript` turns that into
   `assets/types/api.d.ts`, so a changed response is a TypeScript error in the UI.
@@ -28,6 +34,9 @@ code and this file disagree, the code wins — and update this file in the same 
   (`^/api/platform`, super admin only), `api` (`^/api`, JWT; `switch_user` via the `X-Switch-User` header if
   impersonation exists), public ones and `main` (the SPA shell) with `security: false`.
 - A `UserChecker` runs on login **and every JWT request**, so disabling a user or suspending an account works at once.
+- Staff (super admin, owner, assistant) sign in at `/api/login` with email and password; clients at
+  `/api/portal-login` with the consultant's slug too (a client's email is unique per account only:
+  `User::$loginScope`).
 - Each role is its own URL space (`/api/admin`, `/api/portal`, `/api/platform`) and React area; `access_control`
   maps each space to its role; no `role_hierarchy`. The controller's namespace is the authorization boundary.
 - `User` is identified by **id** (JWT and impersonation name users by id); `/api/me` returns the user, roles,
@@ -61,7 +70,8 @@ Library, Playwright. One Twig page (`spa.html.twig`) served by a catch-all contr
 - `lib/api.ts` — fetch wrapper (JWT, `Accept-Language`, `X-Switch-User`), errors as `ApiError` with `code`,
   `status`, `violations`, `fieldErrors()`; files fetched with the JWT and opened from a blob URL.
 - `lib/types.ts` — `Schema<'XOutput'>` from `api.d.ts`.
-- `lib/auth.tsx` — session, `me`, roles, `RequireRole`, home path per role, logout.
+- `lib/auth.tsx` — session, `me`, roles, `RequireRole` (with `loginPath` for the portal), `homePathFor()`,
+  `portalPath(slug)`, `login`, `portalLogin`, logout, impersonation.
 - `lib/hooks.ts` — `useList(path, filters)`, `useApi`, `useForm`, `useSubmit`.
 - `lib/i18n.ts` — `t(key, params)` with `{name}` placeholders and `{one, other}` plurals; `errorMessage(error)`
   translates by API error code. `lib/format.ts` — money and dates in the account's locale and timezone.
@@ -81,7 +91,8 @@ group thousands.
 ## Tests
 
 - `ApiTestCase` (WebTestCase, DAMA rolled-back transactions on `app_test`) with helpers: `createAccount`,
-  `createAdmin`, `createSuperAdmin`, `actAs`, `api`, `upload`, `responseStatus`, `runWorker`.
+  `createOwner`, `createAssistant`, `createClientLogin`, `createSuperAdmin`, `actAs`, `signOut`, `api`, `upload`,
+  `responseStatus`, `runWorker`. `actAs()` clears the entity manager: create fixtures before it, or re-fetch them.
 - Shared tests every list joins: **search** (`?q=` filters) and **query count** (one row vs five must not change it).
 - PHPStan level 6 with an empty baseline.
 - `phpunit.dist.xml` pins `APP_URL` so tests pass on any port.

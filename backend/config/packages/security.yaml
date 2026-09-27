@@ -1,0 +1,94 @@
+parameters:
+    login_max_attempts: 5
+
+security:
+    password_hashers:
+        App\Entity\User: 'auto'
+
+    providers:
+        app_user_provider:
+            # UserRepository::loadUserByIdentifier: a user id (JWT, X-Switch-User) or a staff email (the staff login).
+            # Clients are never found by email here: they sign in per consultant (PortalLoginController).
+            entity:
+                class: App\Entity\User
+
+    # Deliberately no role_hierarchy: no role inherits another. Each has its own URL space (access_control below)
+    # and the super admin, its own firewall.
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+
+        # Staff (super admin, owner, assistant): email and password.
+        login:
+            pattern: ^/api/login$
+            stateless: true
+            provider: app_user_provider
+            user_checker: App\Security\UserChecker
+            json_login:
+                check_path: api_login
+                username_path: email
+                password_path: password
+                success_handler: lexik_jwt_authentication.handler.authentication_success
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
+            login_throttling:
+                max_attempts: '%login_max_attempts%'
+                interval: '15 minutes'
+
+        # Clients: the consultant's slug, email and password (the same email can be a client of two consultants).
+        # No credentials until PortalLoginController has checked them.
+        portal_login:
+            pattern: ^/api/portal-login$
+            security: false
+
+        # ROLE_SUPER_ADMIN only. The only firewall on which the account filter is disabled.
+        platform:
+            pattern: ^/api/platform
+            stateless: true
+            provider: app_user_provider
+            user_checker: App\Security\UserChecker
+            jwt: ~
+
+        # What visitors reach without signing in (landing page forms, bookings, payments). An account's data is
+        # reached only after resolving the account from its slug.
+        public:
+            pattern: ^/api/public/
+            security: false
+
+        api:
+            pattern: ^/api
+            stateless: true
+            provider: app_user_provider
+            user_checker: App\Security\UserChecker
+            jwt: ~
+            # Support: a super admin sends "X-Switch-User: <user id>" with their own JWT and the request runs as that
+            # user (the account filter applies as usual). Stateless, so it lasts one request. Who: ImpersonationVoter.
+            switch_user:
+                parameter: X-Switch-User
+                role: !php/const App\Security\ImpersonationVoter::ATTRIBUTE
+
+        # The React UI shell and the public pages; all data goes through the /api firewalls.
+        main:
+            security: false
+
+    access_control:
+        - { path: ^/api/login$, roles: PUBLIC_ACCESS }
+        - { path: ^/api/invitations/, roles: PUBLIC_ACCESS }
+        - { path: ^/api/platform, roles: ROLE_SUPER_ADMIN }
+        # Owner and assistant share the admin space; owner-only endpoints say so with #[IsGranted('ROLE_OWNER')].
+        - { path: ^/api/admin, roles: [ROLE_OWNER, ROLE_ASSISTANT] }
+        - { path: ^/api/portal, roles: ROLE_CLIENT }
+        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
+
+when@test:
+    parameters:
+        login_max_attempts: 1000
+
+    security:
+        password_hashers:
+            # Secure hashes are slow on purpose; the tests use the cheapest settings.
+            App\Entity\User:
+                algorithm: auto
+                cost: 4
+                time_cost: 3
+                memory_cost: 10

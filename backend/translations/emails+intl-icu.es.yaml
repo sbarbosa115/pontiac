@@ -1,0 +1,13 @@
+layout:
+    footer: 'Enviado por Pontiac.'
+
+invitation:
+    subject: '{inviter} te invitó a Pontiac'
+    greeting: 'Hola, {name}:'
+    body:
+        super_admin: 'Te invitaron a administrar Pontiac.'
+        owner: 'Tu cuenta de asesor en Pontiac está lista. Crea tu contraseña para publicar tus páginas y atender a tus clientes.'
+        assistant: '{inviter} te invitó a su equipo en Pontiac.'
+        client: '{inviter} te dio acceso a tu portal de cliente, donde verás tus sesiones, tus planes y tus pagos.'
+    cta: 'Crear mi contraseña'
+    expiry: 'Este enlace vence en {days} días y solo sirve una vez.'

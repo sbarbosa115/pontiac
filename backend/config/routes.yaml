@@ -1,0 +1,10 @@
+controllers:
+    resource:
+        path: ../src/Controller/
+        namespace: App\Controller
+    type: attribute
+
+# Handled by the json_login authenticator on the "login" firewall.
+api_login:
+    path: /api/login
+    methods: [POST]

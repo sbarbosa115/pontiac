@@ -1,0 +1,30 @@
+# Files in the packages/ subdirectory configure the dependencies; this one, the app's own services.
+parameters:
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+            # Data, not services.
+            - '../src/Api/Input/'
+            - '../src/Api/Output/'
+            # Needs NelmioApiDocBundle, which only dev and test install: registered below for those.
+            - '../src/Api/OpenApi/'
+
+# The #[ApiResponse] → OpenAPI describer: dev and test only, like NelmioApiDocBundle itself.
+when@dev:
+    services:
+        App\Api\OpenApi\ApiResponseDescriber:
+            tags: [{ name: nelmio_api_doc.route_describer, priority: -300 }]
+
+when@test:
+    services:
+        App\Api\OpenApi\ApiResponseDescriber:
+            tags: [{ name: nelmio_api_doc.route_describer, priority: -300 }]

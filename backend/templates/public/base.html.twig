@@ -1,0 +1,25 @@
+{# Every public page: light only (visitors never chose a theme), server-rendered, no framework JavaScript. #}
+<!DOCTYPE html>
+<html lang="es-CO">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>{% block title %}Pontiac{% endblock %}</title>
+        {% block meta %}{% endblock %}
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+        <style>
+            :root { --ink: #1b2330; --muted: #5b6576; --bg: #f6f7f9; --primary: #1e3a5f; --accent: #1f7a55; }
+            * { box-sizing: border-box; }
+            body { margin: 0; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; color: var(--ink); background: var(--bg); line-height: 1.6; }
+            main { max-width: 720px; margin: 0 auto; padding: 72px 16px; }
+            h1 { font-size: clamp(1.8rem, 5vw, 2.6rem); line-height: 1.2; margin: 0 0 16px; color: var(--primary); }
+            p { font-size: 1.1rem; color: var(--muted); margin: 0 0 16px; }
+            .mark { display: inline-block; width: 12px; height: 12px; border-radius: 3px; background: var(--accent); margin-right: 8px; }
+        </style>
+    </head>
+    <body>
+        <main>
+            {% block body %}{% endblock %}
+        </main>
+    </body>
+</html>

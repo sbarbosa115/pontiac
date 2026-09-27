@@ -1,0 +1,7 @@
+{{ 'invitation.greeting'|trans({name: fullName}, 'emails', locale) }}
+
+{{ ('invitation.body.' ~ role)|trans({inviter: inviter}, 'emails', locale) }}
+
+{{ 'invitation.cta'|trans({}, 'emails', locale) }}: {{ acceptUrl }}
+
+{{ 'invitation.expiry'|trans({days: 7}, 'emails', locale) }}

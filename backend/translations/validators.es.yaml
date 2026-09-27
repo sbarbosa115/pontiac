@@ -1,0 +1,8 @@
+# The API's own validation messages (ApiValidationException, buildViolation, constraint "message:" options), keyed by
+# the English text they are written in. Symfony's standard messages come with the validator.
+# A new message in PHP needs its line here (ValidatorsTranslationTest checks it), or a Spanish speaker reads English.
+"Choose light, dark or system.": "Elige claro, oscuro o según el dispositivo."
+"This address is already taken.": "Esa dirección ya la usa otro asesor."
+"This address is reserved.": "Esa dirección está reservada."
+"Use 3 to 60 lowercase letters, numbers and hyphens.": "Usa de 3 a 60 letras minúsculas, números y guiones."
+"This value should be of type %type%.": "Este valor debe ser de tipo %type%."

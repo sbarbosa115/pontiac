@@ -1,0 +1,13 @@
+{% extends 'public/base.html.twig' %}
+
+{% block title %}{{ account.name }}{% endblock %}
+
+{% block meta %}
+    {# Nothing to index until the consultant publishes a page. #}
+    <meta name="robots" content="noindex">
+{% endblock %}
+
+{% block body %}
+    <h1>{{ account.name }}</h1>
+    <p>Muy pronto encontrarás aquí toda la información.</p>
+{% endblock %}

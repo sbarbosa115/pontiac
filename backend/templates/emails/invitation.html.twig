@@ -1,0 +1,17 @@
+{% extends 'emails/layout.html.twig' %}
+
+{% set sender = inviter %}
+
+{% block content %}
+<p>{{ 'invitation.greeting'|trans({name: fullName}, 'emails', locale) }}</p>
+
+<p>{{ ('invitation.body.' ~ role)|trans({inviter: inviter}, 'emails', locale) }}</p>
+
+<p>
+    <a href="{{ acceptUrl }}" style="display:inline-block;padding:12px 20px;background:#1e3a5f;color:#ffffff;text-decoration:none;border-radius:6px;">
+        {{ 'invitation.cta'|trans({}, 'emails', locale) }}
+    </a>
+</p>
+
+<p style="color:#5b6576;font-size:13px;">{{ 'invitation.expiry'|trans({days: 7}, 'emails', locale) }}</p>
+{% endblock %}

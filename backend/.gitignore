@@ -1,0 +1,42 @@
+
+###> symfony/framework-bundle ###
+/.env.local
+/.env.local.php
+/.env.*.local
+/config/secrets/prod/prod.decrypt.private.php
+/public/bundles/
+/var/
+/vendor/
+###< symfony/framework-bundle ###
+
+###> lexik/jwt-authentication-bundle ###
+/config/jwt/*.pem
+###< lexik/jwt-authentication-bundle ###
+
+###> phpunit/phpunit ###
+/phpunit.xml
+/.phpunit.cache/
+###< phpunit/phpunit ###
+
+###> symfony/webpack-encore-bundle ###
+/node_modules/
+/public/build/
+npm-debug.log
+yarn-error.log
+###< symfony/webpack-encore-bundle ###
+
+# Build output is not committed: it is compiled for each deploy (README, "Deploying to cPanel").
+
+###> cPanel ###
+# A cPanel account writes these into the document root itself: .htaccess carries the PHP handler, and the ini files
+# carry the account's PHP settings. They belong to the server, not to the repository.
+/public/.htaccess
+/public/.user.ini
+/public/php.ini
+###< cPanel ###
+
+###> playwright ###
+/e2e/.results/
+/playwright-report/
+###< playwright ###
+

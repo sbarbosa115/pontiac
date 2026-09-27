@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="color-scheme" content="light dark">
+        <meta name="robots" content="noindex">
+        {# The theme before anything is drawn, so a reload never flashes white for someone on dark. lib/theme.tsx owns
+           it from then on; this reads the same key (pontiac.theme) and falls back to light. #}
+        <script>
+            (function () {
+                var choice = 'light';
+                try { choice = localStorage.getItem('pontiac.theme') || 'light'; } catch (e) {}
+                var dark = choice === 'dark' || (choice === 'system' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+            })();
+        </script>
+        <title>Pontiac</title>
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+        {{ encore_entry_link_tags('app') }}
+        {{ encore_entry_script_tags('app') }}
+    </head>
+    <body>
+        <div id="app" {{ react_component('App') }}></div>
+    </body>
+</html>

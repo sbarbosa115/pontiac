@@ -1,0 +1,30 @@
+# Static analysis for the PHP side: `docker compose exec php vendor/bin/phpstan` (see CLAUDE.md, "Checks").
+#
+# Level 6, and no baseline: an error is fixed, not recorded.
+
+parameters:
+    level: 6
+    paths:
+        - src
+        - tests
+    tmpDir: var/cache/phpstan
+    symfony:
+        # The compiled container, so $container->get() and service arguments are typed. Warm it first:
+        # `docker compose exec php php bin/console cache:warmup --env=dev`.
+        containerXmlPath: var/cache/dev/App_KernelDevDebugContainer.xml
+    doctrine:
+        # Lets PHPStan check DQL and repository calls against the real mapping.
+        objectManagerLoader: tests/phpstan-object-manager.php
+    ignoreErrors:
+        # By design: an Output DTO field a role must not see is left unset, so the Serializer leaves it out of the
+        # JSON entirely (absent, not null).
+        -
+            identifier: property.uninitializedReadonly
+            path: src/Api/Output/*
+            reportUnmatched: false
+        # By design, not debt: an entity's account is null in PHP until AccountOwnershipListener stamps it on persist,
+        # while the column is NOT NULL — a row can never be saved without one.
+        -
+            identifier: doctrine.associationType
+            path: src/Entity/AccountOwnedTrait.php
+            reportUnmatched: false
