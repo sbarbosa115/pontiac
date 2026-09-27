@@ -105,6 +105,12 @@ filtered: every query that lists them names the account itself.
 - A missing import in a page is **a blank screen, not a build error**: open the page and every modal it owns.
 - Public pages (a consultant's landing pages, `/`) are Twig, not React, for search engines; they stay light.
 
+## Flows
+
+Something that happens to a person (a form, a booking, a session closed, a payment, a plan completed or finished)
+dispatches `App\Flow\ContactMoment` from the service where it happens, after its flush; `FlowEngine` moves them. A
+new such moment is a `FlowTrigger` case, a line in `flows.trigger.*` and a test in `FlowEngineTest`.
+
 ## Checks
 
 ```bash

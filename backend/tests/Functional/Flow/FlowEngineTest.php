@@ -168,6 +168,7 @@ final class FlowEngineTest extends ApiTestCase
             $this->api('POST', '/api/admin/flows/'.$this->flow->getId().'/people', ['contactId' => (string) $person->getId()]);
         }
         $this->move($contact, 'Sesión agendada');
+        self::assertStringContainsString('es el día por definir.', (string) $this->emailWithSubject('Nos vemos pronto, Laura Gómez')->getTextBody(), 'no session booked yet');
         // Four days ago, past the stage's three-day alert.
         $this->em()->getConnection()->executeStatement('UPDATE contact_flow_state SET entered_at = ? WHERE contact_id = ?', [(new \DateTimeImmutable('-4 days'))->format('Y-m-d H:i:s'), $contact->getId()->toBinary()]);
 

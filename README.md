@@ -42,6 +42,10 @@ right, and Wompi's answer is simulated with `php bin/console app:wompi:simulate-
 webhook the signed event Wompi would send). To see Wompi's real checkout, save your own sandbox keys in Ajustes ›
 Pagos Wompi.
 
+The home page feeds the ready flow *Diagnóstico gratuito* (Nuevo → Sesión agendada → Seguimiento → Cliente →
+Finalizado), whose *Sesión agendada* stage sends the email of the same name; Carlos is in Cliente and Laura Gómez has
+waited in Seguimiento past its alert, so she shows on Inicio.
+
 A real super admin: `SUPER_ADMIN_PASSWORD=… php bin/console app:create-super-admin you@example.com -n`.
 
 ## Architecture
@@ -165,6 +169,12 @@ Every error is `{"error": "<code>", "message": "…"}`, plus `violations: [{fiel
 | POST | `/api/admin/contacts/{id}/portal/invitation`, `/disable`, `/enable` | owner, assistant (portal) | Invite to the portal (or again); take the access away; give it back |
 | GET, POST | `/api/admin/contacts/{id}/files` | owner, assistant | A contact's files; upload (multipart `file`, `shared`) |
 | PATCH, DELETE | `/api/admin/client-files/{id}` | owner, assistant | Share or unshare `{shared}`; turn off (`POST …/enable` to undo); `GET …/download` |
+| GET, POST | `/api/admin/flows`, `/all` | owner, assistant (flows) | Flows (`?q=&includeInactive=1`); a new one `{name}` starts as the ready example |
+| GET, PUT, DELETE | `/api/admin/flows/{id}` | owner, assistant (flows) | A flow with its stages, arrows and the pages that feed it; save the whole canvas `{name, stages, transitions}` (violations point at `stages[i].…`, `transitions[i].…`); disable (`POST …/enable` to undo) |
+| GET | `/api/admin/flows/{id}/board` | owner, assistant (flows) | A column per stage, the people in it with their days there |
+| POST, DELETE | `/api/admin/flows/{id}/people`, `…/people/{contactId}`, `…/people/{contactId}/move` | owner, assistant (flows) | Add `{contactId}` to the start stage (409 `already_in_flow`, `flow_not_ready`); take out; move to any stage `{stageId}`. Each answers the person's flows |
+| GET, POST, PUT, DELETE | `/api/admin/email-templates`, `/all`, `/{id}`, `/{id}/enable` | owner, assistant (flows) | The emails stages send (`?q=` name and subject) |
+| GET | `/api/admin/contacts/{id}/history` | owner, assistant | Every move through a flow and every email the person was sent |
 | GET, PUT | `/api/admin/wompi` | owner (payments) | Wompi keys: the public key, secrets by their last 4 characters, the events URL; save (empty secret: keep) |
 | POST | `/api/admin/wompi/test` | owner (payments) | Ask Wompi for the public key's merchant (409 `wompi_rejected`) |
 
@@ -174,7 +184,7 @@ Public (server-rendered): `/<consultant>` (home page), `/<consultant>/<page>`, `
 `POST …/cambiar` and `…/cancelar` (the person's session, from the emailed link), `POST …/pagar` (a page's *Precios
 y pago* section → Wompi's checkout), `/<consultant>/pagar/<token>` (a plan's payment link) and
 `/<consultant>/pago/<reference>` (where Wompi sends the person back), `POST /webhooks/wompi/<account id>` (Wompi's
-events). A former address (a consultant's or
+events), `/<consultant>/correos/baja/<contact>/<signature>` with `POST` (stop a flow's emails, from their link). A former address (a consultant's or
 a page's) answers 301; a disabled page 410; a draft 404.
 
 ## Data model decisions
@@ -232,6 +242,18 @@ a page's) answers 301; a disabled page 410; a draft 404.
   CSV, DOCX), counted in the storage limit with the images, downloaded only through the API. What the client uploads
   is always shared with them.
 - Password resets email a one-hour, single-use link; asking answers the same whether the email exists or not.
+- A flow is stages (one start, steps, ends) and arrows, each arrow a trigger: an event (form sent, session booked,
+  done or no-show, payment approved, plan completed, consultancy finished) or *manual* (documentation only). The
+  services where something happens to a person dispatch a `ContactMoment`; `FlowEngine` listens, first puts them
+  in the start stage of the flow their page feeds (page `settings.flowId`), then moves them along the arrow of their
+  stage with that trigger in every active flow they are in. A person is at most once per flow
+  (`contact_flow_state`), in several flows at once; every move is a `flow_event` (kept when they leave).
+- Entering a stage sends its email once per entry, after the flush, unless the person stopped flow emails
+  (`contact.flow_emails_stopped_at`, from a link signed with the app secret and a `List-Unsubscribe` header) or their
+  data was erased. Variables with nothing to say read "día por definir" (no session) or the booking link (nothing to
+  pay).
+- The flow editor saves the whole canvas at once; stage ids the editor invents (`new-1`) become real ids. A stage
+  with people cannot be removed. The column is `trigger_event`: `trigger` is a reserved word in MySQL.
 - Emails keep the server's `MAILER_FROM` address (it must match the SMTP account); the sender name and Reply-To come
   from the platform settings.
 
@@ -243,8 +265,7 @@ consultant pastes their events URL (Ajustes › Pagos Wompi) in Wompi's dashboar
 
 ## Known gaps
 
-- Page, storage and file-size limits and the payments and flows features are stored but only enforced by the
-  milestones that build what they limit.
+- Page, storage and file-size limits are stored but only enforced by the milestones that build what they limit.
 - Payments: refunds and voids are done in Wompi's dashboard (their events do not reach an approved payment); no invoices.
 - Booking: no calendar sync (Google/Outlook) — each email carries an `.ics` file instead; paid plans cannot be booked
   until payments (milestone 3); changing the meeting link does not change sessions already booked; the person may
@@ -254,5 +275,7 @@ consultant pastes their events URL (Ajustes › Pagos Wompi) in Wompi's dashboar
 - The page limit counts published pages; a consultant can keep any number of drafts.
 - No export of prospectos yet; no custom domains.
 - The client portal's sign-in page does not show the consultant's name yet (only Pontiac's).
+- Flows: no waits or conditions ("3 days after…"), no branches by answer, no emails to the consultant from a flow, no
+  numbers per flow. Arrows move people only on events: a stage alert shows who waits, it moves no one.
 - Lists of users are small today and not paginated by the database for the super admin's picker.
 - The client can book only the plans the consultant assigned; there are no messages between client and consultant.

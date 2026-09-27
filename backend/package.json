@@ -47,5 +47,8 @@
         "test:watch": "vitest",
         "test:e2e": "playwright test",
         "api:types": "openapi-typescript assets/types/openapi.json -o assets/types/api.d.ts"
+    },
+    "dependencies": {
+        "@xyflow/react": "^12.12.0"
     }
 }

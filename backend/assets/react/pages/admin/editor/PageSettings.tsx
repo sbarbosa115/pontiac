@@ -1,7 +1,10 @@
 import React from 'react';
 import { t } from '../../../lib/i18n';
 import type { Catalog, PageContent } from '../../../lib/pages';
-import type { Schema } from '../../../lib/types';
+import { api } from '../../../lib/api';
+import { useAuth } from '../../../lib/auth';
+import { useApi } from '../../../lib/hooks';
+import type { Get, Schema } from '../../../lib/types';
 import { ActionButton, Field, TabIntro } from '../../../components/ui';
 
 type Category = Schema<'LeadCategoryOutput'>;
@@ -23,9 +26,12 @@ interface Props {
     errors: Record<string, string>;
 }
 
-/** Ajustes: the page's name and address, whether it is the home page, its leads' default category, its colour. */
+/** Ajustes: the page's name and address, whether it is the home page, its leads' default category and flow, its colour. */
 export default function PageSettings({ catalog, content, title, slug, home, host, accountSlug, categories, onTitle, onSlug, onChange, onMakeHome, busy, errors }: Props) {
     const settings = content.settings;
+    const { me } = useAuth();
+    // The flow its people enter: only while the consultant has flows on.
+    const flows = useApi(() => ((me?.account?.features ?? []).includes('flows') ? api.get<Get<'/api/admin/flows/all'>>('/api/admin/flows/all') : Promise.resolve(null)), []);
     const set = (change: Partial<PageContent['settings']>) => onChange({ ...content, settings: { ...settings, ...change } });
 
     return (
@@ -59,6 +65,21 @@ export default function PageSettings({ catalog, content, title, slug, home, host
                     ))}
                 </select>
             </Field>
+            {flows.data && (
+                <Field label={t('pageEditor.flow')} error={errors['settings.flowId']} hint={t('pageEditor.flowHint')} optional>
+                    <select value={settings.flowId ?? ''} onChange={(event) => set({ flowId: event.target.value || null })}>
+                        <option value="">{t('pageEditor.noFlow')}</option>
+                        {(flows.data?.items ?? [])
+                            .filter((flow) => flow.active || flow.id === settings.flowId)
+                            .map((flow) => (
+                                <option key={flow.id} value={flow.id}>
+                                    {flow.name}
+                                    {flow.active ? '' : ` (${t('common.inactive')})`}
+                                </option>
+                            ))}
+                    </select>
+                </Field>
+            )}
             <fieldset className="accent-picker">
                 <legend>{t('pageEditor.accent')}</legend>
                 {catalog.accents.map((accent) => (

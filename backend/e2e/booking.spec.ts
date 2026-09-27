@@ -25,8 +25,11 @@ test('a visitor books a free session, cancels it from the emailed link, and the 
     await expect(async () => {
         const found = await (await request.get(`${MAILPIT}/api/v1/search?query=to:${encodeURIComponent(email)}`)).json();
         expect(found.messages.length).toBeGreaterThan(0);
-        const message = await (await request.get(`${MAILPIT}/api/v1/message/${found.messages[0].ID}`)).json();
-        link = /\/finanzas-claras\/reservar\/[\w-]+/.exec(message.Text)?.[0] ?? '';
+        // The home page also feeds a flow, whose stage email arrives beside the confirmation.
+        for (const { ID } of found.messages) {
+            const message = await (await request.get(`${MAILPIT}/api/v1/message/${ID}`)).json();
+            link ||= /\/finanzas-claras\/reservar\/[\w-]+/.exec(message.Text)?.[0] ?? '';
+        }
         expect(link).not.toBe('');
     }).toPass({ timeout: 20_000 });
 

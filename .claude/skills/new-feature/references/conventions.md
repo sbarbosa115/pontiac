@@ -95,6 +95,11 @@ Library, Playwright. One Twig page (`spa.html.twig`) served by a catch-all contr
 - `styles/app.css` — **every colour is a token**, defined for `:root` and `:root[data-theme='dark']`; a Vitest file
   guards it (no colour literals elsewhere, every token in both themes, text contrast ≥ 4.5:1).
 
+- `@xyflow/react` draws the flow editor's canvas. Its nodes are controlled: pass `colorMode`, hand the `dimensions`
+  changes back as each node's `measured` (or it never settles), and theme it with its `--xy-*` variables set to our
+  tokens in `app.css`.
+- Drag and drop (the flow board) is native HTML5, with a select on each card doing the same for the keyboard.
+
 ### House table style
 
 One "Acciones" column, last; buttons coloured by kind of action; no status column — the row colour is the status,

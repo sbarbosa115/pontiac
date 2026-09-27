@@ -9,6 +9,8 @@ import type { Get, Schema } from '../../lib/types';
 import type { IconName } from '../../components/Icon';
 import { ActionButton, Alert, Badge, DefinitionList, ErrorState, Field, Loading, PageHeader, TabPanel, Tabs } from '../../components/ui';
 import ContactFiles from './contact/ContactFiles';
+import ContactFlows from './contact/ContactFlows';
+import ContactHistory from './contact/ContactHistory';
 import ContactPlans from './contact/ContactPlans';
 import ContactSessions from './contact/ContactSessions';
 
@@ -19,9 +21,10 @@ const TABS: { value: string; icon: IconName; feature?: string }[] = [
     { value: 'planes', icon: 'receipt' },
     { value: 'sesiones', icon: 'calendar', feature: 'booking' },
     { value: 'archivos', icon: 'paperclip' },
+    { value: 'historial', icon: 'clock', feature: 'flows' },
 ];
 
-/** A contact, in tabs: who they are and what they sent; their plans and payments; their sessions and notes. */
+/** A contact, in tabs: who they are, what they sent and their flows; plans and payments; sessions and notes; files; history. */
 export default function ContactPage() {
     const { id = '' } = useParams();
     const { roles, me } = useAuth();
@@ -84,17 +87,18 @@ export default function ContactPage() {
                 options={tabs.map(({ value, icon }) => ({ value, icon, label: t(`contacts.tab.${value}`) }))}
             />
             <TabPanel id="contact" value={tab}>
-                {tab === 'resumen' && <Summary contact={contact} onChanged={setChanged} portal={features.includes('portal')} />}
+                {tab === 'resumen' && <Summary contact={contact} onChanged={setChanged} portal={features.includes('portal')} flows={features.includes('flows')} />}
                 {tab === 'planes' && <ContactPlans contact={contact} onChanged={setChanged} />}
                 {tab === 'sesiones' && <ContactSessions contact={contact} onChanged={reload} />}
                 {tab === 'archivos' && <ContactFiles contact={contact} />}
+                {tab === 'historial' && <ContactHistory contactId={contact.id} />}
             </TabPanel>
         </>
     );
 }
 
 /** Resumen: who they are, how they consented, their category, every form they sent. */
-function Summary({ contact, onChanged, portal }: { contact: Contact; onChanged: (contact: Contact) => void; portal: boolean }) {
+function Summary({ contact, onChanged, portal, flows }: { contact: Contact; onChanged: (contact: Contact) => void; portal: boolean; flows: boolean }) {
     const { locale, timezone } = useLocaleSettings();
     const categories = useApi(() => api.get<Get<'/api/admin/categories/all'>>('/api/admin/categories/all'), []);
     const [busy, setBusy] = useState(false);
@@ -138,6 +142,7 @@ function Summary({ contact, onChanged, portal }: { contact: Contact; onChanged: 
                     </select>
                 </Field>
             </section>
+            {flows && <ContactFlows contact={contact} onChanged={onChanged} />}
             {portal && <PortalAccess contact={contact} onChanged={onChanged} />}
             <h2 className="section-title">{t('contacts.submissions', { count: contact.submissions.length })}</h2>
             {contact.submissions.map((submission) => (

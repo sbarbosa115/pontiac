@@ -93,3 +93,15 @@ The manual browser pass, one case per use case. Run it on a fresh stack with the
 | PORT-11 | consultant | A contact › Archivos: upload with "Compartir con la persona" off | Row "Interno" with "Compartir"; the client does not see it |
 | PORT-12 | consultant | The client's own upload in Archivos | "(desde su portal)", always shared (no "Dejar de compartir") |
 | PORT-13 | staff | `/login` › ¿Olvidaste tu contraseña? | Same flow; the link lands on `/login` |
+| FLOW-01 | consultant | Flujos › Nuevo flujo, empty; then a name | "Ponle nombre al flujo." under Nombre; then the editor with the ready example (Nuevo → … → Finalizado) |
+| FLOW-02 | consultant | Editor: click a stage, empty its name, Guardar cambios | "Revisa los campos marcados."; the stage red on the canvas with the reason in its panel |
+| FLOW-03 | consultant | Editor: drag from a stage's bottom point to another; pick "Pago aprobado"; Guardar | The arrow labelled with its event; "Guardado."; after a reload it is still there |
+| FLOW-04 | consultant | Editor: a stage with people | "Quitar etapa" disabled, "Mueve a las personas…" under it |
+| FLOW-05 | consultant | Prospectos › Tablero | A column per stage; a card past its stage's alert amber with "lleva más de lo esperado" |
+| FLOW-06 | consultant | Drag a card to "Sesión agendada" (or "Mover a…" under it) | The card moves; Mailpit: the stage's email with "¿No quieres recibir más correos…?" and its link |
+| FLOW-07 | person | The email's link, "No quiero recibir más correos" | "Listo: no te enviaremos más correos de seguimiento…"; moving them again sends nothing |
+| FLOW-08 | consultant | A contact › Resumen › Flujos: change the stage; Sacar del flujo; Agregar a un flujo | Each change shows at once; Historial lists every move with who made it and the emails sent |
+| FLOW-09 | consultant | Inicio with someone past a stage's alert | "Personas esperando en una etapa" with Tablero and Ver |
+| FLOW-10 | consultant | Páginas › a page › Ajustes › Flujo que alimenta; send its form | The person appears in the flow's start stage |
+| FLOW-11 | consultant | Ajustes › Correos › Nuevo correo empty; then filled | Errors under Nombre, Asunto and Mensaje; the variables listed; the new email in the stage's "Correo al entrar" |
+| FLOW-12 | super admin | Turn off a consultant's flows | Flujos, Tablero, Historial, the contact's Flujos and Ajustes › Correos disappear |

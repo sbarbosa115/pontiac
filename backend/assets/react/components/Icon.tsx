@@ -122,6 +122,14 @@ const PATHS = {
     pencil: <path d="M4 20h4L19.5 8.5a2.8 2.8 0 0 0-4-4L4 16zM13.5 6.5l4 4" />,
     chevronUp: <path d="m6 15 6-6 6 6" />,
     chevronDown: <path d="m6 9 6 6 6-6" />,
+    flow: (
+        <>
+            <rect x="2.5" y="4" width="6" height="5" rx="1.2" />
+            <rect x="15.5" y="4" width="6" height="5" rx="1.2" />
+            <rect x="9" y="15" width="6" height="5" rx="1.2" />
+            <path d="M8.5 6.5h7M18.5 9v2.5a1.5 1.5 0 0 1-1.5 1.5h-5v2" />
+        </>
+    ),
     ban: (
         <>
             <circle cx="12" cy="12" r="9" />

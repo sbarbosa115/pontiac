@@ -1,16 +1,17 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
 import { useAuth, useLocaleSettings } from '../../lib/auth';
 import { formatMoney } from '../../lib/format';
 import { useApi } from '../../lib/hooks';
 import { t } from '../../lib/i18n';
 import type { Schema } from '../../lib/types';
-import { PageHeader } from '../../components/ui';
+import { ActionButton, Actions, DataTable, IconButton, PageHeader } from '../../components/ui';
 
 /** Inicio: where a consultant and their assistants land. Each milestone adds what needs attention today. */
 export default function HomePage() {
     const { me } = useAuth();
+    const navigate = useNavigate();
     const { locale } = useLocaleSettings();
     const features = me?.account?.features ?? [];
     const slug = me?.account?.slug ?? '';
@@ -43,6 +44,31 @@ export default function HomePage() {
                         <span className="stat-label">{t('adminHome.publishedPages')}</span>
                     </Link>
                 </div>
+            )}
+            {features.includes('flows') && data && data.overdue.length > 0 && (
+                <section className="card">
+                    <h2>{t('adminHome.overdue')}</h2>
+                    <p className="muted">{t('adminHome.overdueHint')}</p>
+                    <DataTable
+                        columns={[t('contacts.name'), t('adminHome.overdueWhere'), t('adminHome.overdueDays')]}
+                        rows={data.overdue}
+                        renderRow={(row) => (
+                            <tr key={`${row.contactId}-${row.flowId}`}>
+                                <td className="strong">{row.fullName}</td>
+                                <td>
+                                    {row.stageName} <span className="small muted">· {row.flowName}</span>
+                                </td>
+                                <td>{t('board.days', { count: row.days })}</td>
+                                <Actions>
+                                    <ActionButton action="open" onClick={() => navigate(`/admin/prospectos?tab=tablero&flujo=${row.flowId}`)}>
+                                        {t('flows.board')}
+                                    </ActionButton>
+                                    <IconButton icon="eye" label={t('common.view')} onClick={() => navigate(`/admin/prospectos/${row.contactId}`)} />
+                                </Actions>
+                            </tr>
+                        )}
+                    />
+                </section>
             )}
             <section className="card">
                 <h2>{t('adminHome.publicAddress')}</h2>

@@ -21,6 +21,8 @@ const AdminContactPage = lazy(() => import('../pages/admin/ContactPage'));
 const AdminAgendaPage = lazy(() => import('../pages/admin/AgendaPage'));
 const AdminPlansPage = lazy(() => import('../pages/admin/PlansPage'));
 const AdminPaymentsPage = lazy(() => import('../pages/admin/PaymentsPage'));
+const AdminFlowsPage = lazy(() => import('../pages/admin/FlowsPage'));
+const AdminFlowEditorPage = lazy(() => import('../pages/admin/FlowEditorPage'));
 const PlatformHomePage = lazy(() => import('../pages/platform/HomePage'));
 const PlatformAccountsPage = lazy(() => import('../pages/platform/AccountsPage'));
 const PlatformAccountPage = lazy(() => import('../pages/platform/AccountPage'));
@@ -88,6 +90,8 @@ export default function App() {
                                 <Route path="agenda" element={<AdminAgendaPage />} />
                                 <Route path="prospectos" element={<AdminContactsPage />} />
                                 <Route path="prospectos/:id" element={<AdminContactPage />} />
+                                <Route path="flujos" element={<AdminFlowsPage />} />
+                                <Route path="flujos/:id" element={<AdminFlowEditorPage />} />
                                 <Route path="planes" element={<AdminPlansPage />} />
                                 <Route path="pagos" element={<AdminPaymentsPage />} />
                                 <Route path="paginas" element={<AdminPagesPage />} />

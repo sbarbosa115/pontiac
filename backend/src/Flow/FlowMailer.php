@@ -129,12 +129,14 @@ final class FlowMailer
             }
         }
 
+        // Nothing to name (no session booked, nothing to pay): words that still read in a sentence, and the page to
+        // book from instead of a payment link.
         return [
             'nombre' => $contact->getFullName(),
             'asesor' => $account->getName(),
-            'fecha_sesion' => null === $next ? '' : SessionTime::dateTime($account, $next->getStartsAt()),
+            'fecha_sesion' => null === $next ? 'día por definir' : SessionTime::dateTime($account, $next->getStartsAt()),
             'enlace_reserva' => $base.'#reserva',
-            'enlace_pago' => $payUrl,
+            'enlace_pago' => '' === $payUrl ? $base.'#reserva' : $payUrl,
             'enlace_portal' => $base.'/portal',
         ];
     }

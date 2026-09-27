@@ -30,7 +30,7 @@ export interface PageContent {
     sections: Section[];
     form: { fields: FormField[] };
     seo: { title: string; description: string; imageId: string | null; index: boolean };
-    settings: { defaultCategoryId: string | null; accent: string };
+    settings: { defaultCategoryId: string | null; flowId?: string | null; accent: string };
 }
 
 /** The draft as the API sent it, typed. */

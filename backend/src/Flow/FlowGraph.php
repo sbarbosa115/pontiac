@@ -36,8 +36,9 @@ final class FlowGraph
     {
         $flow = new Flow($account, $name);
         $stages = [];
-        foreach ([['Nuevo', FlowStageKind::Start], ['Sesión agendada', FlowStageKind::Step], ['Seguimiento', FlowStageKind::Step], ['Cliente', FlowStageKind::Step], ['Finalizado', FlowStageKind::End]] as $i => [$stageName, $kind]) {
-            $stage = (new FlowStage($flow))->change($stageName, $kind, $i, 40 + $i * 240, 120, null, 'Seguimiento' === $stageName ? 7 : null);
+        // Top to bottom, the paid shortcut (Nuevo → Cliente) running down the right side.
+        foreach ([['Nuevo', FlowStageKind::Start, 120, 0], ['Sesión agendada', FlowStageKind::Step, 0, 150], ['Seguimiento', FlowStageKind::Step, 0, 300], ['Cliente', FlowStageKind::Step, 240, 450], ['Finalizado', FlowStageKind::End, 240, 600]] as $i => [$stageName, $kind, $x, $y]) {
+            $stage = (new FlowStage($flow))->change($stageName, $kind, $i, $x, $y, null, 'Seguimiento' === $stageName ? 7 : null);
             $flow->addStage($stage);
             $stages[] = $stage;
         }

@@ -10,6 +10,11 @@ use App\Entity\LandingPage;
 use App\Entity\LeadCategory;
 use App\Entity\BookingSession;
 use App\Entity\Contact;
+use App\Entity\ContactFlowState;
+use App\Entity\EmailTemplate;
+use App\Entity\FlowEvent;
+use App\Flow\FlowGraph;
+use App\Repository\FlowRepository;
 use App\Entity\Enrollment;
 use App\Entity\Payment;
 use App\Entity\Plan;
@@ -59,6 +64,8 @@ final class SeedDemoCommand extends Command
         private readonly PlanRepository $plans,
         private readonly WompiSettingsRepository $wompi,
         private readonly WompiKeys $wompiKeys,
+        private readonly FlowRepository $flows,
+        private readonly FlowGraph $graph,
     ) {
         parent::__construct();
     }
@@ -92,6 +99,7 @@ final class SeedDemoCommand extends Command
         $this->seedPlans($account);
         $this->seedPayments($account);
         $this->seedClient($account);
+        $this->seedFlow($account);
 
         $io->success('Demo data ready.');
         $io->table(['Role', 'Sign in at', 'Email', 'Password'], [
@@ -248,6 +256,49 @@ final class SeedDemoCommand extends Command
         $this->em->persist(new SessionNote($past, $owner, "Tarea para la próxima sesión:\n- Registrar todos los gastos de una semana.\n- Traer los extractos de las dos tarjetas.", NoteVisibility::Shared));
         $this->em->persist(new SessionNote($past, $owner, 'Deuda de tarjeta alta (28 % E.A.). Proponer bola de nieve.', NoteVisibility::Private));
         $login->linkContact($contact);
+        $this->em->flush();
+    }
+
+    /**
+     * The ready flow, fed by the home page, with its "Sesión agendada" email; Carlos is in Cliente, and Laura has
+     * waited in Seguimiento past its alert (she shows on Inicio).
+     */
+    private function seedFlow(Account $account): void
+    {
+        $this->context->enterAccount($account);
+        if ([] !== $this->flows->findAllWithStages()) {
+            return;
+        }
+        $template = new EmailTemplate($account, 'Sesión agendada', 'Nos vemos pronto, {nombre}', "Hola {nombre}:\n\nTu sesión con {asesor} quedó para el {fecha_sesion}. Trae tus extractos y una lista de tus gastos del mes.\n\nAquí puedes ver tus sesiones y archivos: {enlace_portal}");
+        $this->em->persist($template);
+        $flow = $this->graph->starter($account, 'Diagnóstico gratuito');
+        $stages = [];
+        foreach ($flow->getStages() as $stage) {
+            $stages[$stage->getName()] = $stage;
+        }
+        $booked = $stages['Sesión agendada'];
+        $booked->change($booked->getName(), $booked->getKind(), $booked->getPosition(), $booked->getX(), $booked->getY(), $template, 3);
+
+        $home = $this->pages->findHome();
+        if (null !== $home) {
+            $content = $home->getDraft();
+            $content['settings']['flowId'] = (string) $flow->getId();
+            $home->saveDraft($content)->publish();
+        }
+
+        $owner = $this->users->loadUserByIdentifier('asesor@pontiac.test');
+        $carlos = $this->users->findClient($account, 'cliente@pontiac.test')?->getContact();
+        $laura = new Contact($account, 'Laura Gómez', 'laura@ejemplo.test', '300 123 4567', $home, 'demo');
+        $this->em->persist($laura);
+        foreach ([[$carlos, 'Cliente', '-10 days'], [$laura, 'Seguimiento', '-9 days']] as [$contact, $stageName, $since]) {
+            if (null === $contact) {
+                continue;
+            }
+            $at = new \DateTimeImmutable($since);
+            $this->em->persist(new ContactFlowState($contact, $stages[$stageName], $at));
+            $this->em->persist(new FlowEvent($contact, $flow, null, $stages['Nuevo'], FlowEvent::ADDED, $owner instanceof User ? $owner : null, $at->modify('-1 day')));
+            $this->em->persist(new FlowEvent($contact, $flow, $stages['Nuevo'], $stages[$stageName], FlowEvent::MANUAL, $owner instanceof User ? $owner : null, $at));
+        }
         $this->em->flush();
     }
 

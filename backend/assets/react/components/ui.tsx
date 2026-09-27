@@ -217,6 +217,8 @@ const TONES: Record<string, string> = {
     // A contact's file.
     shared: 'success',
     internal: 'info',
+    // A contact's history: a move through a flow (emails are sent / failed).
+    moved: 'accent',
     // A session.
     scheduled: 'info',
     done: 'success',

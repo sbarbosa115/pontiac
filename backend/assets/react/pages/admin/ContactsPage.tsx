@@ -1,17 +1,52 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
-import { useLocaleSettings } from '../../lib/auth';
+import { useAuth, useLocaleSettings } from '../../lib/auth';
 import { formatDateTime } from '../../lib/format';
-import { useApi, useList } from '../../lib/hooks';
+import { useApi, useList, useTabParam } from '../../lib/hooks';
 import { t } from '../../lib/i18n';
 import type { Get, Schema } from '../../lib/types';
-import { Actions, Badge, FilterBar, IconButton, ListView, PageHeader, Row, RowLegend } from '../../components/ui';
+import type { IconName } from '../../components/Icon';
+import { Actions, Badge, FilterBar, IconButton, ListView, PageHeader, Row, RowLegend, TabPanel, Tabs } from '../../components/ui';
+import FlowBoard from './FlowBoard';
 
 type Contact = Schema<'ContactSummaryOutput'>;
 
-/** Prospectos: everyone who answered the consultant's pages, most recent activity first. */
+const TABS: { value: string; icon: IconName; feature?: string }[] = [
+    { value: 'lista', icon: 'inbox' },
+    { value: 'tablero', icon: 'flow', feature: 'flows' },
+];
+
+/** Prospectos: the list of everyone who answered the consultant's pages, and the board of each flow. */
 export default function ContactsPage() {
+    const { me } = useAuth();
+    const features = me?.account?.features ?? [];
+    const tabs = TABS.filter((tab) => !tab.feature || features.includes(tab.feature));
+    const [tab, setTab] = useTabParam(tabs.map(({ value }) => value));
+
+    return (
+        <>
+            <PageHeader title={t('nav.contacts')} subtitle={t('contacts.subtitle')} />
+            {tabs.length > 1 && (
+                <Tabs
+                    id="contacts"
+                    variant="page"
+                    label={t('nav.contacts')}
+                    value={tab}
+                    onChange={setTab}
+                    options={tabs.map(({ value, icon }) => ({ value, icon, label: t(`contacts.tabs.${value}`) }))}
+                />
+            )}
+            <TabPanel id="contacts" value={tab}>
+                {tab === 'lista' && <ContactsList />}
+                {tab === 'tablero' && <FlowBoard embedded />}
+            </TabPanel>
+        </>
+    );
+}
+
+/** Everyone, most recent activity first. */
+function ContactsList() {
     const navigate = useNavigate();
     const { locale, timezone } = useLocaleSettings();
     const list = useList<Contact>('/api/admin/contacts', { q: '', category: '', sourcePage: '' });
@@ -20,7 +55,6 @@ export default function ContactsPage() {
 
     return (
         <>
-            <PageHeader title={t('nav.contacts')} subtitle={t('contacts.subtitle')} />
             <FilterBar
                 search={list.filters.q}
                 onSearch={(q) => list.update({ q })}
