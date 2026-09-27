@@ -80,3 +80,16 @@ The manual browser pass, one case per use case. Run it on a fresh stack with the
 | PAY-13 | owner | Ajustes › Pagos Wompi: a bad public key; Probar conexión with the demo key | The error under the field; "Wompi no reconoce esta llave pública…" |
 | PAY-14 | assistant | Ajustes | No "Pagos Wompi" tab; `?tab=pagos` shows Equipo |
 | PAY-15 | owner | Páginas › plan-2-sesiones › Precios y pago | "Planes que se pagan aquí" lists paid plans, at most three ticked |
+| PORT-01 | client | `/finanzas-claras/portal/ingresar` as cliente@pontiac.test | Inicio: the next session with "Entrar a la sesión" and "Cambiar o cancelar", Plan A "1 de 2 sesiones realizadas" with its bar |
+| PORT-02 | client | Mis sesiones › Reprogramar a session more than 24 h ahead | "Tu sesión quedó en la nueva hora…"; the consultant and the client get the emails |
+| PORT-03 | client | Mis sesiones with every session of their plans taken | "Para agendar necesitas un plan activo…", no "Agendar sesión"; past sessions without an Acciones column |
+| PORT-04 | client | Notas | The shared note only, under its session |
+| PORT-05 | client | Archivos › Subir archivos (a PDF); then a `.txt` renamed `.pdf` | "Archivos subidos." and the file as "Tú"; the fake one refused in Spanish |
+| PORT-06 | client | Mis planes with a plan assigned and waiting for payment | "Pagar" goes to Wompi's checkout (with demo keys Wompi shows an error: expected) |
+| PORT-07 | client | Mi cuenta, a wrong current password, in Oscuro | "Esa no es tu contraseña actual." under the field |
+| PORT-08 | client | ¿Olvidaste tu contraseña? at the portal, the emailed link, a new password | Mailpit: "Cambia tu contraseña" from the consultant; the link lands on the portal's sign-in with "Tu contraseña cambió" |
+| PORT-09 | consultant | A contact › Resumen › Portal de cliente: Invitar al portal | "Invitación enviada"; the person gets "… te dio acceso a tu portal de cliente" |
+| PORT-10 | consultant | Quitar acceso, then Devolver acceso | "Acceso quitado" and they cannot sign in; then "Con acceso" |
+| PORT-11 | consultant | A contact › Archivos: upload with "Compartir con la persona" off | Row "Interno" with "Compartir"; the client does not see it |
+| PORT-12 | consultant | The client's own upload in Archivos | "(desde su portal)", always shared (no "Dejar de compartir") |
+| PORT-13 | staff | `/login` › ¿Olvidaste tu contraseña? | Same flow; the link lands on `/login` |

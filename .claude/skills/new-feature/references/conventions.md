@@ -112,6 +112,10 @@ group thousands.
 - Validation messages follow the request's `Accept-Language` (the UI sends `es`): a test asserting a Spanish message
   sets `$this->client->setServerParameter('HTTP_ACCEPT_LANGUAGE', 'es')`. `ValidatorsTranslationTest` fails on a
   message without its Spanish line.
+- An email sent at once (invitations, password resets) after queued ones in the same request confuses
+  `getMailerMessages()`, which takes it for one of them and drops that one: read `getMailerEvents()` instead.
+- Tab labels built at runtime (`t(\`prefix.${value}\`)` over a `{ value, icon }` list) are checked by
+  `lib/i18n.test.ts`; other runtime keys need a component test.
 - Booking helpers: `createPlan`, `createContact`, `bookSession` (optionally "booked at" a past time), `freeSlots`.
   Services that depend on the clock take `$now`; test them with a fixed one.
 - Shared tests every list joins: **search** (`?q=` filters) and **query count** (one row vs five must not change it).

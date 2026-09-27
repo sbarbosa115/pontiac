@@ -46,6 +46,8 @@ filtered: every query that lists them names the account itself.
 
 - Store times in UTC; work out anything about a day (hours, exceptions, "this week", date filters, email dates) in
   the account's timezone — `SlotFinder`, `SessionTime`, `lib/agenda.ts` (`localDate`, `mondayOf`).
+- Something made lazily on first use (`AvailabilityRepository::forAccount()`) must find the copy it made earlier in
+  the same request: a query does not see an unflushed entity, and a second copy breaks the unique key on flush.
 - A booking goes through `App\Booking\Booker` (the lock per consultant, the emails); never create a `BookingSession`
   elsewhere outside tests.
 - A paid plan's sessions are booked only while it is active with sessions left (`Booker::bookForEnrollment`).
@@ -60,6 +62,13 @@ filtered: every query that lists them names the account itself.
 - A secret a consultant gives us is stored with `App\Security\SecretBox` and never leaves the server.
 - Wompi is never called in tests: its HTTP client is `App\Tests\Support\FakeWompi` (register transactions and
   merchants); events are signed with `ApiTestCase::wompiEvent()`. Locally, `app:wompi:simulate-event <reference>`.
+
+## Portal
+
+- Portal controllers extend `App\Controller\Portal\PortalController`: `contact()` is the signed-in client's, and
+  `own($contact)` makes anything of another person a 404. Never take a contact id from a portal request.
+- `/{slug}/portal/…` is the SPA; its slug excludes `api` so `/api/portal/…` reaches the API. A new first path segment
+  (a page of the app) goes in `Account::RESERVED_SLUGS` too.
 
 ## Tables
 

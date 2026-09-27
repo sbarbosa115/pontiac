@@ -100,6 +100,16 @@ Every error is `{"error": "<code>", "message": "…"}`, plus `violations: [{fiel
 |---|---|---|---|
 | POST | `/api/login` | anyone | Staff sign-in: `{email, password}` → `{token}` |
 | POST | `/api/portal-login` | anyone | Client sign-in: `{account, email, password}` → `{token}` |
+| POST | `/api/password-reset/request` | anyone | "¿Olvidaste tu contraseña?" `{email, account?}` (a client adds the consultant's slug): always 204 |
+| POST | `/api/password-reset/confirm` | anyone | `{token, password}` → `{loginPath}` (the link lasts an hour, works once) |
+| POST | `/api/me/password` | signed in | `{currentPassword, newPassword}` |
+| GET | `/api/portal/overview` | client | Their next session, their current plans, the cancellation limit |
+| GET | `/api/portal/sessions`, `/slots` | client (booking) | Their sessions; free slots for `?enrollmentId=` or `?sessionId=` |
+| POST | `/api/portal/sessions`, `…/{id}/reschedule`, `…/{id}/cancel` | client (booking) | Book `{enrollmentId, startsAt}` a session of one of their plans; move; cancel — the visitor's rules |
+| GET | `/api/portal/plans` | client | Their plans with progress and payments |
+| POST | `/api/portal/plans/{id}/pay` | client | `{checkoutUrl}`: Wompi's checkout for a plan assigned to them |
+| GET | `/api/portal/notes` | client | The shared notes of their sessions |
+| GET, POST | `/api/portal/files`, `…/{id}/download` | client | Shared files and their own; upload (multipart `file`) |
 | GET | `/api/me` | signed in | Who the requests run as, their account, theme, impersonator |
 | PATCH | `/api/me/preferences` | signed in | `{uiTheme}`: light, dark or system |
 | POST | `/api/invitations/lookup` | anyone | `{token}` → who the invitation is for |
@@ -152,6 +162,9 @@ Every error is `{"error": "<code>", "message": "…"}`, plus `violations: [{fiel
 | POST | `/api/admin/enrollments/{id}/payments` | owner (payments) | Record money received `{method: cash\|transfer\|other, note, paidOn}`: the plan starts, the person becomes a client |
 | POST | `/api/admin/enrollments/{id}/renew`, `/finish` | owner, assistant | A used-up plan: another one `{planId}`, or the end of the consultancy (409 `enrollment_not_completed`) |
 | GET | `/api/admin/payments` | owner, assistant (payments) | Payments (`?q=&status=&from=&to=`) |
+| POST | `/api/admin/contacts/{id}/portal/invitation`, `/disable`, `/enable` | owner, assistant (portal) | Invite to the portal (or again); take the access away; give it back |
+| GET, POST | `/api/admin/contacts/{id}/files` | owner, assistant | A contact's files; upload (multipart `file`, `shared`) |
+| PATCH, DELETE | `/api/admin/client-files/{id}` | owner, assistant | Share or unshare `{shared}`; turn off (`POST …/enable` to undo); `GET …/download` |
 | GET, PUT | `/api/admin/wompi` | owner (payments) | Wompi keys: the public key, secrets by their last 4 characters, the events URL; save (empty secret: keep) |
 | POST | `/api/admin/wompi/test` | owner (payments) | Ask Wompi for the public key's merchant (409 `wompi_rejected`) |
 
@@ -212,6 +225,13 @@ a page's) answers 301; a disabled page 410; a draft 404.
 - Wompi's secrets are encrypted with libsodium (`APP_ENCRYPTION_KEY`) and never returned; the screen shows their
   last four characters.
 - Session notes are private (owner only) or shared (the assistant, and the client in the portal from milestone 4).
+- A client login belongs to one contact (`app_user.contact_id`); the portal reads everything from it, never from the
+  request. A first paid plan invites the person; the team can invite anyone, take the access away or give it back;
+  erasing the person's data turns the login off. Client bookings follow the visitor's rules.
+- Contacts' files live at `UPLOADS_DIR/<account>/files/<id>`, type detected from content (PDF, JPG, PNG, WebP, XLSX,
+  CSV, DOCX), counted in the storage limit with the images, downloaded only through the API. What the client uploads
+  is always shared with them.
+- Password resets email a one-hour, single-use link; asking answers the same whether the email exists or not.
 - Emails keep the server's `MAILER_FROM` address (it must match the SMTP account); the sender name and Reply-To come
   from the platform settings.
 
@@ -225,8 +245,7 @@ consultant pastes their events URL (Ajustes › Pagos Wompi) in Wompi's dashboar
 
 - Page, storage and file-size limits and the payments and flows features are stored but only enforced by the
   milestones that build what they limit.
-- Payments: the portal invitation on first payment and clients booking their own sessions come with milestone 4;
-  refunds and voids are done in Wompi's dashboard (their events do not reach an approved payment); no invoices.
+- Payments: refunds and voids are done in Wompi's dashboard (their events do not reach an approved payment); no invoices.
 - Booking: no calendar sync (Google/Outlook) — each email carries an `.ics` file instead; paid plans cannot be booked
   until payments (milestone 3); changing the meeting link does not change sessions already booked; the person may
   move a session into a slot inside the cancellation limit.
@@ -236,4 +255,4 @@ consultant pastes their events URL (Ajustes › Pagos Wompi) in Wompi's dashboar
 - No export of prospectos yet; no custom domains.
 - The client portal's sign-in page does not show the consultant's name yet (only Pontiac's).
 - Lists of users are small today and not paginated by the database for the super admin's picker.
-- No self-service password reset yet.
+- The client can book only the plans the consultant assigned; there are no messages between client and consultant.

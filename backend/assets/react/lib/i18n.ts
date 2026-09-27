@@ -153,8 +153,8 @@ const es: Record<string, Message> = {
     'portal.moved': 'Tu sesión quedó en la nueva hora. Te enviamos la confirmación.',
     'portal.cancelled': 'Tu sesión quedó cancelada.',
     'portal.planOption': '{name} ({left} por agendar, {minutes} min)',
-    'portal.moveIntro': 'Tu sesión es el {when}. Elige la nueva hora.',
-    'portal.cancelIntro': 'Se cancela tu sesión del {when} y le avisamos a tu asesor.',
+    'portal.moveIntro': 'Elige la nueva hora para tu sesión ({when}).',
+    'portal.cancelIntro': 'Se cancela tu sesión ({when}) y le avisamos a tu asesor.',
     'portal.cancelReason': '¿Quieres contarnos por qué?',
     'portal.plans': 'Mis planes',
     'portal.plansSubtitle': 'Tus planes, tus sesiones y tus pagos.',
@@ -385,6 +385,7 @@ const es: Record<string, Message> = {
     'contacts.tab.resumen': 'Resumen',
     'contacts.tab.planes': 'Planes y pagos',
     'contacts.tab.sesiones': 'Sesiones',
+    'contacts.tab.archivos': 'Archivos',
     'contacts.sessionsIntro': 'Sus sesiones, con sus notas. Agenda una sesión de un plan que tenga o de un plan gratuito.',
 
     // Planes

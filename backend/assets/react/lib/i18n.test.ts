@@ -24,4 +24,21 @@ describe('i18n', () => {
         }
         expect([...missing]).toEqual([]);
     });
+
+    it('has a label for every tab a page lists', () => {
+        // Pages list their tabs as `{ value: 'x', icon: … }` and label them with t(`<prefix>.${value}`).
+        const missing: string[] = [];
+        for (const file of files) {
+            const source = readFileSync(join(root, file), 'utf8');
+            const prefixes = [...source.matchAll(/t\(`([a-zA-Z.]+)\.\$\{value\}`\)/g)].map(([, prefix]) => prefix);
+            const values = [...source.matchAll(/\{ value: '([a-z-]+)', icon:/g)].map(([, value]) => value);
+            for (const prefix of prefixes) {
+                for (const value of values) {
+                    if (!(`${prefix}.${value}` in messages)) missing.push(`${prefix}.${value} (${file})`);
+                }
+            }
+        }
+        expect(missing).toEqual([]);
+    });
 });
+

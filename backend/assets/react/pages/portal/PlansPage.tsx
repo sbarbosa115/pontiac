@@ -46,6 +46,8 @@ export default function PlansPage() {
                 <>
                     <RowLegend statuses={ENROLLMENT_STATUSES.map((status) => ({ value: status, label: t(`plans.status.${status}`) }))} />
                     <DataTable
+                        // Only a plan waiting for payment can be acted on.
+                        actions={plans.data.items.some((plan) => plan.payable)}
                         columns={[t('agenda.plan'), t('plans.price'), t('plans.progress')]}
                         rows={plans.data.items}
                         renderRow={(plan) => (
@@ -53,13 +55,15 @@ export default function PlansPage() {
                                 <td className="strong">{plan.planName}</td>
                                 <td>{plan.free ? t('plans.free') : formatMoney(plan.price, locale)}</td>
                                 <td>{t('portal.progress', { used: plan.sessionsUsed, total: plan.sessionsIncluded })}</td>
-                                <Actions>
-                                    {plan.payable && (
-                                        <ActionButton action="confirm" busy={paying === plan.id} onClick={() => pay(plan)}>
-                                            {t('portal.payTitle')}
-                                        </ActionButton>
-                                    )}
-                                </Actions>
+                                {plans.data?.items.some((candidate) => candidate.payable) && (
+                                    <Actions>
+                                        {plan.payable && (
+                                            <ActionButton action="confirm" busy={paying === plan.id} onClick={() => pay(plan)}>
+                                                {t('portal.payTitle')}
+                                            </ActionButton>
+                                        )}
+                                    </Actions>
+                                )}
                             </Row>
                         )}
                     />

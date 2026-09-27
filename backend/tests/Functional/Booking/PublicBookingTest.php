@@ -123,6 +123,22 @@ final class PublicBookingTest extends ApiTestCase
         self::assertSelectorNotExists('form');
     }
 
+    public function testMovingASessionWorksBeforeTheConsultantEverSavedTheirHours(): void
+    {
+        // Their availability is made from the platform's defaults on first use; moving reads it twice in one request.
+        $defaults = (new \App\Entity\Availability($this->account, new \App\Entity\PlatformSettings()));
+        $slots = array_values(array_filter(
+            static::getContainer()->get(\App\Booking\SlotFinder::class)->slots($this->account, $defaults, 45, new \DateTimeImmutable()),
+            static fn (\DateTimeImmutable $s) => $s > new \DateTimeImmutable('+2 days'),
+        ));
+        [, $token] = $this->bookSession($this->createContact($this->account), $this->plan, $slots[0]);
+
+        $this->client->request('POST', '/finanzas-claras/reservar/'.$token.'/cambiar', ['slot' => $slots[1]->format(\DATE_ATOM)]);
+
+        self::assertSame(303, $this->responseStatus());
+        self::assertSame(1, (int) $this->em()->getConnection()->fetchOne('SELECT COUNT(*) FROM availability'));
+    }
+
     public function testCloseToTheSessionItCannotBeChangedOnline(): void
     {
         // The limit is 24 hours by default; this one starts in three.
