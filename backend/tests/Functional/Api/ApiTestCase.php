@@ -177,7 +177,7 @@ abstract class ApiTestCase extends WebTestCase
             : [];
     }
 
-    private function withPassword(User $user): User
+    protected function withPassword(User $user): User
     {
         $hasher = static::getContainer()->get(UserPasswordHasherInterface::class);
         $user->setPassword($hasher->hashPassword($user, self::PASSWORD));

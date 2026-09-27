@@ -11,6 +11,7 @@ use App\Api\Input\PortalLoginInput;
 use App\Api\InputMapper;
 use App\Api\Output\TokenOutput;
 use App\Entity\User;
+use App\Enum\AccountFeature;
 use App\Repository\AccountRepository;
 use App\Repository\UserRepository;
 use App\Security\UserChecker;
@@ -29,7 +30,8 @@ use Symfony\Component\Security\Core\Exception\AccountStatusException;
  * client of two consultants, so the consultant's slug says which login is meant; staff use /api/login instead.
  *
  * Every failure is the same 401 invalid_credentials: an unknown consultant, an unknown email, a wrong password and
- * a disabled login look alike, so the form does not tell anyone who is a client of whom.
+ * a disabled login look alike, so the form does not tell anyone who is a client of whom. A consultant whose client
+ * portal is off answers 403 feature_disabled to everyone (whether a portal is on is no secret).
  */
 final class PortalLoginController extends ApiController
 {
@@ -59,6 +61,9 @@ final class PortalLoginController extends ApiController
         }
 
         $account = $accounts->findActiveBySlug($slug);
+        if (null !== $account && !$account->hasFeature(AccountFeature::Portal)) {
+            throw ApiException::forbidden('feature_disabled', 'This consultant\'s client portal is not enabled.');
+        }
         $user = null === $account ? null : $users->findClient($account, $email);
         if (null === $user || null === $user->getPassword() || !$hasher->isPasswordValid($user, (string) $input->password)) {
             throw self::invalid();

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Enum\AccountFeature;
 use App\Repository\AccountRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Uid\Uuid;
@@ -31,6 +33,12 @@ class Account
         'pago', 'plataforma', 'portal', 'pontiac', 'privacidad', 'public', 'reservar', 'robots.txt', 'sitemap.xml',
         'soporte', 'static', 'terminos', 'uploads', 'www',
     ];
+
+    // What a consultant starts with when nobody says otherwise (the platform's defaults are these until changed).
+    public const DEFAULT_MAX_PUBLISHED_PAGES = 10;
+    public const DEFAULT_MAX_ASSISTANTS = 3;
+    public const DEFAULT_STORAGE_MB = 1024;
+    public const DEFAULT_MAX_FILE_MB = 10;
 
     public const SLUG_PATTERN = '[a-z0-9](?:[a-z0-9-]{1,58}[a-z0-9])';
 
@@ -62,6 +70,23 @@ class Account
     #[ORM\Column]
     private bool $active = true;
 
+    // What the super admin turned on (AccountFeature values).
+    /** @var list<string> */
+    #[ORM\Column(type: Types::JSON)]
+    private array $features;
+
+    #[ORM\Column(type: Types::SMALLINT)]
+    private int $maxPublishedPages = self::DEFAULT_MAX_PUBLISHED_PAGES;
+
+    #[ORM\Column(type: Types::SMALLINT)]
+    private int $maxAssistants = self::DEFAULT_MAX_ASSISTANTS;
+
+    #[ORM\Column]
+    private int $storageMb = self::DEFAULT_STORAGE_MB;
+
+    #[ORM\Column(type: Types::SMALLINT)]
+    private int $maxFileMb = self::DEFAULT_MAX_FILE_MB;
+
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
 
@@ -74,6 +99,7 @@ class Account
         $this->currency = strtoupper($currency);
         $this->locale = $locale;
         $this->timezone = $timezone;
+        $this->features = AccountFeature::values();
         $this->createdAt = new \DateTimeImmutable();
     }
 
@@ -145,6 +171,89 @@ class Account
     public function setActive(bool $active): static
     {
         $this->active = $active;
+
+        return $this;
+    }
+
+    public function setCountry(string $country): static
+    {
+        $this->country = strtoupper($country);
+
+        return $this;
+    }
+
+    public function setCurrency(string $currency): static
+    {
+        $this->currency = strtoupper($currency);
+
+        return $this;
+    }
+
+    public function setLocale(string $locale): static
+    {
+        $this->locale = $locale;
+
+        return $this;
+    }
+
+    public function setTimezone(string $timezone): static
+    {
+        $this->timezone = $timezone;
+
+        return $this;
+    }
+
+    public function hasFeature(AccountFeature $feature): bool
+    {
+        return \in_array($feature->value, $this->features, true);
+    }
+
+    /**
+     * @return list<AccountFeature>
+     */
+    public function getFeatures(): array
+    {
+        return array_values(array_filter(array_map(AccountFeature::tryFrom(...), $this->features)));
+    }
+
+    /**
+     * @param list<AccountFeature> $features
+     */
+    public function setFeatures(array $features): static
+    {
+        // Kept in the enum's order, so the stored list does not depend on the order they were ticked in.
+        $values = array_map(static fn (AccountFeature $f) => $f->value, $features);
+        $this->features = array_values(array_intersect(AccountFeature::values(), $values));
+
+        return $this;
+    }
+
+    public function getMaxPublishedPages(): int
+    {
+        return $this->maxPublishedPages;
+    }
+
+    public function getMaxAssistants(): int
+    {
+        return $this->maxAssistants;
+    }
+
+    public function getStorageMb(): int
+    {
+        return $this->storageMb;
+    }
+
+    public function getMaxFileMb(): int
+    {
+        return $this->maxFileMb;
+    }
+
+    public function setLimits(int $maxPublishedPages, int $maxAssistants, int $storageMb, int $maxFileMb): static
+    {
+        $this->maxPublishedPages = $maxPublishedPages;
+        $this->maxAssistants = $maxAssistants;
+        $this->storageMb = $storageMb;
+        $this->maxFileMb = $maxFileMb;
 
         return $this;
     }

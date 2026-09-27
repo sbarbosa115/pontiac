@@ -16,6 +16,8 @@ final readonly class MeAccountOutput
         public string $currency,
         public string $locale,
         public string $timezone,
+        /** @var list<string> the features that are on: the UI hides the menus of the others */
+        public array $features,
     ) {
     }
 }

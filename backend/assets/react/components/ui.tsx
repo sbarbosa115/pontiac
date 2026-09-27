@@ -190,6 +190,11 @@ const TONES: Record<string, string> = {
     // A login not set up yet: the link was sent (invited) or never was (none).
     invited: 'info',
     none: 'warning',
+    // A consultant the super admin suspended: nobody of theirs can sign in.
+    suspended: 'danger',
+    // One attempt to send an email.
+    sent: 'success',
+    failed: 'danger',
 };
 
 export function Badge({ value, children }: { value: string; children?: ReactNode }) {

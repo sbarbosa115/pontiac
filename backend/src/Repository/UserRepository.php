@@ -9,6 +9,7 @@ use App\Api\Pagination;
 use App\Entity\Account;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bridge\Doctrine\Security\User\UserLoaderInterface;
 use Symfony\Bridge\Doctrine\Types\UuidType;
@@ -136,5 +137,113 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
         $user->setPassword($newHashedPassword);
         $this->getEntityManager()->flush();
+    }
+
+    /**
+     * The owners of these accounts, keyed by account id: one query for a whole page of consultants.
+     *
+     * @param list<Account> $accounts
+     *
+     * @return array<string, User>
+     */
+    public function findOwnersOf(array $accounts): array
+    {
+        $owners = [];
+        foreach ($this->staffOf($accounts) as $user) {
+            if ($user->hasRole(User::ROLE_OWNER)) {
+                $owners[(string) $user->getAccount()?->getId()] = $user;
+            }
+        }
+
+        return $owners;
+    }
+
+    /**
+     * How many assistants and clients each of these accounts has, keyed by account id.
+     *
+     * @param list<Account> $accounts
+     *
+     * @return array<string, array{assistants: int, clients: int}>
+     */
+    public function countPeopleOf(array $accounts): array
+    {
+        if ([] === $accounts) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('u')
+            ->select('IDENTITY(u.account) AS account, u.loginScope AS scope, u.roles AS roles')
+            ->andWhere('u.account IN (:accounts)')
+            ->setParameter('accounts', array_map(static fn (Account $a) => $a->getId()->toBinary(), $accounts), ArrayParameterType::BINARY)
+            ->getQuery()
+            ->getArrayResult();
+
+        $counts = [];
+        foreach ($accounts as $account) {
+            $counts[(string) $account->getId()] = ['assistants' => 0, 'clients' => 0];
+        }
+        foreach ($rows as $row) {
+            $id = Uuid::fromBinary((string) $row['account'])->toRfc4122();
+            if (User::STAFF_SCOPE !== $row['scope']) {
+                ++$counts[$id]['clients'];
+            } elseif (\in_array(User::ROLE_ASSISTANT, (array) $row['roles'], true)) {
+                ++$counts[$id]['assistants'];
+            }
+        }
+
+        return $counts;
+    }
+
+    /**
+     * How many of the account's assistants are active: what the assistant limit counts.
+     */
+    public function countActiveAssistants(Account $account): int
+    {
+        return \count(array_filter(
+            $this->staffOf([$account]),
+            static fn (User $user) => $user->isActive() && $user->hasRole(User::ROLE_ASSISTANT),
+        ));
+    }
+
+    /**
+     * Pontiac's own administrators, by name; ?q= searches name and email.
+     */
+    public function searchSuperAdmins(string $term, Pagination $pagination): Page
+    {
+        $qb = $this->createQueryBuilder('u')
+            ->andWhere('u.account IS NULL')
+            ->andWhere("u.roles LIKE '%ROLE_SUPER_ADMIN%'")
+            ->orderBy('u.fullName', 'ASC')
+            ->addOrderBy('u.email', 'ASC');
+        self::whereTerm($qb, $term, ['u.fullName', 'u.email']);
+
+        return self::paginate($qb, $pagination);
+    }
+
+    public function findSuperAdmin(string $id): ?User
+    {
+        $user = $this->findOneById($id);
+
+        return null !== $user && $user->hasRole(User::ROLE_SUPER_ADMIN) ? $user : null;
+    }
+
+    /**
+     * @param list<Account> $accounts
+     *
+     * @return list<User>
+     */
+    private function staffOf(array $accounts): array
+    {
+        if ([] === $accounts) {
+            return [];
+        }
+
+        return $this->createQueryBuilder('u')
+            ->andWhere('u.account IN (:accounts)')
+            ->andWhere('u.loginScope = :staff')
+            ->setParameter('accounts', array_map(static fn (Account $a) => $a->getId()->toBinary(), $accounts), ArrayParameterType::BINARY)
+            ->setParameter('staff', User::STAFF_SCOPE)
+            ->getQuery()
+            ->getResult();
     }
 }

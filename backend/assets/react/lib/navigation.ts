@@ -9,6 +9,8 @@ export interface MenuItem {
     icon: IconName;
     end?: boolean;
     roles?: string[];
+    /** Shown only while the user's account has this feature on (/api/me `account.features`). */
+    feature?: string;
 }
 
 export interface MenuSection {
@@ -25,7 +27,12 @@ export const MENU: MenuSection[] = [
     {
         title: 'nav.section.platform',
         roles: [ROLE_SUPER_ADMIN],
-        items: [{ to: '/plataforma', label: 'nav.home', icon: 'dashboard', end: true }],
+        items: [
+            { to: '/plataforma', label: 'nav.home', icon: 'dashboard', end: true },
+            { to: '/plataforma/asesores', label: 'nav.consultants', icon: 'users' },
+            { to: '/plataforma/configuracion', label: 'nav.platformSettings', icon: 'settings' },
+            { to: '/plataforma/correos', label: 'nav.emails', icon: 'inbox' },
+        ],
     },
     {
         title: 'nav.section.practice',
@@ -44,13 +51,16 @@ export const MENU: MenuSection[] = [
 
 const visibleTo = (roles: readonly string[]) => (entry: { roles?: string[] }) => !entry.roles || entry.roles.some((role) => roles.includes(role));
 
+/** An item with a `feature` shows only while the account has it on; the super admin has no account and no such items. */
+const enabledFor = (me: Me | null) => (item: MenuItem) => !item.feature || (me?.account?.features ?? []).includes(item.feature);
+
 /** The sections and items the given roles may see, with portal paths resolved; empty sections removed. */
 export function menuFor(roles: readonly string[] = [], me: Me | null = null): MenuSection[] {
     const portal = portalPath(me?.account?.slug);
     return MENU.filter(visibleTo(roles))
         .map((section) => ({
             ...section,
-            items: section.items.filter(visibleTo(roles)).map((item) => ({ ...item, to: item.to.replace(/^:portal/, portal) })),
+            items: section.items.filter(visibleTo(roles)).filter(enabledFor(me)).map((item) => ({ ...item, to: item.to.replace(/^:portal/, portal) })),
         }))
         .filter((section) => section.items.length > 0);
 }

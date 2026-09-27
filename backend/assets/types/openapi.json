@@ -211,6 +211,550 @@
                 }
             }
         },
+        "/api/platform/accounts": {
+            "get": {
+                "summary": "?q= searches name, address and owner's email; ?status= \"active\" or \"suspended\".",
+                "operationId": "get_api_platform_account_list",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "items",
+                                        "total",
+                                        "page",
+                                        "perPage"
+                                    ],
+                                    "properties": {
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/AccountSummaryOutput"
+                                            }
+                                        },
+                                        "total": {
+                                            "type": "integer"
+                                        },
+                                        "page": {
+                                            "type": "integer"
+                                        },
+                                        "perPage": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "A new consultant: the account with the platform's defaults, and its owner, invited by email.",
+                "operationId": "post_api_platform_account_create",
+                "responses": {
+                    "201": {
+                        "description": "Created.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AccountDetailOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/platform/accounts/{id}": {
+            "get": {
+                "operationId": "get_api_platform_account_show",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AccountDetailOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "summary": "Datos, and L\u00edmites y funciones. A field left out is left as it is.",
+                "operationId": "patch_api_platform_account_update",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AccountDetailOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/platform/accounts/{id}/suspend": {
+            "post": {
+                "summary": "Its people cannot sign in and its public pages are not served, until it is reactivated. Nothing is deleted.",
+                "operationId": "post_api_platform_account_suspend",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AccountDetailOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/platform/accounts/{id}/reactivate": {
+            "post": {
+                "operationId": "post_api_platform_account_reactivate",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AccountDetailOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/platform/accounts/{id}/users": {
+            "get": {
+                "summary": "The owner and the assistants. ?q= searches name and email. Clients are the consultant's, not listed here.",
+                "operationId": "get_api_platform_account_users",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "items",
+                                        "total",
+                                        "page",
+                                        "perPage"
+                                    ],
+                                    "properties": {
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/TeamMemberOutput"
+                                            }
+                                        },
+                                        "total": {
+                                            "type": "integer"
+                                        },
+                                        "page": {
+                                            "type": "integer"
+                                        },
+                                        "perPage": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/platform/accounts/{id}/users/{userId}/resend-invitation": {
+            "post": {
+                "operationId": "post_api_platform_account_user_resend",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    },
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TeamMemberOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/platform/accounts/{id}/users/{userId}": {
+            "delete": {
+                "summary": "Disables an assistant. The owner is not disabled: suspend the consultant instead.",
+                "operationId": "delete_api_platform_account_user_disable",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    },
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TeamMemberOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/platform/accounts/{id}/users/{userId}/enable": {
+            "post": {
+                "summary": "The super admin may enable an assistant beyond the consultant's limit: the limit binds the consultant.",
+                "operationId": "post_api_platform_account_user_enable",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    },
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TeamMemberOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/platform/admins": {
+            "get": {
+                "summary": "?q= searches name and email.",
+                "operationId": "get_api_platform_admin_list",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "items",
+                                        "total",
+                                        "page",
+                                        "perPage"
+                                    ],
+                                    "properties": {
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/SuperAdminOutput"
+                                            }
+                                        },
+                                        "total": {
+                                            "type": "integer"
+                                        },
+                                        "page": {
+                                            "type": "integer"
+                                        },
+                                        "perPage": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "operationId": "post_api_platform_admin_invite",
+                "responses": {
+                    "201": {
+                        "description": "Created.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuperAdminOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/platform/admins/{id}/resend-invitation": {
+            "post": {
+                "operationId": "post_api_platform_admin_resend",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuperAdminOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/platform/admins/{id}": {
+            "delete": {
+                "summary": "Never yourself: the platform always keeps the person doing this.",
+                "operationId": "delete_api_platform_admin_disable",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuperAdminOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/platform/admins/{id}/enable": {
+            "post": {
+                "operationId": "post_api_platform_admin_enable",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuperAdminOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/platform/dashboard": {
+            "get": {
+                "operationId": "get_api_platform_dashboard",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlatformDashboardOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/platform/emails": {
+            "get": {
+                "summary": "?q= searches recipient, subject and consultant; ?status= \"sent\" or \"failed\"; ?account= a consultant's id.",
+                "operationId": "get_api_platform_email_list",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "items",
+                                        "total",
+                                        "page",
+                                        "perPage"
+                                    ],
+                                    "properties": {
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/OutgoingEmailOutput"
+                                            }
+                                        },
+                                        "total": {
+                                            "type": "integer"
+                                        },
+                                        "page": {
+                                            "type": "integer"
+                                        },
+                                        "perPage": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/platform/emails/test": {
+            "post": {
+                "summary": "Sent at once, not queued: the super admin waits to see whether the mail server takes it (502 email_failed).",
+                "operationId": "post_api_platform_email_test",
+                "responses": {
+                    "default": {
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/platform/impersonatable-users": {
             "get": {
                 "operationId": "get_api_platform_impersonatable_users",
@@ -229,6 +773,80 @@
                                             "items": {
                                                 "$ref": "#/components/schemas/ImpersonatableUserOutput"
                                             }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/platform/settings": {
+            "get": {
+                "operationId": "get_api_platform_settings_show",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlatformSettingsOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "summary": "A field left out is left as it is; the change is logged (Historial).",
+                "operationId": "patch_api_platform_settings_update",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlatformSettingsOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/platform/settings/history": {
+            "get": {
+                "summary": "Newest first; ?q= searches who changed it and the settings' names.",
+                "operationId": "get_api_platform_settings_history",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "items",
+                                        "total",
+                                        "page",
+                                        "perPage"
+                                    ],
+                                    "properties": {
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/SettingsChangeOutput"
+                                            }
+                                        },
+                                        "total": {
+                                            "type": "integer"
+                                        },
+                                        "page": {
+                                            "type": "integer"
+                                        },
+                                        "perPage": {
+                                            "type": "integer"
                                         }
                                     },
                                     "type": "object"
@@ -334,7 +952,8 @@
                     "country",
                     "currency",
                     "locale",
-                    "timezone"
+                    "timezone",
+                    "features"
                 ],
                 "properties": {
                     "id": {
@@ -358,6 +977,13 @@
                     },
                     "timezone": {
                         "type": "string"
+                    },
+                    "features": {
+                        "title": "the features that are on: the UI hides the menus of the others",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
                     }
                 },
                 "type": "object"
@@ -442,6 +1068,290 @@
                 },
                 "type": "object"
             },
+            "AccountOwnerOutput": {
+                "required": [
+                    "id",
+                    "fullName",
+                    "email",
+                    "loginStatus"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "fullName": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "loginStatus": {
+                        "title": "\"active\" (has a password), \"invited\" or \"none\".",
+                        "type": "string"
+                    },
+                    "lastSignInAt": {
+                        "title": "ISO 8601; null until they first sign in.",
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "AccountSummaryOutput": {
+                "required": [
+                    "id",
+                    "name",
+                    "slug",
+                    "active",
+                    "createdAt",
+                    "assistants",
+                    "clients"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "slug": {
+                        "type": "string"
+                    },
+                    "active": {
+                        "type": "boolean"
+                    },
+                    "createdAt": {
+                        "title": "ISO 8601.",
+                        "type": "string"
+                    },
+                    "owner": {
+                        "title": "null only for an account created before owners were invited with it.",
+                        "nullable": true,
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/AccountOwnerOutput"
+                            }
+                        ]
+                    },
+                    "assistants": {
+                        "type": "integer"
+                    },
+                    "clients": {
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "AccountDetailOutput": {
+                "required": [
+                    "id",
+                    "name",
+                    "slug",
+                    "country",
+                    "currency",
+                    "locale",
+                    "timezone",
+                    "active",
+                    "createdAt",
+                    "maxPublishedPages",
+                    "maxAssistants",
+                    "storageMb",
+                    "maxFileMb",
+                    "features",
+                    "assistants",
+                    "clients"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "slug": {
+                        "type": "string"
+                    },
+                    "country": {
+                        "type": "string"
+                    },
+                    "currency": {
+                        "type": "string"
+                    },
+                    "locale": {
+                        "type": "string"
+                    },
+                    "timezone": {
+                        "type": "string"
+                    },
+                    "active": {
+                        "type": "boolean"
+                    },
+                    "createdAt": {
+                        "title": "ISO 8601.",
+                        "type": "string"
+                    },
+                    "maxPublishedPages": {
+                        "type": "integer"
+                    },
+                    "maxAssistants": {
+                        "type": "integer"
+                    },
+                    "storageMb": {
+                        "type": "integer"
+                    },
+                    "maxFileMb": {
+                        "type": "integer"
+                    },
+                    "features": {
+                        "title": "the features that are on: \"booking\", \"payments\", \"portal\", \"flows\"",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "owner": {
+                        "nullable": true,
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/AccountOwnerOutput"
+                            }
+                        ]
+                    },
+                    "assistants": {
+                        "type": "integer"
+                    },
+                    "clients": {
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "SuperAdminOutput": {
+                "required": [
+                    "id",
+                    "email",
+                    "fullName",
+                    "active",
+                    "loginStatus",
+                    "you"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "fullName": {
+                        "type": "string"
+                    },
+                    "active": {
+                        "type": "boolean"
+                    },
+                    "loginStatus": {
+                        "title": "\"active\", \"invited\" or \"none\".",
+                        "type": "string"
+                    },
+                    "lastSignInAt": {
+                        "title": "ISO 8601; null until they first sign in.",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "you": {
+                        "title": "The super admin reading the list: they cannot disable themselves.",
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "PlatformDashboardOutput": {
+                "required": [
+                    "activeAccounts",
+                    "suspendedAccounts",
+                    "failedEmailsLast7Days",
+                    "failedJobs"
+                ],
+                "properties": {
+                    "activeAccounts": {
+                        "type": "integer"
+                    },
+                    "suspendedAccounts": {
+                        "type": "integer"
+                    },
+                    "failedEmailsLast7Days": {
+                        "title": "Attempts to send an email that failed in the last 7 days.",
+                        "type": "integer"
+                    },
+                    "failedJobs": {
+                        "title": "Queue messages that failed every retry and wait in the \"failed\" queue.",
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "AccountRefOutput": {
+                "required": [
+                    "id",
+                    "name"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "OutgoingEmailOutput": {
+                "required": [
+                    "id",
+                    "kind",
+                    "recipient",
+                    "subject",
+                    "status",
+                    "sentAt"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "kind": {
+                        "title": "What it is: \"invitation\", \"test\", \u2026",
+                        "type": "string"
+                    },
+                    "recipient": {
+                        "type": "string"
+                    },
+                    "subject": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "title": "\"sent\" or \"failed\".",
+                        "type": "string"
+                    },
+                    "error": {
+                        "title": "Why it failed, as the mail server said it; null when sent.",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "sentAt": {
+                        "title": "ISO 8601.",
+                        "type": "string"
+                    },
+                    "account": {
+                        "title": "The consultant it was sent for; null for the platform's own emails.",
+                        "nullable": true,
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/AccountRefOutput"
+                            }
+                        ]
+                    }
+                },
+                "type": "object"
+            },
             "ImpersonatableAccountOutput": {
                 "required": [
                     "id",
@@ -481,6 +1391,166 @@
                     },
                     "account": {
                         "$ref": "#/components/schemas/ImpersonatableAccountOutput"
+                    }
+                },
+                "type": "object"
+            },
+            "PlatformSettingsOutput": {
+                "required": [
+                    "platformName",
+                    "supportEmail",
+                    "senderName",
+                    "enabledTemplates",
+                    "reminderHours",
+                    "minNoticeHours",
+                    "bookingWindowDays",
+                    "clientCancelHours",
+                    "sessionBufferMinutes",
+                    "defaultMaxPublishedPages",
+                    "defaultMaxAssistants",
+                    "defaultStorageMb",
+                    "defaultMaxFileMb",
+                    "defaultFeatures",
+                    "termsText",
+                    "defaultPrivacyText",
+                    "reservedSlugs"
+                ],
+                "properties": {
+                    "platformName": {
+                        "type": "string"
+                    },
+                    "supportEmail": {
+                        "type": "string"
+                    },
+                    "senderName": {
+                        "type": "string"
+                    },
+                    "enabledTemplates": {
+                        "title": "PageTemplate values a new page may use",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "reminderHours": {
+                        "title": "hours before a session, largest first",
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        }
+                    },
+                    "minNoticeHours": {
+                        "type": "integer"
+                    },
+                    "bookingWindowDays": {
+                        "type": "integer"
+                    },
+                    "clientCancelHours": {
+                        "type": "integer"
+                    },
+                    "sessionBufferMinutes": {
+                        "type": "integer"
+                    },
+                    "defaultMaxPublishedPages": {
+                        "type": "integer"
+                    },
+                    "defaultMaxAssistants": {
+                        "type": "integer"
+                    },
+                    "defaultStorageMb": {
+                        "type": "integer"
+                    },
+                    "defaultMaxFileMb": {
+                        "type": "integer"
+                    },
+                    "defaultFeatures": {
+                        "title": "AccountFeature values",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "termsText": {
+                        "type": "string"
+                    },
+                    "defaultPrivacyText": {
+                        "type": "string"
+                    },
+                    "reservedSlugs": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "updatedAt": {
+                        "title": "ISO 8601; null until a super admin first saves them.",
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "PersonOutput": {
+                "required": [
+                    "id",
+                    "fullName",
+                    "email"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "fullName": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "SettingChangeOutput": {
+                "required": [
+                    "field",
+                    "from",
+                    "to"
+                ],
+                "properties": {
+                    "field": {
+                        "type": "string"
+                    },
+                    "from": {
+                        "type": "string"
+                    },
+                    "to": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "SettingsChangeOutput": {
+                "required": [
+                    "id",
+                    "changedAt",
+                    "changedBy",
+                    "changes"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "changedAt": {
+                        "title": "ISO 8601.",
+                        "type": "string"
+                    },
+                    "changedBy": {
+                        "$ref": "#/components/schemas/PersonOutput"
+                    },
+                    "changes": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SettingChangeOutput"
+                        }
                     }
                 },
                 "type": "object"

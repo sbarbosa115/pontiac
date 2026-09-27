@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Api;
 
 use App\Entity\Account;
+use App\Entity\OutgoingEmail;
+use App\Entity\PlatformSettingsChange;
 use App\Entity\User;
+use App\Enum\EmailStatus;
 use Doctrine\Bundle\DoctrineBundle\DataCollector\DoctrineDataCollector;
 use PHPUnit\Framework\Attributes\DataProvider;
 
@@ -18,6 +21,7 @@ final class ListQueryCountTest extends ApiTestCase
 {
     private Account $account;
     private User $owner;
+    private User $superAdmin;
     private int $row = 0;
 
     protected function setUp(): void
@@ -26,25 +30,32 @@ final class ListQueryCountTest extends ApiTestCase
 
         $this->account = $this->createAccount();
         $this->owner = $this->createOwner($this->account);
+        $this->superAdmin = $this->createSuperAdmin();
     }
 
     /**
-     * @return iterable<string, array{string, string}> [path, the row it adds]
+     * @return iterable<string, array{string, string, string}> [who reads it, path, the row it adds]
      */
     public static function lists(): iterable
     {
-        yield 'equipo' => ['/api/admin/team', 'assistant'];
+        yield 'equipo' => ['owner', '/api/admin/team', 'assistant'];
+        yield 'asesores' => ['superAdmin', '/api/platform/accounts', 'consultant'];
+        yield 'equipo de un asesor' => ['superAdmin', '/api/platform/accounts/{account}/users', 'assistant'];
+        yield 'administradores' => ['superAdmin', '/api/platform/admins', 'superAdmin'];
+        yield 'historial de configuración' => ['superAdmin', '/api/platform/settings/history', 'settingsChange'];
+        yield 'correos' => ['superAdmin', '/api/platform/emails', 'email'];
     }
 
     #[DataProvider('lists')]
-    public function testAListCostsTheSameQueriesWithOneRowAsWithFive(string $path, string $row): void
+    public function testAListCostsTheSameQueriesWithOneRowAsWithFive(string $who, string $path, string $row): void
     {
+        $path = str_replace('{account}', (string) $this->account->getId(), $path);
         $this->{$row}();
-        $one = $this->queriesFor($this->owner, $path);
+        $one = $this->queriesFor($this->{$who}, $path);
         for ($i = 0; $i < 4; ++$i) {
             $this->{$row}();
         }
-        $five = $this->queriesFor($this->owner, $path);
+        $five = $this->queriesFor($this->{$who}, $path);
 
         self::assertSame(
             $one['queries'],
@@ -84,6 +95,7 @@ final class ListQueryCountTest extends ApiTestCase
     {
         $this->account = $this->em()->getReference(Account::class, $this->account->getId());
         $this->owner = $this->em()->getReference(User::class, $this->owner->getId());
+        $this->superAdmin = $this->em()->getReference(User::class, $this->superAdmin->getId());
     }
 
     // One row of each list, complete enough for its Presenter to read every relation it shows.
@@ -92,5 +104,32 @@ final class ListQueryCountTest extends ApiTestCase
     {
         ++$this->row;
         $this->createAssistant($this->account, sprintf('asistente%d@demo.test', $this->row), 'Asistente '.$this->row);
+    }
+
+    private function consultant(): void
+    {
+        ++$this->row;
+        $account = $this->createAccount('Asesor '.$this->row, 'asesor-'.$this->row);
+        $this->createOwner($account, sprintf('dueno%d@demo.test', $this->row), 'Dueño '.$this->row);
+        $this->createAssistant($account, sprintf('ayuda%d@demo.test', $this->row), 'Ayuda '.$this->row);
+        $this->createClientLogin($account, sprintf('cliente%d@demo.test', $this->row));
+    }
+
+    private function superAdmin(): void
+    {
+        ++$this->row;
+        $this->createSuperAdmin(sprintf('admin%d@pontiac.test', $this->row));
+    }
+
+    private function settingsChange(): void
+    {
+        $this->save(new PlatformSettingsChange($this->superAdmin, ['minNoticeHours' => ['from' => $this->row, 'to' => ++$this->row]]));
+    }
+
+    private function email(): void
+    {
+        // As the email log writes it, for a consultant so the list shows its name.
+        $email = new OutgoingEmail($this->account, 'test', sprintf('persona%d@demo.test', ++$this->row), 'Hola', EmailStatus::Sent, null);
+        $this->em()->getConnection()->insert('outgoing_email', $email->toRow());
     }
 }

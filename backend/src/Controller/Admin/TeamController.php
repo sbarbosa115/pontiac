@@ -52,6 +52,7 @@ final class TeamController extends ApiController
     public function invite(Request $request, InputMapper $input): JsonResponse
     {
         $data = $input->map($input->json($request), InviteTeamMemberInput::class);
+        $this->assertRoomForOneMore();
         $user = $this->invitations->inviteAssistant($this->account(), (string) $data->email, trim((string) $data->fullName));
 
         return $this->json(Presenter::teamMember($user), 201);
@@ -89,10 +90,26 @@ final class TeamController extends ApiController
     #[ApiResponse(TeamMemberOutput::class)]
     public function enable(string $id): JsonResponse
     {
-        $user = $this->member($id)->setActive(true);
+        $user = $this->member($id);
+        if (!$user->isActive()) {
+            $this->assertRoomForOneMore();
+        }
+        $user->setActive(true);
         $this->em->flush();
 
         return $this->json(Presenter::teamMember($user));
+    }
+
+    /**
+     * The consultant's plan allows so many active assistants (Asesores › Límites y funciones); a disabled one does not
+     * count, so disabling someone makes room.
+     */
+    private function assertRoomForOneMore(): void
+    {
+        $account = $this->account();
+        if ($this->users->countActiveAssistants($account) >= $account->getMaxAssistants()) {
+            throw ApiException::conflict('assistant_limit_reached', sprintf('This consultant can have at most %d active assistants.', $account->getMaxAssistants()));
+        }
     }
 
     private function member(string $id): User

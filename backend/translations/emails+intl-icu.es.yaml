@@ -2,7 +2,11 @@ layout:
     footer: 'Enviado por Pontiac.'
 
 invitation:
-    subject: '{inviter} te invitó a Pontiac'
+    subject:
+        super_admin: 'Te invitaron a administrar {platform}'
+        owner: 'Tu cuenta de asesor en {platform} está lista'
+        assistant: '{inviter} te invitó a Pontiac'
+        client: '{inviter} te dio acceso a tu portal de cliente'
     greeting: 'Hola, {name}:'
     body:
         super_admin: 'Te invitaron a administrar Pontiac.'

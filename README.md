@@ -99,6 +99,18 @@ Every error is `{"error": "<code>", "message": "…"}`, plus `violations: [{fiel
 | DELETE | `/api/admin/team/{id}` | owner | Disable an assistant (409 for the owner) |
 | POST | `/api/admin/team/{id}/enable` | owner | Enable them again |
 | GET | `/api/platform/impersonatable-users` | super admin | Who can be acted as |
+| GET | `/api/platform/dashboard` | super admin | Consultants by status, failed emails (7 days), failed queue jobs |
+| GET, POST | `/api/platform/accounts` | super admin | Consultants (`?q=&status=active\|suspended`); create one and invite its owner |
+| GET, PATCH | `/api/platform/accounts/{id}` | super admin | A consultant: data, limits, features |
+| POST | `/api/platform/accounts/{id}/suspend`, `/reactivate` | super admin | |
+| GET | `/api/platform/accounts/{id}/users` | super admin | Its owner and assistants |
+| POST, DELETE | `/api/platform/accounts/{id}/users/{userId}[/resend-invitation\|/enable]` | super admin | Resend, enable, disable an assistant |
+| GET, PATCH | `/api/platform/settings` | super admin | The platform's settings; each change is logged |
+| GET | `/api/platform/settings/history` | super admin | Who changed which setting (`?q=`) |
+| GET, POST | `/api/platform/admins` | super admin | Super admins; invite one |
+| POST, DELETE | `/api/platform/admins/{id}[/resend-invitation\|/enable]` | super admin | Resend, enable, disable (never yourself) |
+| GET | `/api/platform/emails` | super admin | Every attempt to send an email (`?q=&status=&account=`) |
+| POST | `/api/platform/emails/test` | super admin | Send a test email `{to}` |
 
 ## Data model decisions
 
@@ -107,7 +119,18 @@ Every error is `{"error": "<code>", "message": "…"}`, plus `violations: [{fiel
 - `app_user.login_scope` is `staff` or the account id, and `(email, login_scope)` is unique: staff emails are unique
   across Pontiac, client emails per consultant.
 - A consultant's slug is the first segment of every public URL; the app's own first segments are reserved
-  (`Account::RESERVED_SLUGS`).
+  (`Account::RESERVED_SLUGS`), and the super admin can reserve more (Configuración › Legal).
+- `platform_settings` is one row; until a super admin first saves, the entity's defaults are the settings. The
+  defaults for new consultants (limits, features) are **copied** into the account when it is created, so changing a
+  default never changes an existing consultant. Each save that changes something writes a `platform_settings_change`.
+- `account.features` (JSON list) and four limit columns. Enforced today: the assistant limit (409
+  `assistant_limit_reached`) and the client portal (clients cannot sign in, and their sessions end). Controllers of
+  later features declare `#[RequiresFeature(AccountFeature::…)]` (403 `feature_disabled`); menu items declare `feature`.
+- `outgoing_email` logs every attempt to send an email, written by `App\Mail\EmailLog` from the mailer's events with
+  DBAL (never flushing someone else's changes). It is not account-owned: only the super admin reads it; `account_id`
+  says which consultant an email was for. A queued email that fails and is retried logs one row per attempt.
+- Emails keep the server's `MAILER_FROM` address (it must match the SMTP account); the sender name and Reply-To come
+  from the platform settings.
 
 ## Deploying to cPanel
 
@@ -115,6 +138,11 @@ Not written yet: it comes with the release milestone (PRD, "Delivery plan").
 
 ## Known gaps
 
+- Changing a consultant's address breaks their old links (redirects come with the pages milestone).
+- Page, storage and file-size limits and the booking, payments and flows features are stored but only enforced by
+  the milestones that build what they limit. The booking defaults are copied into a consultant's booking settings by
+  milestone 2.
+- Template previews in Configuración › Plantillas come with milestone 1.
 - The client portal's sign-in page does not show the consultant's name yet (only Pontiac's).
 - Lists of users are small today and not paginated by the database for the super admin's picker.
 - No self-service password reset yet.

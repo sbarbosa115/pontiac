@@ -24,6 +24,15 @@ Every customer-owned entity implements `AccountOwnedInterface` + `AccountOwnedTr
 Another consultant's ids answer 404, and every endpoint has a test proving it. `User` and `Account` are not
 filtered: every query that lists them names the account itself.
 
+## Emails and features
+
+- Every email goes through `App\Mail\EmailTag::apply($email, '<kind>', $account)` before it is sent, so the email log
+  (Plataforma › Correos) says what it was and which consultant it was for; add the kind's label in `i18n.ts`
+  (`emails.kinds.<kind>`). Mail someone waits for on screen is sent through the transport at once; the rest is queued.
+- A feature a consultant may not have (`AccountFeature`) guards its controllers with
+  `#[RequiresFeature(AccountFeature::…)]` and its menu items with `feature`. A limit (`Account::getMax…()`) is checked
+  where the thing is created or re-enabled, with a 409 `<thing>_limit_reached`.
+
 ## Tables
 
 **Every table follows this.** The components that enforce it are in `assets/react/components/ui.tsx`.

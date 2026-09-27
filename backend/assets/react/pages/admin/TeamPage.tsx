@@ -17,15 +17,27 @@ function statusOf(member: Member): (typeof STATUSES)[number] {
     return member.loginStatus === 'active' ? 'active' : 'invited';
 }
 
+interface TeamPageProps {
+    embedded?: boolean;
+    /** Where the team lives: the consultant's own (/api/admin/team), or one consultant's seen by the super admin. */
+    endpoint?: string;
+    /** Whether invitations, disabling and enabling are offered: the consultant's, or the super admin's (no invite). */
+    manage?: 'owner' | 'platform';
+    intro?: string;
+}
+
 /**
  * Ajustes › Equipo: the consultant and the assistants they invited. Everyone on the team sees it; only the consultant
- * invites, sends an invitation again, disables and enables.
+ * invites, sends an invitation again, disables and enables. The super admin sees the same list for any consultant
+ * (Asesores › Usuarios) and does all of it but inviting.
  */
-export default function TeamPage({ embedded = false }: { embedded?: boolean }) {
+export default function TeamPage({ embedded = false, endpoint = '/api/admin/team', manage, intro }: TeamPageProps) {
     const { roles } = useAuth();
     const { locale, timezone } = useLocaleSettings();
-    const isOwner = roles.includes(ROLE_OWNER);
-    const list = useList<Member>('/api/admin/team', { q: '' });
+    const mode = manage ?? (roles.includes(ROLE_OWNER) ? 'owner' : null);
+    const canManage = mode !== null;
+    const canInvite = mode === 'owner';
+    const list = useList<Member>(endpoint, { q: '' });
     const [inviting, setInviting] = useState(false);
     const [busyId, setBusyId] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -48,14 +60,15 @@ export default function TeamPage({ embedded = false }: { embedded?: boolean }) {
 
     const toggleActive = (member: Member) => {
         if (member.active && !window.confirm(t('team.confirmDisable', { name: member.fullName }))) return;
-        act(member, () => (member.active ? api.del(`/api/admin/team/${member.id}`) : api.post(`/api/admin/team/${member.id}/enable`)));
+        act(member, () => (member.active ? api.del(`${endpoint}/${member.id}`) : api.post(`${endpoint}/${member.id}/enable`)));
     };
 
-    const inviteButton = isOwner ? <Button onClick={() => setInviting(true)}>{t('team.invite')}</Button> : null;
+    const inviteButton = canInvite ? <Button onClick={() => setInviting(true)}>{t('team.invite')}</Button> : null;
+    const introText = intro ?? t('team.intro');
 
     return (
         <>
-            {embedded ? <TabIntro>{t('team.intro')}</TabIntro> : <PageHeader title={t('settings.tab.equipo')} subtitle={t('team.intro')} />}
+            {embedded ? <TabIntro>{introText}</TabIntro> : <PageHeader title={t('settings.tab.equipo')} subtitle={introText} />}
             <FilterBar search={list.filters.q} onSearch={(q) => list.update({ q })} searchPlaceholder={t('team.searchPlaceholder')}>
                 {inviteButton}
             </FilterBar>
@@ -71,9 +84,9 @@ export default function TeamPage({ embedded = false }: { embedded?: boolean }) {
                 list={list}
                 empty={t('team.empty')}
                 showAll={{ q: '' }}
-                emptyAll={t('team.emptyAll')}
+                emptyAll={canInvite ? t('team.emptyAll') : t('team.emptyAllPlatform')}
                 emptyAction={inviteButton}
-                actions={isOwner}
+                actions={canManage}
                 columns={[t('team.fullName'), t('team.email'), t('team.role'), t('team.lastSignIn')]}
                 renderRow={(member) => {
                     const status = statusOf(member);
@@ -83,14 +96,14 @@ export default function TeamPage({ embedded = false }: { embedded?: boolean }) {
                             <td>{member.email}</td>
                             <td>{t(`team.roles.${member.role}`)}</td>
                             <td className="nowrap">{member.lastSignInAt ? formatDateTime(member.lastSignInAt, locale, timezone) : t('team.neverSignedIn')}</td>
-                            {isOwner && (
+                            {canManage && (
                                 <Actions>
                                     {member.active && member.loginStatus !== 'active' && (
                                         <ActionButton
                                             action="setup"
                                             busy={busyId === member.id}
                                             onClick={() =>
-                                                act(member, () => api.post(`/api/admin/team/${member.id}/resend-invitation`), t('team.invitationSent', { email: member.email }))
+                                                act(member, () => api.post(`${endpoint}/${member.id}/resend-invitation`), t('team.invitationSent', { email: member.email }))
                                             }
                                         >
                                             {t('team.resendInvitation')}

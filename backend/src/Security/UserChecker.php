@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Security;
 
 use App\Entity\User;
+use App\Enum\AccountFeature;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\CustomUserMessageAccountStatusException;
 use Symfony\Component\Security\Core\User\UserCheckerInterface;
@@ -28,6 +29,11 @@ final class UserChecker implements UserCheckerInterface
 
         if (null !== $user->getAccount() && !$user->getAccount()->isActive()) {
             throw new CustomUserMessageAccountStatusException('Account suspended.');
+        }
+
+        // A client exists for the portal: with the consultant's portal off, their sessions end at once too.
+        if ($user->hasRole(User::ROLE_CLIENT) && true !== $user->getAccount()?->hasFeature(AccountFeature::Portal)) {
+            throw new CustomUserMessageAccountStatusException('Client portal disabled.');
         }
     }
 

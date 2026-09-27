@@ -21,3 +21,16 @@ The manual browser pass, one case per use case. Run it on a fresh stack with the
 | PLAT-01 | super admin | `/login` as admin@pontiac.test | Lands on `/plataforma` in their own theme |
 | PLAT-02 | super admin | "Actuar como" › Andrés Asesor | Goes to `/admin` with the banner "Estás actuando como Andrés Asesor (asesor de Finanzas Claras)…"; "Volver a la plataforma" ends it |
 | PUB-01 | anyone | `/` and `/finanzas-claras` | Server-rendered pages; the consultant's says "Muy pronto…" and is `noindex` |
+| PLAT-03 | super admin | Inicio | Four figures (active, suspended, failed emails, failed jobs); each linked one opens its list filtered |
+| PLAT-04 | super admin | Asesores › Nuevo asesor, type a name | The address follows the name until edited; a taken or reserved address is refused under its field |
+| PLAT-05 | super admin | Create with a free address | Notice "Creamos a … y enviamos la invitación a …"; the row shows "Invitación enviada" and "Reenviar invitación"; the email is in Mailpit with the subject "Tu cuenta de asesor en Pontiac está lista" |
+| PLAT-06 | super admin | Open a consultant › Datos, change the name, save | "Guardado."; the header shows the new name |
+| PLAT-07 | super admin | Límites y funciones: assistants −1, save; then 0 and the portal off | −1 refused under its field; then "Guardado." |
+| PLAT-08 | super admin | The consultant's Usuarios and Correos tabs | Owner and assistants (no clients); the invitation email listed |
+| PLAT-09 | super admin | Suspend a consultant (confirm), then reactivate | Row turns red and greys; its people cannot sign in and `/<slug>` answers 404 until reactivated |
+| PLAT-10 | super admin | Configuración › General, change the sender, save; then Historial | "Guardado."; Historial shows "Remitente: Pontiac → …" with who and when |
+| PLAT-11 | super admin | Configuración › every tab | Each renders its form or list; the tab bar scrolls on a narrow screen |
+| PLAT-12 | super admin | Configuración › Administradores | Own row says "tú" and has no switch; inviting sends an email |
+| PLAT-13 | super admin | Correos › Enviar correo de prueba | Notice, and the email appears first in the list as "Prueba" |
+| PLAT-14 | consultant | With the assistant limit reached, Invitar asistente | "Llegaste al máximo de asistentes activos de tu plan…" in the dialog |
+| PLAT-15 | client | The consultant's portal turned off, sign in at the portal | "Esta función no está activa para este asesor." |

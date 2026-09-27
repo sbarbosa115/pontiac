@@ -21,7 +21,7 @@ final class MeTest extends ApiTestCase
 
         self::assertSame(['ROLE_OWNER', 'ROLE_USER'], $me['roles']);
         self::assertSame(
-            ['name' => 'Finanzas Claras', 'slug' => 'finanzas-claras', 'country' => 'CO', 'currency' => 'COP', 'locale' => 'es_CO', 'timezone' => 'America/Bogota'],
+            ['name' => 'Finanzas Claras', 'slug' => 'finanzas-claras', 'country' => 'CO', 'currency' => 'COP', 'locale' => 'es_CO', 'timezone' => 'America/Bogota', 'features' => ['booking', 'payments', 'portal', 'flows']],
             array_diff_key($me['account'], ['id' => true]),
         );
         self::assertSame('light', $me['uiTheme'], 'someone who never chose sees light');

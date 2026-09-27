@@ -137,6 +137,257 @@ export interface paths {
         patch: operations["patch_api_me_preferences"];
         trace?: never;
     };
+    "/api/platform/accounts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** ?q= searches name, address and owner's email; ?status= "active" or "suspended". */
+        get: operations["get_api_platform_account_list"];
+        put?: never;
+        /** A new consultant: the account with the platform's defaults, and its owner, invited by email. */
+        post: operations["post_api_platform_account_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/accounts/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_api_platform_account_show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Datos, and Límites y funciones. A field left out is left as it is. */
+        patch: operations["patch_api_platform_account_update"];
+        trace?: never;
+    };
+    "/api/platform/accounts/{id}/suspend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Its people cannot sign in and its public pages are not served, until it is reactivated. Nothing is deleted. */
+        post: operations["post_api_platform_account_suspend"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/accounts/{id}/reactivate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post_api_platform_account_reactivate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/accounts/{id}/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The owner and the assistants. ?q= searches name and email. Clients are the consultant's, not listed here. */
+        get: operations["get_api_platform_account_users"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/accounts/{id}/users/{userId}/resend-invitation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post_api_platform_account_user_resend"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/accounts/{id}/users/{userId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Disables an assistant. The owner is not disabled: suspend the consultant instead. */
+        delete: operations["delete_api_platform_account_user_disable"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/accounts/{id}/users/{userId}/enable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** The super admin may enable an assistant beyond the consultant's limit: the limit binds the consultant. */
+        post: operations["post_api_platform_account_user_enable"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/admins": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** ?q= searches name and email. */
+        get: operations["get_api_platform_admin_list"];
+        put?: never;
+        post: operations["post_api_platform_admin_invite"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/admins/{id}/resend-invitation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post_api_platform_admin_resend"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/admins/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Never yourself: the platform always keeps the person doing this. */
+        delete: operations["delete_api_platform_admin_disable"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/admins/{id}/enable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post_api_platform_admin_enable"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_api_platform_dashboard"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/emails": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** ?q= searches recipient, subject and consultant; ?status= "sent" or "failed"; ?account= a consultant's id. */
+        get: operations["get_api_platform_email_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/emails/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sent at once, not queued: the super admin waits to see whether the mail server takes it (502 email_failed). */
+        post: operations["post_api_platform_email_test"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/platform/impersonatable-users": {
         parameters: {
             query?: never;
@@ -145,6 +396,40 @@ export interface paths {
             cookie?: never;
         };
         get: operations["get_api_platform_impersonatable_users"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_api_platform_settings_show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** A field left out is left as it is; the change is logged (Historial). */
+        patch: operations["patch_api_platform_settings_update"];
+        trace?: never;
+    };
+    "/api/platform/settings/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Newest first; ?q= searches who changed it and the settings' names. */
+        get: operations["get_api_platform_settings_history"];
         put?: never;
         post?: never;
         delete?: never;
@@ -203,6 +488,8 @@ export interface components {
             currency: string;
             locale: string;
             timezone: string;
+            /** the features that are on: the UI hides the menus of the others */
+            features: string[];
         };
         ImpersonatorOutput: {
             id: string;
@@ -225,6 +512,87 @@ export interface components {
             /** "light", "dark" or "system" (follow the device). */
             uiTheme: string;
         };
+        AccountOwnerOutput: {
+            id: string;
+            fullName: string;
+            email: string;
+            /** "active" (has a password), "invited" or "none". */
+            loginStatus: string;
+            /** ISO 8601; null until they first sign in. */
+            lastSignInAt?: string | null;
+        };
+        AccountSummaryOutput: {
+            id: string;
+            name: string;
+            slug: string;
+            active: boolean;
+            /** ISO 8601. */
+            createdAt: string;
+            /** null only for an account created before owners were invited with it. */
+            owner?: components["schemas"]["AccountOwnerOutput"] | null;
+            assistants: number;
+            clients: number;
+        };
+        AccountDetailOutput: {
+            id: string;
+            name: string;
+            slug: string;
+            country: string;
+            currency: string;
+            locale: string;
+            timezone: string;
+            active: boolean;
+            /** ISO 8601. */
+            createdAt: string;
+            maxPublishedPages: number;
+            maxAssistants: number;
+            storageMb: number;
+            maxFileMb: number;
+            /** the features that are on: "booking", "payments", "portal", "flows" */
+            features: string[];
+            owner?: components["schemas"]["AccountOwnerOutput"] | null;
+            assistants: number;
+            clients: number;
+        };
+        SuperAdminOutput: {
+            id: string;
+            email: string;
+            fullName: string;
+            active: boolean;
+            /** "active", "invited" or "none". */
+            loginStatus: string;
+            /** ISO 8601; null until they first sign in. */
+            lastSignInAt?: string | null;
+            /** The super admin reading the list: they cannot disable themselves. */
+            you: boolean;
+        };
+        PlatformDashboardOutput: {
+            activeAccounts: number;
+            suspendedAccounts: number;
+            /** Attempts to send an email that failed in the last 7 days. */
+            failedEmailsLast7Days: number;
+            /** Queue messages that failed every retry and wait in the "failed" queue. */
+            failedJobs: number;
+        };
+        AccountRefOutput: {
+            id: string;
+            name: string;
+        };
+        OutgoingEmailOutput: {
+            id: string;
+            /** What it is: "invitation", "test", … */
+            kind: string;
+            recipient: string;
+            subject: string;
+            /** "sent" or "failed". */
+            status: string;
+            /** Why it failed, as the mail server said it; null when sent. */
+            error?: string | null;
+            /** ISO 8601. */
+            sentAt: string;
+            /** The consultant it was sent for; null for the platform's own emails. */
+            account?: components["schemas"]["AccountRefOutput"] | null;
+        };
         ImpersonatableAccountOutput: {
             id: string;
             name: string;
@@ -236,6 +604,47 @@ export interface components {
             /** "owner" or "assistant". */
             role: string;
             account: components["schemas"]["ImpersonatableAccountOutput"];
+        };
+        PlatformSettingsOutput: {
+            platformName: string;
+            supportEmail: string;
+            senderName: string;
+            /** PageTemplate values a new page may use */
+            enabledTemplates: string[];
+            /** hours before a session, largest first */
+            reminderHours: number[];
+            minNoticeHours: number;
+            bookingWindowDays: number;
+            clientCancelHours: number;
+            sessionBufferMinutes: number;
+            defaultMaxPublishedPages: number;
+            defaultMaxAssistants: number;
+            defaultStorageMb: number;
+            defaultMaxFileMb: number;
+            /** AccountFeature values */
+            defaultFeatures: string[];
+            termsText: string;
+            defaultPrivacyText: string;
+            reservedSlugs: string[];
+            /** ISO 8601; null until a super admin first saves them. */
+            updatedAt?: string | null;
+        };
+        PersonOutput: {
+            id: string;
+            fullName: string;
+            email: string;
+        };
+        SettingChangeOutput: {
+            field: string;
+            from: string;
+            to: string;
+        };
+        SettingsChangeOutput: {
+            id: string;
+            /** ISO 8601. */
+            changedAt: string;
+            changedBy: components["schemas"]["PersonOutput"];
+            changes: components["schemas"]["SettingChangeOutput"][];
         };
         TokenOutput: {
             token: string;
@@ -437,6 +846,408 @@ export interface operations {
             };
         };
     };
+    get_api_platform_account_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["AccountSummaryOutput"][];
+                        total: number;
+                        page: number;
+                        perPage: number;
+                    };
+                };
+            };
+        };
+    };
+    post_api_platform_account_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Created. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountDetailOutput"];
+                };
+            };
+        };
+    };
+    get_api_platform_account_show: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountDetailOutput"];
+                };
+            };
+        };
+    };
+    patch_api_platform_account_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountDetailOutput"];
+                };
+            };
+        };
+    };
+    post_api_platform_account_suspend: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountDetailOutput"];
+                };
+            };
+        };
+    };
+    post_api_platform_account_reactivate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountDetailOutput"];
+                };
+            };
+        };
+    };
+    get_api_platform_account_users: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["TeamMemberOutput"][];
+                        total: number;
+                        page: number;
+                        perPage: number;
+                    };
+                };
+            };
+        };
+    };
+    post_api_platform_account_user_resend: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamMemberOutput"];
+                };
+            };
+        };
+    };
+    delete_api_platform_account_user_disable: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamMemberOutput"];
+                };
+            };
+        };
+    };
+    post_api_platform_account_user_enable: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamMemberOutput"];
+                };
+            };
+        };
+    };
+    get_api_platform_admin_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["SuperAdminOutput"][];
+                        total: number;
+                        page: number;
+                        perPage: number;
+                    };
+                };
+            };
+        };
+    };
+    post_api_platform_admin_invite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Created. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuperAdminOutput"];
+                };
+            };
+        };
+    };
+    post_api_platform_admin_resend: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuperAdminOutput"];
+                };
+            };
+        };
+    };
+    delete_api_platform_admin_disable: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuperAdminOutput"];
+                };
+            };
+        };
+    };
+    post_api_platform_admin_enable: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuperAdminOutput"];
+                };
+            };
+        };
+    };
+    get_api_platform_dashboard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformDashboardOutput"];
+                };
+            };
+        };
+    };
+    get_api_platform_email_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["OutgoingEmailOutput"][];
+                        total: number;
+                        page: number;
+                        perPage: number;
+                    };
+                };
+            };
+        };
+    };
+    post_api_platform_email_test: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     get_api_platform_impersonatable_users: {
         parameters: {
             query?: never;
@@ -454,6 +1265,71 @@ export interface operations {
                 content: {
                     "application/json": {
                         items: components["schemas"]["ImpersonatableUserOutput"][];
+                    };
+                };
+            };
+        };
+    };
+    get_api_platform_settings_show: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformSettingsOutput"];
+                };
+            };
+        };
+    };
+    patch_api_platform_settings_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformSettingsOutput"];
+                };
+            };
+        };
+    };
+    get_api_platform_settings_history: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["SettingsChangeOutput"][];
+                        total: number;
+                        page: number;
+                        perPage: number;
                     };
                 };
             };

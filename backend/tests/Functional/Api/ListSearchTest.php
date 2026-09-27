@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Api;
 
+use App\Entity\Account;
 use App\Entity\User;
 use PHPUnit\Framework\Attributes\DataProvider;
 
@@ -16,29 +17,52 @@ use PHPUnit\Framework\Attributes\DataProvider;
 final class ListSearchTest extends ApiTestCase
 {
     private User $owner;
+    private User $superAdmin;
+    private Account $account;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $account = $this->createAccount();
-        $this->owner = $this->createOwner($account, 'andres@demo.test', 'Andrés Asesor');
-        $this->createAssistant($account, 'sofia@asistentes.test', 'Sofía Ruiz');
+        $this->account = $this->createAccount('Finanzas Claras');
+        $this->owner = $this->createOwner($this->account, 'andres@demo.test', 'Andrés Asesor');
+        $this->createAssistant($this->account, 'sofia@asistentes.test', 'Sofía Ruiz');
+        $this->createOwner($this->createAccount('Plata Sana'), 'paola@plata.test', 'Paola Pérez');
+        $this->superAdmin = $this->createSuperAdmin();
+        $this->withPassword(User::createSuperAdmin('olga@operaciones.test', 'Olga Operaciones'));
+
+        // Two settings changes by two people, and two emails for two consultants.
+        $this->actAs($this->superAdmin);
+        $this->api('PATCH', '/api/platform/settings', ['senderName' => 'Equipo']);
+        $this->api('PATCH', '/api/platform/settings', ['minNoticeHours' => 3]);
+        $this->actAs($this->owner);
+        $this->api('POST', '/api/admin/team', ['fullName' => 'Nueva', 'email' => 'nueva@demo.test']);
+        $this->actAs($this->superAdmin);
+        $this->api('POST', '/api/platform/emails/test', ['to' => 'prueba@operaciones.test']);
     }
 
     /**
-     * @return iterable<string, array{string, string, string}> [path, a term matching one row, a term matching another]
+     * @return iterable<string, array{string, string, string, string}> [who, path, a term matching one row, a term matching another]
      */
     public static function lists(): iterable
     {
-        yield 'team by name' => ['/api/admin/team', 'Andrés', 'Ruiz'];
-        yield 'team by email' => ['/api/admin/team', 'andres@', 'asistentes.test'];
+        yield 'team by name' => ['owner', '/api/admin/team', 'Andrés', 'Ruiz'];
+        yield 'team by email' => ['owner', '/api/admin/team', 'andres@', 'asistentes.test'];
+        yield 'consultants by name' => ['superAdmin', '/api/platform/accounts', 'Claras', 'Plata'];
+        yield 'consultants by address' => ['superAdmin', '/api/platform/accounts', 'finanzas-', 'plata-sana'];
+        yield 'consultants by owner email' => ['superAdmin', '/api/platform/accounts', 'andres@', 'plata.test'];
+        yield 'a consultant\'s team' => ['superAdmin', '/api/platform/accounts/{account}/users', 'Andrés', 'Ruiz'];
+        yield 'administrators' => ['superAdmin', '/api/platform/admins', 'Paula', 'operaciones.test'];
+        yield 'settings history by field' => ['superAdmin', '/api/platform/settings/history', 'senderName', 'minNotice'];
+        yield 'emails by recipient' => ['superAdmin', '/api/platform/emails', 'nueva@', 'prueba@'];
+        yield 'emails by consultant' => ['superAdmin', '/api/platform/emails', 'Finanzas', 'correo de prueba'];
     }
 
     #[DataProvider('lists')]
-    public function testEveryListNarrowsToTheSearchTerm(string $path, string $matching, string $other): void
+    public function testEveryListNarrowsToTheSearchTerm(string $who, string $path, string $matching, string $other): void
     {
-        $this->actAs($this->owner);
+        $this->actAs($this->{$who});
+        $path = str_replace('{account}', (string) $this->account->getId(), $path);
 
         $all = $this->api('GET', $path)['total'];
         self::assertGreaterThan(1, $all, 'the fixture needs more than one row for the filter to prove anything');

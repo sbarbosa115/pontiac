@@ -56,6 +56,11 @@ The plumbing lives in `backend/src/Api` (namespace `App\Api`); Input DTOs in `Ap
 
 ## Background work, email, files
 
+- Every email is tagged with `EmailTag::apply($email, $kind, $account)`; `App\Mail\EmailLog` records each attempt
+  (Plataforma › Correos) and strips the tags before the email leaves.
+- Features (`AccountFeature`, on `Account`) gate controllers with `#[RequiresFeature]` (403 `feature_disabled`) and menu
+  items with `feature`; limits are `Account::getMax…()` checked at creation (409 `…_limit_reached`).
+
 - Messenger `async` on the Doctrine transport (a table), retries 3× (1 min, ×5), a `failed` transport;
   `in-memory://` in tests. Messages carry ids, never entities.
 - Rate limiters live in their own config file with generous `when@test` values.

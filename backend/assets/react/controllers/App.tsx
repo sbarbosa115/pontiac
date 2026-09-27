@@ -15,6 +15,10 @@ import { FullPageLoading } from '../components/ui';
 const AdminHomePage = lazy(() => import('../pages/admin/HomePage'));
 const AdminSettingsPage = lazy(() => import('../pages/admin/SettingsPage'));
 const PlatformHomePage = lazy(() => import('../pages/platform/HomePage'));
+const PlatformAccountsPage = lazy(() => import('../pages/platform/AccountsPage'));
+const PlatformAccountPage = lazy(() => import('../pages/platform/AccountPage'));
+const PlatformSettingsPage = lazy(() => import('../pages/platform/SettingsPage'));
+const PlatformEmailsPage = lazy(() => import('../pages/platform/EmailsPage'));
 const PortalHomePage = lazy(() => import('../pages/portal/HomePage'));
 
 /** The page Symfony serves at "/" is public (PublicController); inside the app, "/" means "my home". */
@@ -77,6 +81,10 @@ export default function App() {
                                 }
                             >
                                 <Route index element={<PlatformHomePage />} />
+                                <Route path="asesores" element={<PlatformAccountsPage />} />
+                                <Route path="asesores/:id" element={<PlatformAccountPage />} />
+                                <Route path="configuracion" element={<PlatformSettingsPage />} />
+                                <Route path="correos" element={<PlatformEmailsPage />} />
                             </Route>
 
                             <Route path="/:slug/portal/ingresar" element={<PortalLoginPage />} />

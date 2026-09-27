@@ -1601,3 +1601,22 @@ select.filter-select {
     margin: 4px 0 0;
 }
 
+
+/* A feature's checkbox and the line under it saying what it turns on (Asesores › Límites y funciones). */
+.feature-hint {
+    margin: 2px 0 0 26px;
+}
+
+/* A settings change in Configuración › Historial: one line per setting, "before → after". */
+.change-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.change-value {
+    overflow-wrap: anywhere;
+}
