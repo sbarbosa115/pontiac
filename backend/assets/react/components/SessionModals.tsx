@@ -6,8 +6,8 @@ import { formatDateTime } from '../lib/format';
 import { useApi, useSubmit } from '../lib/hooks';
 import { rowErrorMessage, t } from '../lib/i18n';
 import type { Get, Schema } from '../lib/types';
-import Icon from './Icon';
-import { Alert, Field, FormModal, IconButton, Loading } from './ui';
+import { useNavigate } from 'react-router-dom';
+import { ActionButton, actionClass, Alert, Field, FormModal, IconButton, Loading } from './ui';
 
 type SlotDay = Schema<'SlotDayOutput'>;
 type Contact = Schema<'ContactSummaryOutput'>;
@@ -189,6 +189,7 @@ export function useSessionActions(onChanged: (session: Session) => void) {
     const [cancelling, setCancelling] = useState<Session | null>(null);
     const [busy, setBusy] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const navigate = useNavigate();
 
     const post = async (session: Session, action: 'done' | 'no-show' | 'reopen') => {
         setBusy(`${session.id}:${action}`);
@@ -202,19 +203,43 @@ export function useSessionActions(onChanged: (session: Session) => void) {
         }
     };
 
-    const buttons = (session: Session): ReactNode => {
+    /**
+     * Worded actions first, then "Ver" (the person, unless we are on their page), cancelling last (CLAUDE.md, "Tables").
+     */
+    const buttons = (session: Session, { withContact = true } = {}): ReactNode => {
         const can = sessionActions(session);
         return (
             <>
-                {can.close && <IconButton icon="check" label={t('agenda.markDone')} busy={busy === `${session.id}:done`} onClick={() => post(session, 'done')} />}
-                {can.close && <IconButton icon="ban" action="revert" label={t('agenda.markNoShow')} busy={busy === `${session.id}:no-show`} onClick={() => post(session, 'no-show')} />}
-                {can.reschedule && <IconButton icon="clock" action="edit" label={t('agenda.reschedule')} onClick={() => setMoving(session)} />}
-                {can.cancel && <IconButton icon="close" label={t('agenda.cancel')} onClick={() => setCancelling(session)} />}
-                {can.reopen && <IconButton icon="undo" label={t('agenda.reopen')} busy={busy === `${session.id}:reopen`} onClick={() => post(session, 'reopen')} />}
+                {can.close && (
+                    <ActionButton action="confirm" busy={busy === `${session.id}:done`} onClick={() => post(session, 'done')}>
+                        {t('agenda.markDone')}
+                    </ActionButton>
+                )}
+                {can.close && (
+                    <ActionButton action="revert" busy={busy === `${session.id}:no-show`} onClick={() => post(session, 'no-show')}>
+                        {t('agenda.markNoShow')}
+                    </ActionButton>
+                )}
+                {can.reopen && (
+                    <ActionButton action="revert" busy={busy === `${session.id}:reopen`} onClick={() => post(session, 'reopen')}>
+                        {t('agenda.reopen')}
+                    </ActionButton>
+                )}
+                {can.reschedule && (
+                    <ActionButton action="edit" onClick={() => setMoving(session)}>
+                        {t('agenda.reschedule')}
+                    </ActionButton>
+                )}
                 {session.meetingLink && session.status === 'scheduled' && (
-                    <a className="btn btn-action btn-action-open btn-icon" href={session.meetingLink} target="_blank" rel="noopener noreferrer" aria-label={t('agenda.openMeeting')} data-tooltip={t('agenda.openMeeting')}>
-                        <Icon name="globe" size={16} />
+                    <a className={actionClass('open')} href={session.meetingLink} target="_blank" rel="noopener noreferrer">
+                        {t('agenda.openMeeting')}
                     </a>
+                )}
+                {withContact && <IconButton icon="eye" label={t('agenda.viewContact')} onClick={() => navigate(`/admin/prospectos/${session.contact.id}`)} />}
+                {can.cancel && (
+                    <ActionButton action="danger" onClick={() => setCancelling(session)}>
+                        {t('agenda.cancelShort')}
+                    </ActionButton>
                 )}
             </>
         );

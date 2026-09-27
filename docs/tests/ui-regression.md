@@ -53,11 +53,11 @@ The manual browser pass, one case per use case. Run it on a fresh stack with the
 | BOOK-03 | visitor | The manage link, a session more than 24 h ahead: pick another time, "Cambiar a esta hora" | "Listo: tu sesión quedó en la nueva hora"; the old link answers 404; both get "cambió de hora" |
 | BOOK-04 | visitor | The manage link: cancel with a reason | "Tu sesión quedó cancelada"; no forms left; the owner gets "Sesión cancelada por el cliente" |
 | BOOK-05 | visitor | The manage link of a session less than 24 h ahead | Its summary and "Ya no es posible cambiarla o cancelarla en línea…", no forms |
-| BOOK-06 | consultant | Agenda › Semana, Siguiente | Next week's sessions by day in Bogotá time; today's column outlined; "Esta semana" comes back |
+| BOOK-06 | consultant | Agenda › Semana, Siguiente | Worded actions (Reprogramar, Reunión, Cancelar) on each session; next week's sessions by day in Bogotá time; today's column outlined; "Esta semana" comes back |
 | BOOK-07 | consultant | Agenda › Sesiones: "Pasadas" with none; "Ver todos" | Empty state with "Ver todos"; then every session, rows tinted by status as the legend says |
 | BOOK-08 | consultant | Reprogramar with no time, then with one | "Elige un día y una hora." under Hora; then the row shows the new time and the person gets an email |
-| BOOK-09 | consultant | Cancelar sesión with a reason | Row greys with the reason; no actions left |
-| BOOK-10 | consultant | A past scheduled session: Marcar como realizada, then Volver a agendada | Row turns green, then blue again |
+| BOOK-09 | consultant | Cancelar, with a reason | Row greys with the reason; only "Ver persona" is left |
+| BOOK-10 | consultant | A past scheduled session: Realizada, then Volver a agendada | Row turns green, then blue again |
 | BOOK-11 | consultant | Agendar sesión with nothing chosen; then a contact, a day and a time | Errors under Persona and Hora; then "Tu equipo" in the list |
 | BOOK-12 | consultant | Agenda › Disponibilidad: a range ending before it starts, save; fix it and add a meeting link | "El final debe ser después del inicio." under it; then "Disponibilidad guardada."; new bookings show the meeting icon |
 | BOOK-13 | owner | Planes › Nuevo plan empty; then 0 as price | Errors under Nombre and Precio; a price of 0 shows "Gratuito" |

@@ -3,7 +3,7 @@ import { useTabParam } from '../../lib/hooks';
 import { t } from '../../lib/i18n';
 import type { IconName } from '../../components/Icon';
 import { BookSessionModal } from '../../components/SessionModals';
-import { Button, PageHeader, TabPanel, Tabs } from '../../components/ui';
+import { PageHeader, TabPanel, Tabs } from '../../components/ui';
 import AvailabilityForm from './agenda/AvailabilityForm';
 import SessionsList from './agenda/SessionsList';
 import WeekView from './agenda/WeekView';
@@ -23,7 +23,7 @@ export default function AgendaPage() {
 
     return (
         <>
-            <PageHeader title={t('nav.agenda')} subtitle={t('agenda.subtitle')} actions={<Button onClick={() => setBooking(true)}>{t('agenda.book')}</Button>} />
+            <PageHeader title={t('nav.agenda')} subtitle={t('agenda.subtitle')} />
             <Tabs
                 id="agenda"
                 variant="page"
@@ -33,7 +33,7 @@ export default function AgendaPage() {
                 options={TABS.map(({ value, icon }) => ({ value, icon, label: t(`agenda.tab.${value}`) }))}
             />
             <TabPanel id="agenda" value={tab}>
-                {tab === 'semana' && <WeekView key={version} />}
+                {tab === 'semana' && <WeekView key={version} onBook={() => setBooking(true)} />}
                 {tab === 'sesiones' && <SessionsList key={version} onBook={() => setBooking(true)} />}
                 {tab === 'disponibilidad' && <AvailabilityForm />}
             </TabPanel>

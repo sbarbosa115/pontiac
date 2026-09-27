@@ -121,7 +121,7 @@ export default function ContactPage() {
                                         {session.cancelReason && <div className="small muted">{session.cancelReason}</div>}
                                     </td>
                                     <td>{t(`agenda.bookedByName.${session.bookedBy}`)}</td>
-                                    <Actions>{sessionActions.buttons(session)}</Actions>
+                                    <Actions>{sessionActions.buttons(session, { withContact: false })}</Actions>
                                 </Row>
                             )}
                         />

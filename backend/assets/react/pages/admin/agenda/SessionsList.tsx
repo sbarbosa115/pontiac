@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { addDays, SESSION_STATUSES, type Session } from '../../../lib/agenda';
 import { useLocaleSettings } from '../../../lib/auth';
 import { formatDateTime, todayIn } from '../../../lib/format';
@@ -44,7 +43,9 @@ export default function SessionsList({ onBook }: { onBook: () => void }) {
                         options: [{ value: '', label: t('agenda.allStatuses') }, ...SESSION_STATUSES.map((status) => ({ value: status, label: t(`agenda.statusName.${status}`) }))],
                     },
                 ]}
-            />
+            >
+                {bookButton}
+            </FilterBar>
             <Alert kind="error" onDismiss={actions.clearError}>
                 {actions.error}
             </Alert>
@@ -60,7 +61,7 @@ export default function SessionsList({ onBook }: { onBook: () => void }) {
                     <Row key={session.id} status={session.status} label={t(`agenda.statusName.${session.status}`)}>
                         <td className="strong">{formatDateTime(session.startsAt, locale, timezone)}</td>
                         <td>
-                            <Link to={`/admin/prospectos/${session.contact.id}`}>{session.contact.fullName}</Link>
+                            {session.contact.fullName}
                             <div className="small muted">{session.contact.email}</div>
                         </td>
                         <td>

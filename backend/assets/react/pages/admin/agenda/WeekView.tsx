@@ -11,7 +11,7 @@ import { useSessionActions } from '../../../components/SessionModals';
 import { Alert, Button, ErrorState, Loading, TabIntro } from '../../../components/ui';
 
 /** Agenda › Semana: the scheduled sessions of one week, a column per day, in the consultant's timezone. */
-export default function WeekView() {
+export default function WeekView({ onBook }: { onBook: () => void }) {
     const { locale, timezone } = useLocaleSettings();
     const today = todayIn(timezone);
     const [monday, setMonday] = useState(() => mondayOf(today));
@@ -38,6 +38,7 @@ export default function WeekView() {
                         <Button variant="ghost" size="sm" onClick={() => setMonday(addDays(monday, 7))}>
                             {t('agenda.nextWeek')} →
                         </Button>
+                        <Button onClick={onBook}>{t('agenda.book')}</Button>
                     </div>
                 }
             >
