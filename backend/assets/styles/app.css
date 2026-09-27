@@ -1999,7 +1999,12 @@ select.filter-select {
 .week-day-title {
     margin: 0 0 8px;
     font-size: 0.85rem;
-    text-transform: capitalize;
+}
+
+/* "lunes, 5 de oct." → "Lunes, 5 de oct.": only the first letter (capitalize would give "De"). */
+.week-day-title::first-letter,
+.weekly-day-name::first-letter {
+    text-transform: uppercase;
 }
 
 .week-session {
@@ -2040,7 +2045,6 @@ select.filter-select {
 
 .weekly-day-name {
     padding-top: 8px;
-    text-transform: capitalize;
 }
 
 .weekly-day-ranges {

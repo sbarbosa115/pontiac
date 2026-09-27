@@ -66,6 +66,9 @@ The plumbing lives in `backend/src/Api` (namespace `App\Api`); Input DTOs in `Ap
 - Rate limiters live in their own config file with generous `when@test` values.
 - One notification mailer and template; mail is rendered in the request and queued, sent after the flush.
 - Files are stored by key under the account, type detected from content, served only through the API.
+- Scheduled work is a console command with a lock, run every minute (a `scheduler` compose service; a cron line in
+  production). It enters each account in turn and claims each piece of work with an insert the database refuses
+  twice (unique key), so overlapping or repeated runs do nothing twice.
 
 ## Frontend
 
@@ -101,6 +104,11 @@ group thousands.
   `imageFile`. `actAs()` clears the entity manager: create fixtures before it, or re-fetch them. A request leaves its
   account entered; `asPlatform()` (called by `save()`) lets the test read and write every account's data.
 - `assets/react/lib/i18n.test.ts` fails on a `t('key')` whose key is missing.
+- Validation messages follow the request's `Accept-Language` (the UI sends `es`): a test asserting a Spanish message
+  sets `$this->client->setServerParameter('HTTP_ACCEPT_LANGUAGE', 'es')`. `ValidatorsTranslationTest` fails on a
+  message without its Spanish line.
+- Booking helpers: `createPlan`, `createContact`, `bookSession` (optionally "booked at" a past time), `freeSlots`.
+  Services that depend on the clock take `$now`; test them with a fixed one.
 - Shared tests every list joins: **search** (`?q=` filters) and **query count** (one row vs five must not change it).
 - PHPStan level 6 with an empty baseline.
 - `phpunit.dist.xml` pins `APP_URL` so tests pass on any port.

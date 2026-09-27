@@ -9,15 +9,15 @@ use Symfony\Component\Validator\Constraints as Assert;
 /** POST /api/admin/sessions: the consultant books a session for a contact. */
 final class SessionCreateInput
 {
-    #[Assert\NotBlank]
+    #[Assert\NotBlank(message: 'Choose the person.')]
     public ?string $contactId = null;
 
     /** An active free plan (a paid one is booked after its payment). */
-    #[Assert\NotBlank]
+    #[Assert\NotBlank(message: 'Choose a plan.')]
     public ?string $planId = null;
 
     /** ISO 8601 with its offset, e.g. "2026-10-06T15:00:00+00:00". */
-    #[Assert\NotBlank]
+    #[Assert\NotBlank(message: 'Choose a day and a time.')]
     #[Assert\DateTime(format: \DATE_ATOM, message: 'Choose a day and a time.')]
     public ?string $startsAt = null;
 }

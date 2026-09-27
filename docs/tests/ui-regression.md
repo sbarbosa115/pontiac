@@ -48,4 +48,20 @@ The manual browser pass, one case per use case. Run it on a fresh stack with the
 | PAGE-12 | owner | Páginas › Retirar | Visitors get "Esta página ya no está disponible" (410); "Volver a publicar" brings it back |
 | PAGE-13 | owner | A contact › Eliminar sus datos | Name, email, phone and answers erased; assistants do not see the button |
 | PAGE-14 | consultant | Ajustes › Categorías, Medios, Privacidad | Each lists and edits; privacy says when the default text is used |
-
+| BOOK-01 | visitor | `/finanzas-claras`, Reserva: pick a day and time, name, email, consent, "Reservar mi diagnóstico" | "¡Listo! Tu sesión quedó reservada."; Mailpit: the confirmation with `sesion.ics` and a manage link, and "Nueva sesión agendada" to the owner |
+| BOOK-02 | visitor | The same slot again from another browser | "Esa hora ya no está disponible. Elige otra." and what was typed stays |
+| BOOK-03 | visitor | The manage link, a session more than 24 h ahead: pick another time, "Cambiar a esta hora" | "Listo: tu sesión quedó en la nueva hora"; the old link answers 404; both get "cambió de hora" |
+| BOOK-04 | visitor | The manage link: cancel with a reason | "Tu sesión quedó cancelada"; no forms left; the owner gets "Sesión cancelada por el cliente" |
+| BOOK-05 | visitor | The manage link of a session less than 24 h ahead | Its summary and "Ya no es posible cambiarla o cancelarla en línea…", no forms |
+| BOOK-06 | consultant | Agenda › Semana, Siguiente | Next week's sessions by day in Bogotá time; today's column outlined; "Esta semana" comes back |
+| BOOK-07 | consultant | Agenda › Sesiones: "Pasadas" with none; "Ver todos" | Empty state with "Ver todos"; then every session, rows tinted by status as the legend says |
+| BOOK-08 | consultant | Reprogramar with no time, then with one | "Elige un día y una hora." under Hora; then the row shows the new time and the person gets an email |
+| BOOK-09 | consultant | Cancelar sesión with a reason | Row greys with the reason; no actions left |
+| BOOK-10 | consultant | A past scheduled session: Marcar como realizada, then Volver a agendada | Row turns green, then blue again |
+| BOOK-11 | consultant | Agendar sesión with nothing chosen; then a contact, a day and a time | Errors under Persona and Hora; then "Tu equipo" in the list |
+| BOOK-12 | consultant | Agenda › Disponibilidad: a range ending before it starts, save; fix it and add a meeting link | "El final debe ser después del inicio." under it; then "Disponibilidad guardada."; new bookings show the meeting icon |
+| BOOK-13 | owner | Planes › Nuevo plan empty; then 0 as price | Errors under Nombre and Precio; a price of 0 shows "Gratuito" |
+| BOOK-14 | assistant | Planes | The list without Acciones or "Nuevo plan"; Agenda works as for the owner |
+| BOOK-15 | consultant | A contact's page | Their sessions with actions and "Agendar sesión"; the form history shows "Sesión reservada" |
+| BOOK-16 | consultant | Páginas › the home page › Reserva | "Plan que se reserva" offers free plans only |
+| BOOK-17 | super admin | Turn off a consultant's booking | Their Agenda leaves the menu; their pages hide the Reserva section |

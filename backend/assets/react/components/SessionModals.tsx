@@ -24,7 +24,12 @@ function SlotPicker({ query, value, onChange, error }: { query: { planId: string
     const day = days[dayIndex];
 
     if (slots.loading && !slots.data) return <Loading />;
-    if (key && days.length === 0) return <Alert kind="warning">{t('agenda.noSlots')}</Alert>;
+    if (key && days.length === 0)
+        return (
+            <div className="span-2">
+                <Alert kind="warning">{t('agenda.noSlots')}</Alert>
+            </div>
+        );
 
     return (
         <>
@@ -76,17 +81,19 @@ export function BookSessionModal({ contact, onClose, onBooked }: { contact?: { i
     return (
         <FormModal title={t('agenda.book')} onClose={onClose} onSubmit={save} submit={submit} submitLabel={t('agenda.bookSubmit')}>
             {contact ? (
-                <Field label={t('agenda.contact')}>
+                <Field className="span-2" label={t('agenda.contact')}>
                     <input value={contact.fullName} readOnly />
                 </Field>
             ) : (
                 <ContactSearch value={contactId} onChange={setContactId} error={submit.errors.contactId} />
             )}
             {plans.data && bookable.length === 0 ? (
-                <Alert kind="warning">{t('agenda.noFreePlans')}</Alert>
+                <div className="span-2">
+                    <Alert kind="warning">{t('agenda.noFreePlans')}</Alert>
+                </div>
             ) : (
                 <>
-                    <Field label={t('agenda.plan')} error={submit.errors.planId} hint={t('agenda.planHint')}>
+                    <Field className="span-2" label={t('agenda.plan')} error={submit.errors.planId} hint={t('agenda.planHint')}>
                         <select
                             value={chosenPlan}
                             onChange={(event) => {
@@ -146,7 +153,7 @@ export function RescheduleModal({ session, onClose, onDone }: { session: Session
 
     return (
         <FormModal title={t('agenda.reschedule')} onClose={onClose} onSubmit={save} submit={submit} submitLabel={t('agenda.rescheduleSubmit')}>
-            <p className="small muted">{t('agenda.rescheduleIntro', { name: session.contact.fullName, when: formatDateTime(session.startsAt, locale, timezone) })}</p>
+            <p className="small muted span-2">{t('agenda.rescheduleIntro', { name: session.contact.fullName, when: formatDateTime(session.startsAt, locale, timezone) })}</p>
             <SlotPicker query={{ sessionId: session.id }} value={startsAt} onChange={setStartsAt} error={submit.errors.startsAt} />
         </FormModal>
     );
@@ -165,8 +172,8 @@ export function CancelSessionModal({ session, onClose, onDone }: { session: Sess
 
     return (
         <FormModal title={t('agenda.cancel')} onClose={onClose} onSubmit={save} submit={submit} submitLabel={t('agenda.cancelSubmit')}>
-            <p className="small muted">{t('agenda.cancelIntro', { name: session.contact.fullName, when: formatDateTime(session.startsAt, locale, timezone) })}</p>
-            <Field label={t('agenda.cancelReason')} error={submit.errors.reason} optional hint={t('agenda.cancelReasonHint')}>
+            <p className="small muted span-2">{t('agenda.cancelIntro', { name: session.contact.fullName, when: formatDateTime(session.startsAt, locale, timezone) })}</p>
+            <Field className="span-2" label={t('agenda.cancelReason')} error={submit.errors.reason} optional hint={t('agenda.cancelReasonHint')}>
                 <textarea value={reason} maxLength={500} rows={3} onChange={(event) => setReason(event.target.value)} />
             </Field>
         </FormModal>

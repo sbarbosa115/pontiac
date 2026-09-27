@@ -35,6 +35,9 @@ the password `demo-password-123`:
 | Assistant | `/login` | asistente@pontiac.test |
 | Client | `/finanzas-claras/portal` | cliente@pontiac.test |
 
+The consultant has two plans (a free *Diagnóstico gratuito* and *Plan A*, 250.000 × 2 sessions) and its home page
+books the free one in its *Reserva* section, Monday to Friday 9–12 and 14–18 (Bogotá).
+
 A real super admin: `SUPER_ADMIN_PASSWORD=… php bin/console app:create-super-admin you@example.com -n`.
 
 ## Architecture
@@ -80,6 +83,10 @@ The Messenger queue is a table (`messenger_messages`). Locally the `worker` serv
 every minute runs `php bin/console messenger:consume async --time-limit=50`. Emails are queued, except those
 someone waits for on screen (invitations), which are sent at once.
 
+Session reminders come from `php bin/console app:send-due-reminders`: locally the `scheduler` service runs it every
+minute; on cPanel it is a second cron line every minute. It sends each due reminder once (a row in
+`session_reminder` claims it), so running it twice, or late, is safe.
+
 ## API reference
 
 Every error is `{"error": "<code>", "message": "…"}`, plus `violations: [{field, message}]` on a 422. Lists answer
@@ -123,13 +130,23 @@ Every error is `{"error": "<code>", "message": "…"}`, plus `violations: [{fiel
 | GET, POST | `/api/admin/categories`, `/all` | owner, assistant | Lead categories (`?q=`); every one for pickers; create |
 | PUT, DELETE | `/api/admin/categories/{id}` | owner, assistant | Rename and recolour; disable (`POST …/enable` to undo) |
 | GET | `/api/admin/contacts` | owner, assistant | Prospectos (`?q=&status=&category=<id or none>&sourcePage=<id>`) |
-| GET, PATCH | `/api/admin/contacts/{id}` | owner, assistant | A contact with every form they sent; `{categoryId}` |
+| GET, PATCH | `/api/admin/contacts/{id}` | owner, assistant | A contact with every form they sent and their sessions; `{categoryId}` |
 | POST | `/api/admin/contacts/{id}/anonymize` | owner | Erase the person's data (Ley 1581) |
 | GET, PUT | `/api/admin/privacy` | owner (PUT), assistant (GET) | The privacy policy the forms link to |
+| GET, POST | `/api/admin/plans`, `/all` | owner (POST), assistant (GET) | Plans (`?q=&includeInactive=1`); every one for pickers; create `{name, description, price, sessions, durationMinutes}` |
+| PUT, DELETE | `/api/admin/plans/{id}` | owner | Change; disable (`POST …/enable` to undo). Enrollments keep what they were sold |
+| GET, PUT | `/api/admin/availability` | owner, assistant (booking) | Weekly hours, exceptions, buffer, notice, window, cancellation limit, reminder hours, meeting link |
+| GET | `/api/admin/availability/slots` | owner, assistant (booking) | Free slots by day, for `?planId=` (to book) or `?sessionId=` (to move it) |
+| GET, POST | `/api/admin/sessions` | owner, assistant (booking) | Sessions (`?q=&status=&from=&to=`, local dates); book one for a contact on a free plan (409 `slot_taken`, 422 `plan_not_bookable`) |
+| GET | `/api/admin/sessions/week` | owner, assistant (booking) | The scheduled sessions of the week starting `?start=` (Y-m-d) |
+| POST | `/api/admin/sessions/{id}/reschedule`, `/cancel` | owner, assistant (booking) | Move `{startsAt}`; cancel `{reason}`; the person is emailed |
+| POST | `/api/admin/sessions/{id}/done`, `/no-show`, `/reopen` | owner, assistant (booking) | Close once it has started (409 `session_not_closable`); undo |
 
 Public (server-rendered): `/<consultant>` (home page), `/<consultant>/<page>`, `POST …/enviar` (the form),
 `/<consultant>/privacidad`, `/<consultant>/media/<id>-<width>.webp`, `/<consultant>/sitemap.xml`, `/sitemap.xml`,
-`/robots.txt`. A former address (a consultant's or a page's) answers 301; a disabled page 410; a draft 404.
+`/robots.txt`, `POST …/reservar` (a page's Reserva section), `/<consultant>/reservar/<token>` with
+`POST …/cambiar` and `…/cancelar` (the person's session, from the emailed link). A former address (a consultant's or
+a page's) answers 301; a disabled page 410; a draft 404.
 
 ## Data model decisions
 
@@ -160,6 +177,16 @@ Public (server-rendered): `/<consultant>` (home page), `/<consultant>/<page>`, `
 - Page images are public by nature: served to anyone at their consultant's address, one-year immutable cache.
   Uploads are checked by content (JPEG, PNG, WebP), resized to WebP 480/960/1600 with GD (never enlarged), and count
   towards the storage limit with their copies.
+- Times are stored in UTC; everything about days (weekly hours, exceptions, the week view, "from/to" filters, email
+  dates) is worked out in the consultant's timezone (`SlotFinder`, `SessionTime`).
+- A booking is an `enrollment` (the contact on a plan, with the plan's name, price, sessions and minutes **copied**,
+  so changing a plan never changes what someone bought) and its `session`s. A page books only an active free plan;
+  paid plans are booked after payment (milestone 3). The staff may book any free time; visitors only the offered
+  slots. Both re-check under a lock per consultant, so two people cannot take the same slot (409 `slot_taken`).
+- A session's manage link is a random token; only its hash is stored, and moving the session issues a new one (the
+  old link stops working). The person can move or cancel it until the consultant's cancellation limit.
+- A reminder is not sent for a time that had already passed when the session was booked (booked 3 hours before, no
+  24-hour reminder). The meeting link is copied into the session when it is booked.
 - Emails keep the server's `MAILER_FROM` address (it must match the SMTP account); the sender name and Reply-To come
   from the platform settings.
 
@@ -169,9 +196,11 @@ Not written yet: it comes with the release milestone (PRD, "Delivery plan").
 
 ## Known gaps
 
-- Page, storage and file-size limits and the booking, payments and flows features are stored but only enforced by
-  the milestones that build what they limit. The booking defaults are copied into a consultant's booking settings by
-  milestone 2.
+- Page, storage and file-size limits and the payments and flows features are stored but only enforced by the
+  milestones that build what they limit.
+- Booking: no calendar sync (Google/Outlook) — each email carries an `.ics` file instead; paid plans cannot be booked
+  until payments (milestone 3); changing the meeting link does not change sessions already booked; the person may
+  move a session into a slot inside the cancellation limit.
 - Template previews in Configuración › Plantillas (the page editor's preview covers the consultant's side).
 - EXIF orientation of uploaded photos is not applied (a phone photo taken sideways stays sideways).
 - The page limit counts published pages; a consultant can keep any number of drafts.

@@ -39,8 +39,17 @@ filtered: every query that lists them names the account itself.
   nothing public is reached any other way. Public pages are Twig, never React.
 - A new section type or field goes in `App\Page\TemplateCatalog::SECTION_TYPES`, its Twig partial in
   `templates/public/page/sections/`, and its labels in `i18n.ts` (`pageEditor.sectionType.*`, `pageEditor.field.*`).
-- After `cache:clear` in dev, restart the worker (`docker compose restart worker`): it keeps the old compiled
-  container and crashes on the first message.
+- After `cache:clear` in dev, restart the worker and the scheduler (`docker compose restart worker scheduler`): they
+  keep the old compiled container and crash; a message the worker was handling stays taken for an hour.
+
+## Booking
+
+- Store times in UTC; work out anything about a day (hours, exceptions, "this week", date filters, email dates) in
+  the account's timezone — `SlotFinder`, `SessionTime`, `lib/agenda.ts` (`localDate`, `mondayOf`).
+- A booking goes through `App\Booking\Booker` (the lock per consultant, the emails); never create a `BookingSession`
+  elsewhere outside tests.
+- A scheduled job is a console command run every minute (the `scheduler` service; a cron line on cPanel): it walks
+  active accounts, enters each, and claims each piece of work with an insert the database refuses twice.
 
 ## Tables
 

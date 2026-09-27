@@ -8,14 +8,16 @@ test('a visitor answers a page and the consultant finds them sorted in Prospecto
 
     await page.goto('/finanzas-claras');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-    await page.getByLabel('Nombre completo').fill('Visita de Prueba');
-    await page.getByLabel('Correo electrónico').fill(email);
-    await page.getByLabel('¿Qué te preocupa más de tus finanzas?').selectOption('Mi pensión');
-    await page.getByLabel(/Autorizo el tratamiento de mis datos/).check();
+    // The page also has a Reserva section with its own name and email fields.
+    const form = page.locator('#formulario');
+    await form.getByLabel('Nombre completo').fill('Visita de Prueba');
+    await form.getByLabel('Correo electrónico').fill(email);
+    await form.getByLabel('¿Qué te preocupa más de tus finanzas?').selectOption('Mi pensión');
+    await form.getByLabel(/Autorizo el tratamiento de mis datos/).check();
     // A form sent back instantly is a script's: a person takes a few seconds.
     await page.waitForTimeout(3500);
-    await page.getByRole('button', { name: 'Quiero mi diagnóstico' }).last().click();
-    await expect(page.getByRole('status')).toContainText('Gracias');
+    await form.getByRole('button', { name: 'Quiero mi diagnóstico' }).click();
+    await expect(form.getByRole('status')).toContainText('Gracias');
 
     await page.goto('/login');
     await page.getByLabel('Correo electrónico').fill('asesor@pontiac.test');
