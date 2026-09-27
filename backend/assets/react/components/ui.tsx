@@ -205,6 +205,15 @@ const TONES: Record<string, string> = {
     lead: 'info',
     client: 'success',
     finished: 'muted',
+    // A plan a person has.
+    pending_payment: 'warning',
+    completed: 'accent',
+    // A payment.
+    pending: 'warning',
+    approved: 'success',
+    declined: 'danger',
+    voided: 'muted',
+    error: 'danger',
     // A session.
     scheduled: 'info',
     done: 'success',

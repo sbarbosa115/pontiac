@@ -20,6 +20,7 @@ const AdminContactsPage = lazy(() => import('../pages/admin/ContactsPage'));
 const AdminContactPage = lazy(() => import('../pages/admin/ContactPage'));
 const AdminAgendaPage = lazy(() => import('../pages/admin/AgendaPage'));
 const AdminPlansPage = lazy(() => import('../pages/admin/PlansPage'));
+const AdminPaymentsPage = lazy(() => import('../pages/admin/PaymentsPage'));
 const PlatformHomePage = lazy(() => import('../pages/platform/HomePage'));
 const PlatformAccountsPage = lazy(() => import('../pages/platform/AccountsPage'));
 const PlatformAccountPage = lazy(() => import('../pages/platform/AccountPage'));
@@ -79,6 +80,7 @@ export default function App() {
                                 <Route path="prospectos" element={<AdminContactsPage />} />
                                 <Route path="prospectos/:id" element={<AdminContactPage />} />
                                 <Route path="planes" element={<AdminPlansPage />} />
+                                <Route path="pagos" element={<AdminPaymentsPage />} />
                                 <Route path="paginas" element={<AdminPagesPage />} />
                                 <Route path="paginas/:id" element={<AdminPageEditorPage />} />
                                 <Route path="ajustes" element={<AdminSettingsPage />} />

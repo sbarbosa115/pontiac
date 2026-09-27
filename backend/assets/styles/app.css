@@ -2075,3 +2075,64 @@ select.filter-select {
         grid-template-columns: 1fr;
     }
 }
+
+/* Session notes and copyable lines */
+.note-list {
+    list-style: none;
+    margin: 12px 0;
+    padding: 0;
+    display: grid;
+    gap: 10px;
+}
+
+.note {
+    padding: 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+}
+
+.note-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.note-meta .btn {
+    margin-left: auto;
+}
+
+.note-body {
+    margin: 8px 0 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.note-form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.note-form-actions .filter-select {
+    margin-right: auto;
+}
+
+.copy-line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.copy-line code {
+    overflow-wrap: anywhere;
+    padding: 6px 8px;
+    border-radius: var(--radius-sm);
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+}

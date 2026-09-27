@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../../lib/api';
-import { useAuth } from '../../lib/auth';
+import { useAuth, useLocaleSettings } from '../../lib/auth';
+import { formatMoney } from '../../lib/format';
 import { useApi } from '../../lib/hooks';
 import { t } from '../../lib/i18n';
 import type { Schema } from '../../lib/types';
@@ -10,6 +11,8 @@ import { PageHeader } from '../../components/ui';
 /** Inicio: where a consultant and their assistants land. Each milestone adds what needs attention today. */
 export default function HomePage() {
     const { me } = useAuth();
+    const { locale } = useLocaleSettings();
+    const features = me?.account?.features ?? [];
     const slug = me?.account?.slug ?? '';
     const dashboard = useApi(() => api.get<Schema<'AdminDashboardOutput'>>('/api/admin/dashboard'), []);
     const data = dashboard.data;
@@ -23,6 +26,18 @@ export default function HomePage() {
                         <span className="stat-value">{data.newLeadsLast7Days}</span>
                         <span className="stat-label">{t('adminHome.newLeads', { count: data.newLeadsLast7Days })}</span>
                     </Link>
+                    {features.includes('booking') && (
+                        <Link className="stat" to="/admin/agenda">
+                            <span className="stat-value">{t('adminHome.sessionsValue', { today: data.sessionsToday, tomorrow: data.sessionsTomorrow })}</span>
+                            <span className="stat-label">{t('adminHome.sessions')}</span>
+                        </Link>
+                    )}
+                    {features.includes('payments') && (
+                        <Link className="stat" to="/admin/pagos">
+                            <span className="stat-value">{formatMoney(data.paidLast7Days, locale)}</span>
+                            <span className="stat-label">{t('adminHome.payments', { count: data.paymentsLast7Days })}</span>
+                        </Link>
+                    )}
                     <Link className="stat" to="/admin/paginas?status=published">
                         <span className="stat-value">{t('adminHome.pagesOf', { used: data.publishedPages, max: data.maxPublishedPages })}</span>
                         <span className="stat-label">{t('adminHome.publishedPages')}</span>

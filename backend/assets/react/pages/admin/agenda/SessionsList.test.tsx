@@ -36,14 +36,14 @@ describe('SessionsList', () => {
         expect(within(laura).queryByRole('button', { name: 'Realizada' })).not.toBeInTheDocument();
         expect(within(laura).getByRole('link', { name: 'Reunión' })).toHaveAttribute('href', 'https://meet.example/abc');
         // Worded actions first, "Ver persona", cancelling last.
-        expect(within(laura).getAllByRole('button').map((b) => b.textContent || b.getAttribute('aria-label'))).toEqual(['Reprogramar', 'Ver persona', 'Cancelar']);
+        expect(within(laura).getAllByRole('button').map((b) => b.textContent || b.getAttribute('aria-label'))).toEqual(['Reprogramar', 'Notas', 'Ver persona', 'Cancelar']);
 
         const carlos = screen.getByText('Carlos Ruiz').closest('tr') as HTMLElement;
         expect(within(carlos).getByRole('button', { name: 'Realizada' })).toBeInTheDocument();
         expect(within(carlos).getByRole('button', { name: 'No asistió' })).toBeInTheDocument();
 
         const marta = screen.getByText('Marta Díaz').closest('tr') as HTMLElement;
-        expect(within(marta).getAllByRole('button').map((b) => b.getAttribute('aria-label'))).toEqual(['Ver persona']);
+        expect(within(marta).getAllByRole('button').map((b) => b.textContent || b.getAttribute('aria-label'))).toEqual(['Notas', 'Ver persona']);
         expect(within(marta).getByText('Viaje')).toBeInTheDocument();
         expect(marta).toHaveAttribute('title', 'Cancelada');
 

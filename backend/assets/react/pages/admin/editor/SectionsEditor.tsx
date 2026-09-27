@@ -81,7 +81,7 @@ function SpecField({ spec, value, path, errors, onChange }: SpecFieldProps) {
     const optional = !spec.required;
 
     if (spec.kind === 'items') {
-        const items = Array.isArray(value) ? value : [];
+        const items = Array.isArray(value) ? value.filter((item): item is Record<string, string> => typeof item === 'object') : [];
         return (
             <fieldset className="items-field">
                 <legend>{label}</legend>
@@ -122,6 +122,10 @@ function SpecField({ spec, value, path, errors, onChange }: SpecFieldProps) {
                 <ImageField value={typeof value === 'string' ? value : null} onChange={onChange} />
             </Field>
         );
+    }
+
+    if (spec.kind === 'plans') {
+        return <PlansField label={label} error={error} max={spec.maxItems ?? 3} value={Array.isArray(value) ? value.filter((id): id is string => typeof id === 'string') : []} onChange={onChange} />;
     }
 
     if (spec.kind === 'plan') {
@@ -167,6 +171,30 @@ function PlanField({ label, error, value, onChange }: { label: string; error?: s
                 ))}
             </select>
         </Field>
+    );
+}
+
+/** The paid plans a Precios y pago section sells: one to `max` active paid plans, in the order ticked. */
+function PlansField({ label, error, max, value, onChange }: { label: string; error?: string; max: number; value: string[]; onChange: (value: FieldValue) => void }) {
+    const plans = useApi(() => api.get<Get<'/api/admin/plans/all'>>('/api/admin/plans/all'), []);
+    const paid = (plans.data?.items ?? []).filter((plan) => !plan.free && (plan.active || value.includes(plan.id)));
+    const toggle = (id: string, on: boolean) => onChange(on ? [...value, id] : value.filter((current) => current !== id));
+
+    return (
+        <fieldset className="items-field">
+            <legend>{label}</legend>
+            {error && <span className="field-error">{error}</span>}
+            {plans.data && paid.length === 0 && <p className="small muted">{t('pageEditor.hint.noPaidPlan')}</p>}
+            {paid.map((plan) => (
+                <Checkbox
+                    key={plan.id}
+                    label={plan.active ? plan.name : `${plan.name} (${t('common.inactive')})`}
+                    checked={value.includes(plan.id)}
+                    onChange={(on) => (!on || value.length < max ? toggle(plan.id, on) : undefined)}
+                />
+            ))}
+            <span className="field-hint">{t('pageEditor.hint.planIds', { max })}</span>
+        </fieldset>
     );
 }
 

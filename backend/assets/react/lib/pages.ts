@@ -7,7 +7,8 @@ export type SectionType = Schema<'SectionTypeOutput'>;
 export type FieldSpec = Schema<'FieldSpecOutput'>;
 export type PageDetail = Schema<'PageDetailOutput'>;
 
-export type FieldValue = string | null | Array<Record<string, string>>;
+// A list of ids: a payment section's plans.
+export type FieldValue = string | null | string[] | Array<Record<string, string>>;
 
 export interface Section {
     id: string;

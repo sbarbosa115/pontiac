@@ -3,50 +3,54 @@ import { Link, useParams } from 'react-router-dom';
 import { api } from '../../lib/api';
 import { ROLE_OWNER, useAuth, useLocaleSettings } from '../../lib/auth';
 import { formatDateTime } from '../../lib/format';
-import { useApi } from '../../lib/hooks';
+import { useApi, useTabParam } from '../../lib/hooks';
 import { errorMessage, t } from '../../lib/i18n';
 import type { Get, Schema } from '../../lib/types';
-import { BookSessionModal, useSessionActions } from '../../components/SessionModals';
-import { ActionButton, Actions, Alert, Badge, Button, DataTable, DefinitionList, ErrorState, Field, Loading, PageHeader, Row } from '../../components/ui';
+import type { IconName } from '../../components/Icon';
+import { ActionButton, Alert, Badge, DefinitionList, ErrorState, Field, Loading, PageHeader, TabPanel, Tabs } from '../../components/ui';
+import ContactPlans from './contact/ContactPlans';
+import ContactSessions from './contact/ContactSessions';
 
 type Contact = Schema<'ContactDetailOutput'>;
 
-/** A contact: who they are, how they consented, their sessions, every form they sent. */
+const TABS: { value: string; icon: IconName; feature?: string }[] = [
+    { value: 'resumen', icon: 'users' },
+    { value: 'planes', icon: 'receipt' },
+    { value: 'sesiones', icon: 'calendar', feature: 'booking' },
+];
+
+/** A contact, in tabs: who they are and what they sent; their plans and payments; their sessions and notes. */
 export default function ContactPage() {
     const { id = '' } = useParams();
     const { roles, me } = useAuth();
-    const { locale, timezone } = useLocaleSettings();
+    const features = me?.account?.features ?? [];
+    const tabs = TABS.filter((tab) => !tab.feature || features.includes(tab.feature));
+    const [tab, setTab] = useTabParam(tabs.map(({ value }) => value));
     const loaded = useApi(() => api.get<Contact>(`/api/admin/contacts/${id}`), [id]);
-    const categories = useApi(() => api.get<Get<'/api/admin/categories/all'>>('/api/admin/categories/all'), []);
     const [changed, setChanged] = useState<Contact | null>(null);
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [booking, setBooking] = useState(false);
     const contact = changed?.id === id ? changed : loaded.data;
-    const hasBooking = (me?.account?.features ?? []).includes('booking');
-    const sessionActions = useSessionActions(() => {
-        setChanged(null);
-        loaded.reload();
-    });
 
     if (loaded.error) return <ErrorState error={loaded.error} onRetry={loaded.reload} />;
     if (!contact) return <Loading />;
 
-    const run = async (action: () => Promise<Contact>) => {
+    const reload = () => {
+        setChanged(null);
+        loaded.reload();
+    };
+
+    const anonymize = async () => {
+        if (!window.confirm(t('contacts.confirmAnonymize', { name: contact.fullName }))) return;
         setBusy(true);
         setError(null);
         try {
-            setChanged(await action());
+            setChanged(await api.post<Contact>(`/api/admin/contacts/${contact.id}/anonymize`));
         } catch (err) {
             setError(errorMessage(err));
         } finally {
             setBusy(false);
         }
-    };
-
-    const anonymize = () => {
-        if (!window.confirm(t('contacts.confirmAnonymize', { name: contact.fullName }))) return;
-        run(() => api.post<Contact>(`/api/admin/contacts/${contact.id}/anonymize`));
     };
 
     return (
@@ -69,6 +73,47 @@ export default function ContactPage() {
                 {error}
             </Alert>
             {contact.anonymized && <Alert kind="info">{t('contacts.anonymized')}</Alert>}
+            <Tabs
+                id="contact"
+                variant="page"
+                label={contact.fullName}
+                value={tab}
+                onChange={setTab}
+                options={tabs.map(({ value, icon }) => ({ value, icon, label: t(`contacts.tab.${value}`) }))}
+            />
+            <TabPanel id="contact" value={tab}>
+                {tab === 'resumen' && <Summary contact={contact} onChanged={setChanged} />}
+                {tab === 'planes' && <ContactPlans contact={contact} onChanged={setChanged} />}
+                {tab === 'sesiones' && <ContactSessions contact={contact} onChanged={reload} />}
+            </TabPanel>
+        </>
+    );
+}
+
+/** Resumen: who they are, how they consented, their category, every form they sent. */
+function Summary({ contact, onChanged }: { contact: Contact; onChanged: (contact: Contact) => void }) {
+    const { locale, timezone } = useLocaleSettings();
+    const categories = useApi(() => api.get<Get<'/api/admin/categories/all'>>('/api/admin/categories/all'), []);
+    const [busy, setBusy] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const setCategory = async (categoryId: string) => {
+        setBusy(true);
+        setError(null);
+        try {
+            onChanged(await api.patch<Contact>(`/api/admin/contacts/${contact.id}`, { categoryId: categoryId || null }));
+        } catch (err) {
+            setError(errorMessage(err));
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    return (
+        <>
+            <Alert kind="error" onDismiss={() => setError(null)}>
+                {error}
+            </Alert>
             <section className="card">
                 <DefinitionList
                     items={[
@@ -80,11 +125,7 @@ export default function ContactPage() {
                     ]}
                 />
                 <Field label={t('contacts.category')}>
-                    <select
-                        value={contact.category?.id ?? ''}
-                        disabled={busy}
-                        onChange={(event) => run(() => api.patch<Contact>(`/api/admin/contacts/${contact.id}`, { categoryId: event.target.value || null }))}
-                    >
+                    <select value={contact.category?.id ?? ''} disabled={busy} onChange={(event) => setCategory(event.target.value)}>
                         <option value="">{t('contacts.noCategory')}</option>
                         {(categories.data?.items ?? []).map((category) => (
                             <option key={category.id} value={category.id}>
@@ -94,52 +135,6 @@ export default function ContactPage() {
                     </select>
                 </Field>
             </section>
-            {hasBooking && (
-                <>
-                    <div className="section-title-row">
-                        <h2 className="section-title">{t('contacts.sessions', { count: contact.sessions.length })}</h2>
-                        {!contact.anonymized && (
-                            <Button size="sm" onClick={() => setBooking(true)}>
-                                {t('agenda.book')}
-                            </Button>
-                        )}
-                    </div>
-                    <Alert kind="error" onDismiss={sessionActions.clearError}>
-                        {sessionActions.error}
-                    </Alert>
-                    {contact.sessions.length === 0 ? (
-                        <p className="muted small">{t('contacts.noSessions')}</p>
-                    ) : (
-                        <DataTable
-                            columns={[t('agenda.startsAt'), t('agenda.plan'), t('agenda.bookedBy')]}
-                            rows={contact.sessions}
-                            renderRow={(session) => (
-                                <Row key={session.id} status={session.status} label={t(`agenda.statusName.${session.status}`)}>
-                                    <td className="strong">{formatDateTime(session.startsAt, locale, timezone)}</td>
-                                    <td>
-                                        {session.planName}
-                                        {session.cancelReason && <div className="small muted">{session.cancelReason}</div>}
-                                    </td>
-                                    <td>{t(`agenda.bookedByName.${session.bookedBy}`)}</td>
-                                    <Actions>{sessionActions.buttons(session, { withContact: false })}</Actions>
-                                </Row>
-                            )}
-                        />
-                    )}
-                    {sessionActions.modals}
-                    {booking && (
-                        <BookSessionModal
-                            contact={contact}
-                            onClose={() => setBooking(false)}
-                            onBooked={() => {
-                                setBooking(false);
-                                setChanged(null);
-                                loaded.reload();
-                            }}
-                        />
-                    )}
-                </>
-            )}
             <h2 className="section-title">{t('contacts.submissions', { count: contact.submissions.length })}</h2>
             {contact.submissions.map((submission) => (
                 <section key={submission.id} className="card">

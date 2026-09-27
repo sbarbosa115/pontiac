@@ -1,4 +1,5 @@
 import React from 'react';
+import { ROLE_OWNER, useAuth } from '../../lib/auth';
 import { useTabParam } from '../../lib/hooks';
 import { t } from '../../lib/i18n';
 import type { IconName } from '../../components/Icon';
@@ -7,18 +8,23 @@ import CategoriesPage from './CategoriesPage';
 import MediaPage from './MediaPage';
 import PrivacyPage from './PrivacyPage';
 import TeamPage from './TeamPage';
+import WompiSettingsPage from './WompiSettingsPage';
 
-// The tabs Ajustes has today; the PRD adds Perfil, Pagos Wompi and Correos.
-const TABS: { value: string; icon: IconName }[] = [
+// The tabs Ajustes has today; the PRD adds Perfil and Correos. Pagos Wompi is the owner's, with payments on.
+const TABS: { value: string; icon: IconName; ownerOnly?: boolean; feature?: string }[] = [
     { value: 'equipo', icon: 'users' },
     { value: 'categorias', icon: 'tag' },
     { value: 'medios', icon: 'paperclip' },
+    { value: 'pagos', icon: 'card', ownerOnly: true, feature: 'payments' },
     { value: 'privacidad', icon: 'shield' },
 ];
 
 /** Ajustes: the practice's own settings. Every tab is in the URL (?tab=), so a link lands on it. */
 export default function SettingsPage() {
-    const [tab, setTab] = useTabParam(TABS.map(({ value }) => value));
+    const { roles, me } = useAuth();
+    const features = me?.account?.features ?? [];
+    const tabs = TABS.filter((option) => (!option.ownerOnly || roles.includes(ROLE_OWNER)) && (!option.feature || features.includes(option.feature)));
+    const [tab, setTab] = useTabParam(tabs.map(({ value }) => value));
 
     return (
         <>
@@ -29,12 +35,13 @@ export default function SettingsPage() {
                 label={t('nav.settings')}
                 value={tab}
                 onChange={setTab}
-                options={TABS.map(({ value, icon }) => ({ value, icon, label: t(`settings.tab.${value}`) }))}
+                options={tabs.map(({ value, icon }) => ({ value, icon, label: t(`settings.tab.${value}`) }))}
             />
             <TabPanel id="settings" value={tab}>
                 {tab === 'equipo' && <TeamPage embedded />}
                 {tab === 'categorias' && <CategoriesPage />}
                 {tab === 'medios' && <MediaPage />}
+                {tab === 'pagos' && <WompiSettingsPage />}
                 {tab === 'privacidad' && <PrivacyPage />}
             </TabPanel>
         </>
