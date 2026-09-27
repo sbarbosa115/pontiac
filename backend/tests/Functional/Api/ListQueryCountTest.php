@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Api;
 
 use App\Entity\Account;
+use App\Entity\Contact;
+use App\Entity\MediaAsset;
 use App\Entity\OutgoingEmail;
 use App\Entity\PlatformSettingsChange;
 use App\Entity\User;
 use App\Enum\EmailStatus;
 use Doctrine\Bundle\DoctrineBundle\DataCollector\DoctrineDataCollector;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Symfony\Component\Uid\Uuid;
 
 /**
  * No list costs one query per row. Each list is read with one row and again with five, and the number of queries
@@ -44,6 +47,10 @@ final class ListQueryCountTest extends ApiTestCase
         yield 'administradores' => ['superAdmin', '/api/platform/admins', 'superAdmin'];
         yield 'historial de configuración' => ['superAdmin', '/api/platform/settings/history', 'settingsChange'];
         yield 'correos' => ['superAdmin', '/api/platform/emails', 'email'];
+        yield 'páginas' => ['owner', '/api/admin/pages', 'page'];
+        yield 'categorías' => ['owner', '/api/admin/categories', 'category'];
+        yield 'medios' => ['owner', '/api/admin/media', 'image'];
+        yield 'prospectos' => ['owner', '/api/admin/contacts', 'contact'];
     }
 
     #[DataProvider('lists')]
@@ -131,5 +138,30 @@ final class ListQueryCountTest extends ApiTestCase
         // As the email log writes it, for a consultant so the list shows its name.
         $email = new OutgoingEmail($this->account, 'test', sprintf('persona%d@demo.test', ++$this->row), 'Hola', EmailStatus::Sent, null);
         $this->em()->getConnection()->insert('outgoing_email', $email->toRow());
+    }
+
+    private function page(): void
+    {
+        $this->createPage($this->account, 'pagina-'.++$this->row);
+    }
+
+    private function category(): void
+    {
+        $this->createCategory($this->account, 'Categoría '.++$this->row);
+    }
+
+    private function image(): void
+    {
+        $this->save(new MediaAsset($this->account, Uuid::v7(), 'foto'.++$this->row.'.jpg', 'image/jpeg', 1000, 800, 600, [480, 800]));
+    }
+
+    private function contact(): void
+    {
+        // With a category and a source page: the two relations the list shows.
+        ++$this->row;
+        $page = $this->createPage($this->account, 'origen-'.$this->row);
+        $contact = (new Contact($this->account, 'Persona '.$this->row, sprintf('persona%d@demo.test', $this->row), null, $page, 'hash'))
+            ->setCategory($this->createCategory($this->account, 'Cat '.$this->row));
+        $this->save($contact);
     }
 }

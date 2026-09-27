@@ -1,0 +1,27 @@
+{% extends 'emails/layout.html.twig' %}
+
+{% block content %}
+<p>Tienes un nuevo prospecto desde tu página <strong>{{ pageTitle }}</strong>:</p>
+
+<p>
+    <strong>{{ contact.name }}</strong><br>
+    {{ contact.email }}{% if contact.phone %} · {{ contact.phone }}{% endif %}
+</p>
+
+{% if answers is not empty %}
+<table style="border-collapse:collapse;margin:0 0 16px;">
+    {% for answer in answers %}
+    <tr>
+        <td style="padding:4px 12px 4px 0;color:#5b6576;vertical-align:top;">{{ answer.label }}</td>
+        <td style="padding:4px 0;">{{ answer.value ?: '—' }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endif %}
+
+<p>
+    <a href="{{ contactUrl }}" style="display:inline-block;padding:12px 20px;background:#1e3a5f;color:#ffffff;text-decoration:none;border-radius:6px;">Ver prospecto</a>
+</p>
+
+<p style="color:#5b6576;font-size:13px;">Si respondes este correo, le escribes directamente a {{ contact.name }}.</p>
+{% endblock %}

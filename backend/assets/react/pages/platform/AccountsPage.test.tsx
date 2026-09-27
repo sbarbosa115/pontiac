@@ -3,7 +3,8 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { api } from '../../lib/api';
-import { CreateConsultant, suggestSlug } from './AccountsPage';
+import { suggestSlug } from '../../lib/slug';
+import { CreateConsultant } from './AccountsPage';
 
 afterEach(() => vi.restoreAllMocks());
 

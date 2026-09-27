@@ -1,0 +1,15 @@
+<section id="{{ section.id }}">
+    <div class="wrap">
+        {% if fields.heading %}<{{ first ? 'h1' : 'h2' }}>{{ fields.heading }}</{{ first ? 'h1' : 'h2' }}>{% endif %}
+        <ol class="steps">
+            {% for item in fields.items %}
+                <li>
+                    <div>
+                        <h3>{{ item.title }}</h3>
+                        {% if item.body %}<p>{{ item.body }}</p>{% endif %}
+                    </div>
+                </li>
+            {% endfor %}
+        </ol>
+    </div>
+</section>

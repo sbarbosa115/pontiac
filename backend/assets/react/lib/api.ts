@@ -229,6 +229,30 @@ export const api = {
     },
 };
 
+/**
+ * POSTs JSON to an endpoint that answers HTML (the page editor's preview), with the session's headers. API errors are
+ * thrown as ApiError, like request().
+ */
+export async function postForHtml(path: string, json: unknown): Promise<string> {
+    let response: Response;
+    try {
+        response = await fetch(path, {
+            method: 'POST',
+            headers: { Accept: 'text/html', 'Content-Type': 'application/json', 'Accept-Language': language, ...authHeaders(path) },
+            body: JSON.stringify(json),
+        });
+    } catch {
+        throw new ApiError(0, { error: 'network_error' });
+    }
+    if (!response.ok) {
+        const body = (response.headers.get('Content-Type') || '').includes('json') ? ((await response.json().catch(() => null)) as ErrorBody | null) : null;
+        if (response.status === 401) onUnauthorized();
+        throw new ApiError(response.status, body);
+    }
+
+    return response.text();
+}
+
 /** What the file helpers need of an attachment (AttachmentOutput). */
 export interface AttachmentLink {
     downloadUrl: string;

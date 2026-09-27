@@ -18,6 +18,8 @@ final class EmailTag
 
     public const INVITATION = 'invitation';
     public const TEST = 'test';
+    public const NEW_LEAD = 'new_lead';
+    public const RESOURCE = 'resource';
 
     public static function apply(Email $email, string $kind, ?Account $account = null): Email
     {

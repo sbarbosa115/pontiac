@@ -58,6 +58,8 @@ const ICON_ACTIONS: Partial<Record<IconName, Action>> = {
     plus: 'setup',
     calendar: 'setup',
     undo: 'revert',
+    chevronUp: 'edit',
+    chevronDown: 'edit',
 };
 
 /**
@@ -195,10 +197,19 @@ const TONES: Record<string, string> = {
     // One attempt to send an email.
     sent: 'success',
     failed: 'danger',
+    // A landing page.
+    draft: 'accent',
+    published: 'success',
+    disabled: 'muted',
+    // A contact.
+    lead: 'info',
+    client: 'success',
+    finished: 'muted',
 };
 
-export function Badge({ value, children }: { value: string; children?: ReactNode }) {
-    return <span className={`badge badge-${TONES[value] || 'neutral'}`}>{children}</span>;
+/** A status in its tone (`value`, via TONES), or any tone by name (`tone`: a lead category's colour). */
+export function Badge({ value = '', tone, children }: { value?: string; tone?: string; children?: ReactNode }) {
+    return <span className={`badge badge-${tone ?? TONES[value] ?? 'neutral'}`}>{children}</span>;
 }
 
 /**

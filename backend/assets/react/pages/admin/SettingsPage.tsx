@@ -3,10 +3,18 @@ import { useTabParam } from '../../lib/hooks';
 import { t } from '../../lib/i18n';
 import type { IconName } from '../../components/Icon';
 import { PageHeader, TabPanel, Tabs } from '../../components/ui';
+import CategoriesPage from './CategoriesPage';
+import MediaPage from './MediaPage';
+import PrivacyPage from './PrivacyPage';
 import TeamPage from './TeamPage';
 
-// The tabs Ajustes has today; the PRD adds Perfil, Pagos Wompi, Correos, Categorías and Medios.
-const TABS: { value: string; icon: IconName }[] = [{ value: 'equipo', icon: 'users' }];
+// The tabs Ajustes has today; the PRD adds Perfil, Pagos Wompi and Correos.
+const TABS: { value: string; icon: IconName }[] = [
+    { value: 'equipo', icon: 'users' },
+    { value: 'categorias', icon: 'tag' },
+    { value: 'medios', icon: 'paperclip' },
+    { value: 'privacidad', icon: 'shield' },
+];
 
 /** Ajustes: the practice's own settings. Every tab is in the URL (?tab=), so a link lands on it. */
 export default function SettingsPage() {
@@ -25,6 +33,9 @@ export default function SettingsPage() {
             />
             <TabPanel id="settings" value={tab}>
                 {tab === 'equipo' && <TeamPage embedded />}
+                {tab === 'categorias' && <CategoriesPage />}
+                {tab === 'medios' && <MediaPage />}
+                {tab === 'privacidad' && <PrivacyPage />}
             </TabPanel>
         </>
     );

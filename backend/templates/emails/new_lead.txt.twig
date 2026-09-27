@@ -1,0 +1,10 @@
+Tienes un nuevo prospecto desde tu página «{{ pageTitle }}»:
+
+{{ contact.name }}
+{{ contact.email }}{% if contact.phone %} · {{ contact.phone }}{% endif %}
+
+{% for answer in answers %}{{ answer.label }}: {{ answer.value ?: '—' }}
+{% endfor %}
+Ver prospecto: {{ contactUrl }}
+
+Si respondes este correo, le escribes directamente a {{ contact.name }}.

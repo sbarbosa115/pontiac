@@ -6,6 +6,7 @@ namespace App\Tests\Functional\Api;
 
 use App\Entity\Account;
 use App\Entity\User;
+use App\Enum\PageTemplate;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
@@ -30,6 +31,11 @@ final class ListSearchTest extends ApiTestCase
         $this->createOwner($this->createAccount('Plata Sana'), 'paola@plata.test', 'Paola Pérez');
         $this->superAdmin = $this->createSuperAdmin();
         $this->withPassword(User::createSuperAdmin('olga@operaciones.test', 'Olga Operaciones'));
+        // Two pages and two categories of the consultant.
+        $this->createPage($this->account, 'diagnostico');
+        $this->createPage($this->account, 'plan-ahorro', PageTemplate::PlanOffer);
+        $this->createCategory($this->account, 'Deudas');
+        $this->createCategory($this->account, 'Pensión', 'indigo');
 
         // Two settings changes by two people, and two emails for two consultants.
         $this->actAs($this->superAdmin);
@@ -39,6 +45,13 @@ final class ListSearchTest extends ApiTestCase
         $this->api('POST', '/api/admin/team', ['fullName' => 'Nueva', 'email' => 'nueva@demo.test']);
         $this->actAs($this->superAdmin);
         $this->api('POST', '/api/platform/emails/test', ['to' => 'prueba@operaciones.test']);
+
+        // Two images, two contacts of the consultant.
+        $this->client->request('POST', '/finanzas-claras/diagnostico/enviar', $this->formData('laura@demo.test'));
+        $this->client->request('POST', '/finanzas-claras/diagnostico/enviar', $this->formData('carlos@demo.test', ['name' => 'Carlos Ruiz', 'phone' => '310 555 0000']));
+        $this->actAs($this->owner);
+        $this->upload('/api/admin/media', ['altText' => 'Retrato del asesor'], ['file' => $this->imageFile(800, 600, 'retrato.jpg')]);
+        $this->upload('/api/admin/media', [], ['file' => $this->imageFile(800, 600, 'oficina.jpg')]);
     }
 
     /**
@@ -56,6 +69,14 @@ final class ListSearchTest extends ApiTestCase
         yield 'settings history by field' => ['superAdmin', '/api/platform/settings/history', 'senderName', 'minNotice'];
         yield 'emails by recipient' => ['superAdmin', '/api/platform/emails', 'nueva@', 'prueba@'];
         yield 'emails by consultant' => ['superAdmin', '/api/platform/emails', 'Finanzas', 'correo de prueba'];
+        yield 'pages by title' => ['owner', '/api/admin/pages', 'Página diagnostico', 'Página plan'];
+        yield 'pages by address' => ['owner', '/api/admin/pages', 'diagnostico', 'plan-ahorro'];
+        yield 'categories' => ['owner', '/api/admin/categories', 'Deudas', 'Pensión'];
+        yield 'images by name' => ['owner', '/api/admin/media', 'oficina', 'retrato.jpg'];
+        yield 'images by alt text' => ['owner', '/api/admin/media', 'Retrato del', 'oficina.jpg'];
+        yield 'contacts by name' => ['owner', '/api/admin/contacts', 'Laura', 'Carlos'];
+        yield 'contacts by email' => ['owner', '/api/admin/contacts', 'laura@', 'carlos@'];
+        yield 'contacts by phone' => ['owner', '/api/admin/contacts', '300 123', '310 555'];
     }
 
     #[DataProvider('lists')]

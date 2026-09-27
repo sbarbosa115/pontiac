@@ -4,8 +4,14 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Api;
 
+use App\Doctrine\AccountContext;
 use App\Entity\Account;
+use App\Entity\LandingPage;
+use App\Entity\LeadCategory;
 use App\Entity\User;
+use App\Enum\PageTemplate;
+use App\Page\TemplateCatalog;
+use App\Page\TimeToken;
 use Doctrine\ORM\EntityManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
@@ -37,8 +43,18 @@ abstract class ApiTestCase extends WebTestCase
         return static::getContainer()->get(EntityManagerInterface::class);
     }
 
+    /**
+     * The test's own reads and writes see every account: the account a request entered stays entered after it, and
+     * the test builds and inspects several accounts' data. Requests enter their own scope again.
+     */
+    protected function asPlatform(): void
+    {
+        static::getContainer()->get(AccountContext::class)->enterPlatformScope();
+    }
+
     protected function save(object ...$entities): void
     {
+        $this->asPlatform();
         foreach ($entities as $entity) {
             $this->em()->persist($entity);
         }
@@ -71,6 +87,53 @@ abstract class ApiTestCase extends WebTestCase
     protected function createSuperAdmin(string $email = 'ops@pontiac.test'): User
     {
         return $this->withPassword(User::createSuperAdmin($email, 'Paula Plataforma'));
+    }
+
+    /**
+     * A page from a template's defaults, published unless said otherwise. $change edits its content first.
+     *
+     * @param (callable(array<string, mixed>): array<string, mixed>)|null $change
+     */
+    protected function createPage(Account $account, string $slug = 'diagnostico', PageTemplate $template = PageTemplate::FreeDiagnostic, bool $published = true, bool $home = false, ?callable $change = null): LandingPage
+    {
+        $content = TemplateCatalog::newContent($template, 'Página '.$slug);
+        if (null !== $change) {
+            $content = $change($content);
+        }
+        $page = (new LandingPage($account, 'Página '.$slug, $slug, $template, $content))->setHome($home);
+        if ($published) {
+            $page->publish();
+        }
+        $this->save($page);
+
+        return $page;
+    }
+
+    protected function createCategory(Account $account, string $name = 'Deudas', string $color = 'rose'): LeadCategory
+    {
+        $category = new LeadCategory($account, $name, $color);
+        $this->save($category);
+
+        return $category;
+    }
+
+    /**
+     * What a person sends from a page's form, the form drawn long enough ago to count as a person.
+     *
+     * @param array<string, string> $extra
+     *
+     * @return array<string, string>
+     */
+    protected function formData(string $email = 'laura@demo.test', array $extra = []): array
+    {
+        return $extra + [
+            'name' => 'Laura Gómez',
+            'email' => $email,
+            'phone' => '300 123 4567',
+            'consent' => '1',
+            'website' => '',
+            '_t' => static::getContainer()->get(TimeToken::class)->issue(time() - 30),
+        ];
     }
 
     /**
@@ -117,6 +180,17 @@ abstract class ApiTestCase extends WebTestCase
         $this->client->request('POST', $uri, $fields, $files);
 
         return $this->decode();
+    }
+
+    /** A real image of that size, drawn with GD, as a browser would upload it. */
+    protected function imageFile(int $width = 1200, int $height = 800, string $name = 'foto.jpg'): UploadedFile
+    {
+        $path = (string) tempnam(sys_get_temp_dir(), 'img');
+        $image = imagecreatetruecolor($width, $height);
+        imagefilledrectangle($image, 0, 0, $width, $height, (int) imagecolorallocate($image, 30, 58, 95));
+        imagejpeg($image, $path, 85);
+
+        return new UploadedFile($path, $name, 'image/jpeg', null, true);
     }
 
     protected function pngFile(string $name = 'foto.png'): UploadedFile

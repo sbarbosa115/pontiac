@@ -4,6 +4,7 @@ import { api } from '../../lib/api';
 import { useAuth, useLocaleSettings } from '../../lib/auth';
 import { formatDate } from '../../lib/format';
 import { useForm, useList, useSubmit } from '../../lib/hooks';
+import { suggestSlug } from '../../lib/slug';
 import { errorMessage, t } from '../../lib/i18n';
 import type { Schema } from '../../lib/types';
 import { ActionButton, Actions, Alert, Button, Field, FilterBar, FormModal, IconButton, ListView, PageHeader, Row, RowLegend } from '../../components/ui';
@@ -13,16 +14,6 @@ type Detail = Schema<'AccountDetailOutput'>;
 
 const STATUSES = ['active', 'suspended'] as const;
 
-/** "Finanzas Claras SAS" → "finanzas-claras-sas": a first suggestion for the address, which the super admin can edit. */
-export function suggestSlug(name: string): string {
-    return name
-        .normalize('NFD')
-        .replace(/[̀-ͯ]/g, '')
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '')
-        .slice(0, 60);
-}
 
 /**
  * Plataforma › Asesores: every consultant, created here with its owner (who gets the invitation), suspended and

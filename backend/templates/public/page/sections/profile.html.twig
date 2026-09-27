@@ -1,0 +1,14 @@
+<section id="{{ section.id }}">
+    <div class="wrap profile{{ fields.image ? ' has-image' }}">
+        {% if fields.image %}{{ include('public/page/_image.html.twig', {id: fields.image, sizes: '(max-width: 820px) 100vw, 280px', eager: first}) }}{% endif %}
+        <div>
+            <{{ first ? 'h1' : 'h2' }}>{{ fields.heading }}</{{ first ? 'h1' : 'h2' }}>
+            {% for paragraph in fields.body|split("\n\n") %}{% if paragraph %}<p>{{ paragraph|nl2br }}</p>{% endif %}{% endfor %}
+            {% if fields.credentials is not empty %}
+                <ul class="checks">
+                    {% for item in fields.credentials %}<li>{{ item.title }}</li>{% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+    </div>
+</section>

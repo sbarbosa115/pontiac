@@ -1,0 +1,16 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Api\Output;
+
+/** What a consultant sees first (Inicio). */
+final readonly class AdminDashboardOutput
+{
+    public function __construct(
+        public int $newLeadsLast7Days,
+        public int $publishedPages,
+        public int $maxPublishedPages,
+    ) {
+    }
+}

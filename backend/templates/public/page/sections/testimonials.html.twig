@@ -1,0 +1,13 @@
+<section id="{{ section.id }}">
+    <div class="wrap">
+        {% if fields.heading %}<{{ first ? 'h1' : 'h2' }}>{{ fields.heading }}</{{ first ? 'h1' : 'h2' }}>{% endif %}
+        <div class="grid">
+            {% for item in fields.items %}
+                <blockquote class="card">
+                    <p>“{{ item.quote }}”</p>
+                    <footer>{{ item.author }}{% if item.role %} · {{ item.role }}{% endif %}</footer>
+                </blockquote>
+            {% endfor %}
+        </div>
+    </div>
+</section>

@@ -87,6 +87,10 @@ class Account
     #[ORM\Column(type: Types::SMALLINT)]
     private int $maxFileMb = self::DEFAULT_MAX_FILE_MB;
 
+    // The privacy policy (Ley 1581) the consultant's forms link to. Empty: the platform's default text is shown.
+    #[ORM\Column(type: Types::TEXT)]
+    private string $privacyText = '';
+
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
 
@@ -254,6 +258,18 @@ class Account
         $this->maxAssistants = $maxAssistants;
         $this->storageMb = $storageMb;
         $this->maxFileMb = $maxFileMb;
+
+        return $this;
+    }
+
+    public function getPrivacyText(): string
+    {
+        return $this->privacyText;
+    }
+
+    public function setPrivacyText(string $privacyText): static
+    {
+        $this->privacyText = $privacyText;
 
         return $this;
     }

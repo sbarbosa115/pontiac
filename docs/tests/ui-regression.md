@@ -34,3 +34,18 @@ The manual browser pass, one case per use case. Run it on a fresh stack with the
 | PLAT-13 | super admin | Correos › Enviar correo de prueba | Notice, and the email appears first in the list as "Prueba" |
 | PLAT-14 | consultant | With the assistant limit reached, Invitar asistente | "Llegaste al máximo de asistentes activos de tu plan…" in the dialog |
 | PLAT-15 | client | The consultant's portal turned off, sign in at the portal | "Esta función no está activa para este asesor." |
+| PAGE-01 | visitor | `/finanzas-claras` | The published home page: one h1, the form, a footer link to the privacy policy; no framework JavaScript |
+| PAGE-02 | visitor | Send the form without consent | "Para enviar tus datos debes aceptar…" under the checkbox; what was typed stays; reloading goes back to the page |
+| PAGE-03 | visitor | Send it with consent (after a few seconds) | The page says thanks; the owner gets "Nuevo prospecto" in Mailpit with the answers |
+| PAGE-04 | consultant | Prospectos | The new contact, in the category their answer mapped to; filters by category and page; the contact's page shows consent and answers |
+| PAGE-05 | consultant | Páginas › Nueva página | The address follows the title; creating opens the editor with the template's sections |
+| PAGE-06 | consultant | Editor › Contenido, change the hero title | The preview updates; "Guardar borrador" turns on; the live page does not change until "Publicar" |
+| PAGE-07 | consultant | Empty a required field, save | Error under the field, the section card red, a dot on its tab, the preview waits |
+| PAGE-08 | consultant | Hero › Elegir imagen › Subir imágenes | The image is chosen, shown in the preview at its WebP widths, and live after publishing |
+| PAGE-09 | consultant | Editor › Formulario, a list question with options mapped to categories | Saved; a visitor's answer sorts them into that category |
+| PAGE-10 | consultant | Editor › SEO; › Ajustes (address, home page, colour) | Search preview updates; a published page's new address leaves a 301 from the old one |
+| PAGE-11 | consultant | Editor in Oscuro, preview on Celular | Editor dark, the page light, 390 px wide |
+| PAGE-12 | owner | Páginas › Retirar | Visitors get "Esta página ya no está disponible" (410); "Volver a publicar" brings it back |
+| PAGE-13 | owner | A contact › Eliminar sus datos | Name, email, phone and answers erased; assistants do not see the button |
+| PAGE-14 | consultant | Ajustes › Categorías, Medios, Privacidad | Each lists and edits; privacy says when the default text is used |
+

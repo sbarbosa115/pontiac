@@ -14,6 +14,10 @@ import { FullPageLoading } from '../components/ui';
 // chunk loads (its <Suspense>).
 const AdminHomePage = lazy(() => import('../pages/admin/HomePage'));
 const AdminSettingsPage = lazy(() => import('../pages/admin/SettingsPage'));
+const AdminPagesPage = lazy(() => import('../pages/admin/PagesPage'));
+const AdminPageEditorPage = lazy(() => import('../pages/admin/PageEditorPage'));
+const AdminContactsPage = lazy(() => import('../pages/admin/ContactsPage'));
+const AdminContactPage = lazy(() => import('../pages/admin/ContactPage'));
 const PlatformHomePage = lazy(() => import('../pages/platform/HomePage'));
 const PlatformAccountsPage = lazy(() => import('../pages/platform/AccountsPage'));
 const PlatformAccountPage = lazy(() => import('../pages/platform/AccountPage'));
@@ -69,6 +73,10 @@ export default function App() {
                                 }
                             >
                                 <Route index element={<AdminHomePage />} />
+                                <Route path="prospectos" element={<AdminContactsPage />} />
+                                <Route path="prospectos/:id" element={<AdminContactPage />} />
+                                <Route path="paginas" element={<AdminPagesPage />} />
+                                <Route path="paginas/:id" element={<AdminPageEditorPage />} />
                                 <Route path="ajustes" element={<AdminSettingsPage />} />
                             </Route>
 

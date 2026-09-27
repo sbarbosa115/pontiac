@@ -4,6 +4,364 @@
  */
 
 export interface paths {
+    "/api/admin/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** ?q= searches the name; ?includeInactive=1 shows disabled ones too. */
+        get: operations["get_api_admin_category_list"];
+        put?: never;
+        post: operations["post_api_admin_category_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/categories/all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Every category, for pickers (active first; a disabled one still shows where it is used). */
+        get: operations["get_api_admin_category_all"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/categories/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["put_api_admin_category_update"];
+        post?: never;
+        /** Not offered for new pages and contacts; the contacts that have it keep it. */
+        delete: operations["delete_api_admin_category_disable"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/categories/{id}/enable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post_api_admin_category_enable"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/contacts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** ?q= searches name, email and phone; ?status=, ?category= (an id, or "none") and ?sourcePage= (an id) narrow it. */
+        get: operations["get_api_admin_contact_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/contacts/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_api_admin_contact_show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** {categoryId}: one of the consultant's categories, or null for none. */
+        patch: operations["patch_api_admin_contact_update"];
+        trace?: never;
+    };
+    "/api/admin/contacts/{id}/anonymize": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ley 1581, on the person's request: their name, email, phone and answers are erased for good. Only the owner, who
+         *     answers for the data, can do it.
+         */
+        post: operations["post_api_admin_contact_anonymize"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_api_admin_dashboard"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/media": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** ?q= searches file name and alt text; ?includeInactive=1 shows disabled ones too. */
+        get: operations["get_api_admin_media_list"];
+        put?: never;
+        /** multipart/form-data: "file", and optionally "altText". */
+        post: operations["post_api_admin_media_upload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/media/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_api_admin_media_show"];
+        put?: never;
+        post?: never;
+        /** No longer offered for new content; pages that show it keep showing it. */
+        delete: operations["delete_api_admin_media_disable"];
+        options?: never;
+        head?: never;
+        patch: operations["patch_api_admin_media_update"];
+        trace?: never;
+    };
+    "/api/admin/media/{id}/enable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post_api_admin_media_enable"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/pages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** ?q= searches title and address; ?status= and ?template= narrow it. */
+        get: operations["get_api_admin_page_list"];
+        put?: never;
+        post: operations["post_api_admin_page_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/pages/catalog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The templates, their sections and fields: what the editor draws. */
+        get: operations["get_api_admin_page_catalog"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/pages/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_api_admin_page_show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Saves title, address and draft; visitors see nothing of it until it is published. */
+        patch: operations["patch_api_admin_page_update"];
+        trace?: never;
+    };
+    "/api/admin/pages/{id}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * The editor's live preview: a draft (not saved) as visitors would see it. HTML, for an iframe's srcdoc; a draft
+         *     that is not valid yet answers the 422 the save would.
+         */
+        post: operations["post_api_admin_page_preview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/pages/{id}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post_api_admin_page_publish"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/pages/{id}/disable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Takes it down: visitors get a 410, search engines drop it. Its content is kept. */
+        post: operations["post_api_admin_page_disable"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/pages/{id}/reactivate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post_api_admin_page_reactivate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/pages/{id}/duplicate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post_api_admin_page_duplicate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/pages/{id}/home": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Makes it the page at /<consultant>. */
+        post: operations["post_api_admin_page_home"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/privacy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_api_admin_privacy_show"];
+        /** The owner answers for the data (Ley 1581): only they change it. Empty goes back to the platform's text. */
+        put: operations["put_api_admin_privacy_update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/team": {
         parameters: {
             query?: never;
@@ -458,6 +816,186 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        LeadCategoryOutput: {
+            id: string;
+            name: string;
+            color: string;
+            active: boolean;
+        };
+        CategoryRefOutput: {
+            id: string;
+            name: string;
+            /** One of the UI tones (LeadCategory::COLORS). */
+            color: string;
+            active: boolean;
+        };
+        PageRefOutput: {
+            id: string;
+            title: string;
+            /** Its address inside the consultant's: /<consultant>/<slug>. */
+            slug: string;
+        };
+        ContactSummaryOutput: {
+            id: string;
+            fullName: string;
+            email: string;
+            phone?: string | null;
+            /** "lead", "client" or "finished". */
+            status: string;
+            category?: components["schemas"]["CategoryRefOutput"] | null;
+            /** The page that brought them first. */
+            sourcePage?: components["schemas"]["PageRefOutput"] | null;
+            /** ISO 8601. */
+            lastActivityAt: string;
+            /** Their data was erased on request (Ley 1581). */
+            anonymized: boolean;
+        };
+        AnswerOutput: {
+            key: string;
+            label: string;
+            value: string;
+        };
+        UtmOutput: {
+            name: string;
+            value: string;
+        };
+        SubmissionOutput: {
+            id: string;
+            /** ISO 8601. */
+            submittedAt: string;
+            page: components["schemas"]["PageRefOutput"];
+            answers: components["schemas"]["AnswerOutput"][];
+            utm: components["schemas"]["UtmOutput"][];
+            referrer?: string | null;
+        };
+        ContactDetailOutput: {
+            id: string;
+            fullName: string;
+            email: string;
+            phone?: string | null;
+            status: string;
+            category?: components["schemas"]["CategoryRefOutput"] | null;
+            sourcePage?: components["schemas"]["PageRefOutput"] | null;
+            /** ISO 8601. */
+            createdAt: string;
+            /** ISO 8601. */
+            lastActivityAt: string;
+            /** ISO 8601: when they last accepted the privacy policy. */
+            consentAt: string;
+            anonymized: boolean;
+            /** newest first */
+            submissions: components["schemas"]["SubmissionOutput"][];
+        };
+        AdminDashboardOutput: {
+            newLeadsLast7Days: number;
+            publishedPages: number;
+            maxPublishedPages: number;
+        };
+        MediaAssetOutput: {
+            id: string;
+            originalName: string;
+            width: number;
+            height: number;
+            /** The original and its copies, what counts towards storage. */
+            sizeBytes: number;
+            altText: string;
+            active: boolean;
+            /** ISO 8601. */
+            createdAt: string;
+            /** A small copy, for thumbnails. */
+            thumbUrl: string;
+            /** The widest copy. */
+            url: string;
+        };
+        PageSummaryOutput: {
+            id: string;
+            title: string;
+            slug: string;
+            /** Where visitors find it: /<consultant> for the home page, /<consultant>/<slug> for the rest. */
+            path: string;
+            /** A PageTemplate value. */
+            template: string;
+            /** "draft", "published" or "disabled". */
+            status: string;
+            home: boolean;
+            /** The draft differs from what visitors see. */
+            hasUnpublishedChanges: boolean;
+            leadsLast30Days: number;
+            /** ISO 8601. */
+            updatedAt: string;
+            /** ISO 8601; null until first published. */
+            publishedAt?: string | null;
+        };
+        TemplateSectionOutput: {
+            id: string;
+            /** A key of PageCatalogOutput::$sectionTypes. */
+            type: string;
+        };
+        TemplateOutput: {
+            /** A PageTemplate value. */
+            key: string;
+            enabled: boolean;
+            sections: components["schemas"]["TemplateSectionOutput"][];
+        };
+        ItemFieldSpecOutput: {
+            name: string;
+            kind: string;
+            required: boolean;
+            max?: number | null;
+        };
+        FieldSpecOutput: {
+            name: string;
+            /** "text", "textarea", "image", "date", "url" or "items". */
+            kind: string;
+            required: boolean;
+            /** Characters, for text kinds. */
+            max?: number | null;
+            /** For "items": how many at most. */
+            maxItems?: number | null;
+            /** for "items": the fields of each item */
+            fields: components["schemas"]["ItemFieldSpecOutput"][];
+        };
+        SectionTypeOutput: {
+            type: string;
+            fields: components["schemas"]["FieldSpecOutput"][];
+        };
+        AccentOutput: {
+            key: string;
+            /** Its main colour, for the picker's swatch. */
+            color: string;
+        };
+        PageCatalogOutput: {
+            templates: components["schemas"]["TemplateOutput"][];
+            sectionTypes: components["schemas"]["SectionTypeOutput"][];
+            accents: components["schemas"]["AccentOutput"][];
+            /** the types an extra form field can have */
+            fieldTypes: string[];
+            maxExtraFields: number;
+        };
+        PageDetailOutput: {
+            id: string;
+            title: string;
+            slug: string;
+            path: string;
+            template: string;
+            status: string;
+            home: boolean;
+            hasUnpublishedChanges: boolean;
+            /** ISO 8601. */
+            updatedAt: string;
+            /** ISO 8601; null until first published. */
+            publishedAt?: string | null;
+            /** sections, form, seo, settings (see TemplateCatalog::newContent()) */
+            draft: {
+                [key: string]: unknown;
+            };
+        };
+        PrivacyOutput: {
+            /** What the forms link to: the consultant's text, or the platform's default when they have none. */
+            text: string;
+            usingDefault: boolean;
+            defaultText: string;
+        };
         TeamMemberOutput: {
             id: string;
             email: string;
@@ -658,6 +1196,661 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    get_api_admin_category_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["LeadCategoryOutput"][];
+                        total: number;
+                        page: number;
+                        perPage: number;
+                    };
+                };
+            };
+        };
+    };
+    post_api_admin_category_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Created. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadCategoryOutput"];
+                };
+            };
+        };
+    };
+    get_api_admin_category_all: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["LeadCategoryOutput"][];
+                    };
+                };
+            };
+        };
+    };
+    put_api_admin_category_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadCategoryOutput"];
+                };
+            };
+        };
+    };
+    delete_api_admin_category_disable: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadCategoryOutput"];
+                };
+            };
+        };
+    };
+    post_api_admin_category_enable: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadCategoryOutput"];
+                };
+            };
+        };
+    };
+    get_api_admin_contact_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["ContactSummaryOutput"][];
+                        total: number;
+                        page: number;
+                        perPage: number;
+                    };
+                };
+            };
+        };
+    };
+    get_api_admin_contact_show: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContactDetailOutput"];
+                };
+            };
+        };
+    };
+    patch_api_admin_contact_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContactDetailOutput"];
+                };
+            };
+        };
+    };
+    post_api_admin_contact_anonymize: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContactDetailOutput"];
+                };
+            };
+        };
+    };
+    get_api_admin_dashboard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminDashboardOutput"];
+                };
+            };
+        };
+    };
+    get_api_admin_media_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["MediaAssetOutput"][];
+                        total: number;
+                        page: number;
+                        perPage: number;
+                    };
+                };
+            };
+        };
+    };
+    post_api_admin_media_upload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Created. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaAssetOutput"];
+                };
+            };
+        };
+    };
+    get_api_admin_media_show: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaAssetOutput"];
+                };
+            };
+        };
+    };
+    delete_api_admin_media_disable: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaAssetOutput"];
+                };
+            };
+        };
+    };
+    patch_api_admin_media_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaAssetOutput"];
+                };
+            };
+        };
+    };
+    post_api_admin_media_enable: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaAssetOutput"];
+                };
+            };
+        };
+    };
+    get_api_admin_page_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["PageSummaryOutput"][];
+                        total: number;
+                        page: number;
+                        perPage: number;
+                    };
+                };
+            };
+        };
+    };
+    post_api_admin_page_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Created. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageDetailOutput"];
+                };
+            };
+        };
+    };
+    get_api_admin_page_catalog: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageCatalogOutput"];
+                };
+            };
+        };
+    };
+    get_api_admin_page_show: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageDetailOutput"];
+                };
+            };
+        };
+    };
+    patch_api_admin_page_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageDetailOutput"];
+                };
+            };
+        };
+    };
+    post_api_admin_page_preview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    post_api_admin_page_publish: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageDetailOutput"];
+                };
+            };
+        };
+    };
+    post_api_admin_page_disable: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageDetailOutput"];
+                };
+            };
+        };
+    };
+    post_api_admin_page_reactivate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageDetailOutput"];
+                };
+            };
+        };
+    };
+    post_api_admin_page_duplicate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Created. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageDetailOutput"];
+                };
+            };
+        };
+    };
+    post_api_admin_page_home: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageDetailOutput"];
+                };
+            };
+        };
+    };
+    get_api_admin_privacy_show: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PrivacyOutput"];
+                };
+            };
+        };
+    };
+    put_api_admin_privacy_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PrivacyOutput"];
+                };
+            };
+        };
+    };
     get_api_admin_team_list: {
         parameters: {
             query?: never;

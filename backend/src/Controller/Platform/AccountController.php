@@ -15,11 +15,13 @@ use App\Api\Output\AccountSummaryOutput;
 use App\Api\Output\TeamMemberOutput;
 use App\Api\Presenter;
 use App\Entity\Account;
+use App\Entity\AccountSlugRedirect;
 use App\Entity\User;
 use App\Enum\AccountFeature;
 use App\Platform\AccountCreator;
 use App\Platform\AccountSlugPolicy;
 use App\Repository\AccountRepository;
+use App\Repository\AccountSlugRedirectRepository;
 use App\Repository\UserRepository;
 use App\Security\InvitationService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -89,13 +91,22 @@ final class AccountController extends ApiController
     /** Datos, and Límites y funciones. A field left out is left as it is. */
     #[Route('/{id}', name: 'update', requirements: ['id' => Requirement::UUID], methods: ['PATCH'])]
     #[ApiResponse(AccountDetailOutput::class)]
-    public function update(string $id, Request $request, AccountSlugPolicy $slugs): JsonResponse
+    public function update(string $id, Request $request, AccountSlugPolicy $slugs, AccountSlugRedirectRepository $redirects): JsonResponse
     {
         $account = $this->load($id);
         $data = $this->input->map($this->input->json($request), AccountUpdateInput::class);
 
         if (null !== $data->slug) {
-            $account->setSlug($slugs->assertAvailable($data->slug, $account));
+            $slug = $slugs->assertAvailable($data->slug, $account);
+            if ($slug !== $account->getSlug()) {
+                // The old address keeps working: /<old>/… answers 301 to the same page at the new one.
+                $this->em->persist(new AccountSlugRedirect($account, $account->getSlug()));
+                $taken = $redirects->findOneByOldSlug($slug);
+                if (null !== $taken) {
+                    $this->em->remove($taken);
+                }
+                $account->setSlug($slug);
+            }
         }
         if (null !== $data->name) {
             $account->setName(trim($data->name));

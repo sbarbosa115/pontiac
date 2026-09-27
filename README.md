@@ -111,6 +111,25 @@ Every error is `{"error": "<code>", "message": "…"}`, plus `violations: [{fiel
 | POST, DELETE | `/api/platform/admins/{id}[/resend-invitation\|/enable]` | super admin | Resend, enable, disable (never yourself) |
 | GET | `/api/platform/emails` | super admin | Every attempt to send an email (`?q=&status=&account=`) |
 | POST | `/api/platform/emails/test` | super admin | Send a test email `{to}` |
+| GET | `/api/admin/dashboard` | owner, assistant | New leads (7 days), published pages and the limit |
+| GET, POST | `/api/admin/pages` | owner, assistant | Pages (`?q=&status=&template=`, with leads in 30 days); create from a template |
+| GET | `/api/admin/pages/catalog` | owner, assistant | Templates, section types and their fields, accents, form field types |
+| GET, PATCH | `/api/admin/pages/{id}` | owner, assistant | A page; save title, address and draft (checked against the template) |
+| POST | `/api/admin/pages/{id}/preview` | owner, assistant | `{draft}` → the page as HTML, never indexed (the editor's live preview) |
+| POST | `/api/admin/pages/{id}/publish`, `/duplicate`, `/home` | owner, assistant | Publish (409 `page_limit_reached`), copy, make the home page |
+| POST | `/api/admin/pages/{id}/disable`, `/reactivate` | owner | Take down (visitors get 410), bring back |
+| GET, POST | `/api/admin/media` | owner, assistant | Images (`?q=&includeInactive=1`); upload (multipart `file`, 409 `storage_limit_reached`) |
+| GET, PATCH, DELETE | `/api/admin/media/{id}` | owner, assistant | An image; its alt text; disable (`POST …/enable` to undo) |
+| GET, POST | `/api/admin/categories`, `/all` | owner, assistant | Lead categories (`?q=`); every one for pickers; create |
+| PUT, DELETE | `/api/admin/categories/{id}` | owner, assistant | Rename and recolour; disable (`POST …/enable` to undo) |
+| GET | `/api/admin/contacts` | owner, assistant | Prospectos (`?q=&status=&category=<id or none>&sourcePage=<id>`) |
+| GET, PATCH | `/api/admin/contacts/{id}` | owner, assistant | A contact with every form they sent; `{categoryId}` |
+| POST | `/api/admin/contacts/{id}/anonymize` | owner | Erase the person's data (Ley 1581) |
+| GET, PUT | `/api/admin/privacy` | owner (PUT), assistant (GET) | The privacy policy the forms link to |
+
+Public (server-rendered): `/<consultant>` (home page), `/<consultant>/<page>`, `POST …/enviar` (the form),
+`/<consultant>/privacidad`, `/<consultant>/media/<id>-<width>.webp`, `/<consultant>/sitemap.xml`, `/sitemap.xml`,
+`/robots.txt`. A former address (a consultant's or a page's) answers 301; a disabled page 410; a draft 404.
 
 ## Data model decisions
 
@@ -129,6 +148,18 @@ Every error is `{"error": "<code>", "message": "…"}`, plus `violations: [{fiel
 - `outgoing_email` logs every attempt to send an email, written by `App\Mail\EmailLog` from the mailer's events with
   DBAL (never flushing someone else's changes). It is not account-owned: only the super admin reads it; `account_id`
   says which consultant an email was for. A queued email that fails and is retried logs one row per attempt.
+- A page's content is JSON (`draft`, `published`) shaped by `App\Page\TemplateCatalog`: a template is a fixed list of
+  sections; the consultant orders them, turns them on and off and edits their fields, but cannot add or remove
+  sections. `ContentValidator` checks every save against the template (images and categories must be the
+  consultant's own). MySQL returns JSON with its keys sorted, so drafts are compared as content, not as text.
+- Public pages are Twig, CSS inline, no framework JavaScript: Lighthouse on mobile, production mode: performance 100,
+  accessibility 100, SEO 100 (best practices 79 locally only because the stack is plain HTTP).
+- The page form is a plain HTML form (post, redirect, get). Bots are stopped by a trap field and a signed time token
+  (at least 3 s to fill), and answered as if it worked. One contact per email and consultant; every form is a
+  `lead_submission` with the answers labelled as they were asked. Consent is stored with a hash of the policy text.
+- Page images are public by nature: served to anyone at their consultant's address, one-year immutable cache.
+  Uploads are checked by content (JPEG, PNG, WebP), resized to WebP 480/960/1600 with GD (never enlarged), and count
+  towards the storage limit with their copies.
 - Emails keep the server's `MAILER_FROM` address (it must match the SMTP account); the sender name and Reply-To come
   from the platform settings.
 
@@ -138,11 +169,13 @@ Not written yet: it comes with the release milestone (PRD, "Delivery plan").
 
 ## Known gaps
 
-- Changing a consultant's address breaks their old links (redirects come with the pages milestone).
 - Page, storage and file-size limits and the booking, payments and flows features are stored but only enforced by
   the milestones that build what they limit. The booking defaults are copied into a consultant's booking settings by
   milestone 2.
-- Template previews in Configuración › Plantillas come with milestone 1.
+- Template previews in Configuración › Plantillas (the page editor's preview covers the consultant's side).
+- EXIF orientation of uploaded photos is not applied (a phone photo taken sideways stays sideways).
+- The page limit counts published pages; a consultant can keep any number of drafts.
+- No export of prospectos yet; no custom domains.
 - The client portal's sign-in page does not show the consultant's name yet (only Pontiac's).
 - Lists of users are small today and not paginated by the database for the super admin's picker.
 - No self-service password reset yet.

@@ -1,0 +1,11 @@
+{# A library image at the widths it has, the browser picking the one it needs. The first image of the page loads at
+   once; the rest when they come close. #}
+{% set asset = images[id] ?? null %}
+{% if asset %}
+    <img src="{{ mediaBase }}{{ asset.id }}-{{ asset.variantFor(960) }}.webp"
+         srcset="{% for w in asset.variants %}{{ mediaBase }}{{ asset.id }}-{{ w }}.webp {{ w }}w{{ not loop.last ? ', ' }}{% endfor %}"
+         sizes="{{ sizes|default('(max-width: 820px) 100vw, 50vw') }}"
+         width="{{ asset.width }}" height="{{ asset.height }}"
+         alt="{{ asset.altText }}"
+         {% if eager|default(false) %}fetchpriority="high"{% else %}loading="lazy" decoding="async"{% endif %}>
+{% endif %}

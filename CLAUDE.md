@@ -33,6 +33,15 @@ filtered: every query that lists them names the account itself.
   `#[RequiresFeature(AccountFeature::…)]` and its menu items with `feature`. A limit (`Account::getMax…()`) is checked
   where the thing is created or re-enabled, with a 409 `<thing>_limit_reached`.
 
+## Pages and public routes
+
+- A public route (PublicController) enters the account of its URL's slug itself (`AccountContext::enterAccount()`);
+  nothing public is reached any other way. Public pages are Twig, never React.
+- A new section type or field goes in `App\Page\TemplateCatalog::SECTION_TYPES`, its Twig partial in
+  `templates/public/page/sections/`, and its labels in `i18n.ts` (`pageEditor.sectionType.*`, `pageEditor.field.*`).
+- After `cache:clear` in dev, restart the worker (`docker compose restart worker`): it keeps the old compiled
+  container and crashes on the first message.
+
 ## Tables
 
 **Every table follows this.** The components that enforce it are in `assets/react/components/ui.tsx`.

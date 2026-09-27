@@ -6,6 +6,808 @@
         "version": "1.0.0"
     },
     "paths": {
+        "/api/admin/categories": {
+            "get": {
+                "summary": "?q= searches the name; ?includeInactive=1 shows disabled ones too.",
+                "operationId": "get_api_admin_category_list",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "items",
+                                        "total",
+                                        "page",
+                                        "perPage"
+                                    ],
+                                    "properties": {
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/LeadCategoryOutput"
+                                            }
+                                        },
+                                        "total": {
+                                            "type": "integer"
+                                        },
+                                        "page": {
+                                            "type": "integer"
+                                        },
+                                        "perPage": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "operationId": "post_api_admin_category_create",
+                "responses": {
+                    "201": {
+                        "description": "Created.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LeadCategoryOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/categories/all": {
+            "get": {
+                "summary": "Every category, for pickers (active first; a disabled one still shows where it is used).",
+                "operationId": "get_api_admin_category_all",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "items"
+                                    ],
+                                    "properties": {
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/LeadCategoryOutput"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/categories/{id}": {
+            "put": {
+                "operationId": "put_api_admin_category_update",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LeadCategoryOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Not offered for new pages and contacts; the contacts that have it keep it.",
+                "operationId": "delete_api_admin_category_disable",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LeadCategoryOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/categories/{id}/enable": {
+            "post": {
+                "operationId": "post_api_admin_category_enable",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LeadCategoryOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/contacts": {
+            "get": {
+                "summary": "?q= searches name, email and phone; ?status=, ?category= (an id, or \"none\") and ?sourcePage= (an id) narrow it.",
+                "operationId": "get_api_admin_contact_list",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "items",
+                                        "total",
+                                        "page",
+                                        "perPage"
+                                    ],
+                                    "properties": {
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ContactSummaryOutput"
+                                            }
+                                        },
+                                        "total": {
+                                            "type": "integer"
+                                        },
+                                        "page": {
+                                            "type": "integer"
+                                        },
+                                        "perPage": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/contacts/{id}": {
+            "get": {
+                "operationId": "get_api_admin_contact_show",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ContactDetailOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "summary": "{categoryId}: one of the consultant's categories, or null for none.",
+                "operationId": "patch_api_admin_contact_update",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ContactDetailOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/contacts/{id}/anonymize": {
+            "post": {
+                "summary": "Ley 1581, on the person's request: their name, email, phone and answers are erased for good. Only the owner, who\nanswers for the data, can do it.",
+                "operationId": "post_api_admin_contact_anonymize",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ContactDetailOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/dashboard": {
+            "get": {
+                "operationId": "get_api_admin_dashboard",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AdminDashboardOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/media": {
+            "get": {
+                "summary": "?q= searches file name and alt text; ?includeInactive=1 shows disabled ones too.",
+                "operationId": "get_api_admin_media_list",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "items",
+                                        "total",
+                                        "page",
+                                        "perPage"
+                                    ],
+                                    "properties": {
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/MediaAssetOutput"
+                                            }
+                                        },
+                                        "total": {
+                                            "type": "integer"
+                                        },
+                                        "page": {
+                                            "type": "integer"
+                                        },
+                                        "perPage": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "multipart/form-data: \"file\", and optionally \"altText\".",
+                "operationId": "post_api_admin_media_upload",
+                "responses": {
+                    "201": {
+                        "description": "Created.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MediaAssetOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/media/{id}": {
+            "get": {
+                "operationId": "get_api_admin_media_show",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MediaAssetOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "No longer offered for new content; pages that show it keep showing it.",
+                "operationId": "delete_api_admin_media_disable",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MediaAssetOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "operationId": "patch_api_admin_media_update",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MediaAssetOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/media/{id}/enable": {
+            "post": {
+                "operationId": "post_api_admin_media_enable",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MediaAssetOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/pages": {
+            "get": {
+                "summary": "?q= searches title and address; ?status= and ?template= narrow it.",
+                "operationId": "get_api_admin_page_list",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "items",
+                                        "total",
+                                        "page",
+                                        "perPage"
+                                    ],
+                                    "properties": {
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/PageSummaryOutput"
+                                            }
+                                        },
+                                        "total": {
+                                            "type": "integer"
+                                        },
+                                        "page": {
+                                            "type": "integer"
+                                        },
+                                        "perPage": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "operationId": "post_api_admin_page_create",
+                "responses": {
+                    "201": {
+                        "description": "Created.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageDetailOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/pages/catalog": {
+            "get": {
+                "summary": "The templates, their sections and fields: what the editor draws.",
+                "operationId": "get_api_admin_page_catalog",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageCatalogOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/pages/{id}": {
+            "get": {
+                "operationId": "get_api_admin_page_show",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageDetailOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "summary": "Saves title, address and draft; visitors see nothing of it until it is published.",
+                "operationId": "patch_api_admin_page_update",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageDetailOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/pages/{id}/preview": {
+            "post": {
+                "summary": "The editor's live preview: a draft (not saved) as visitors would see it. HTML, for an iframe's srcdoc; a draft\nthat is not valid yet answers the 422 the save would.",
+                "operationId": "post_api_admin_page_preview",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/admin/pages/{id}/publish": {
+            "post": {
+                "operationId": "post_api_admin_page_publish",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageDetailOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/pages/{id}/disable": {
+            "post": {
+                "summary": "Takes it down: visitors get a 410, search engines drop it. Its content is kept.",
+                "operationId": "post_api_admin_page_disable",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageDetailOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/pages/{id}/reactivate": {
+            "post": {
+                "operationId": "post_api_admin_page_reactivate",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageDetailOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/pages/{id}/duplicate": {
+            "post": {
+                "operationId": "post_api_admin_page_duplicate",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageDetailOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/pages/{id}/home": {
+            "post": {
+                "summary": "Makes it the page at /<consultant>.",
+                "operationId": "post_api_admin_page_home",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageDetailOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/privacy": {
+            "get": {
+                "operationId": "get_api_admin_privacy_show",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PrivacyOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "summary": "The owner answers for the data (Ley 1581): only they change it. Empty goes back to the platform's text.",
+                "operationId": "put_api_admin_privacy_update",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PrivacyOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/admin/team": {
             "get": {
                 "summary": "?q= searches name and email.",
@@ -877,6 +1679,648 @@
     },
     "components": {
         "schemas": {
+            "LeadCategoryOutput": {
+                "required": [
+                    "id",
+                    "name",
+                    "color",
+                    "active"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "color": {
+                        "type": "string"
+                    },
+                    "active": {
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "CategoryRefOutput": {
+                "required": [
+                    "id",
+                    "name",
+                    "color",
+                    "active"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "color": {
+                        "title": "One of the UI tones (LeadCategory::COLORS).",
+                        "type": "string"
+                    },
+                    "active": {
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "PageRefOutput": {
+                "required": [
+                    "id",
+                    "title",
+                    "slug"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "slug": {
+                        "title": "Its address inside the consultant's: /<consultant>/<slug>.",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "ContactSummaryOutput": {
+                "required": [
+                    "id",
+                    "fullName",
+                    "email",
+                    "status",
+                    "lastActivityAt",
+                    "anonymized"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "fullName": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "status": {
+                        "title": "\"lead\", \"client\" or \"finished\".",
+                        "type": "string"
+                    },
+                    "category": {
+                        "nullable": true,
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/CategoryRefOutput"
+                            }
+                        ]
+                    },
+                    "sourcePage": {
+                        "title": "The page that brought them first.",
+                        "nullable": true,
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/PageRefOutput"
+                            }
+                        ]
+                    },
+                    "lastActivityAt": {
+                        "title": "ISO 8601.",
+                        "type": "string"
+                    },
+                    "anonymized": {
+                        "title": "Their data was erased on request (Ley 1581).",
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "AnswerOutput": {
+                "required": [
+                    "key",
+                    "label",
+                    "value"
+                ],
+                "properties": {
+                    "key": {
+                        "type": "string"
+                    },
+                    "label": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "UtmOutput": {
+                "required": [
+                    "name",
+                    "value"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "SubmissionOutput": {
+                "required": [
+                    "id",
+                    "submittedAt",
+                    "page",
+                    "answers",
+                    "utm"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "submittedAt": {
+                        "title": "ISO 8601.",
+                        "type": "string"
+                    },
+                    "page": {
+                        "$ref": "#/components/schemas/PageRefOutput"
+                    },
+                    "answers": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AnswerOutput"
+                        }
+                    },
+                    "utm": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/UtmOutput"
+                        }
+                    },
+                    "referrer": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "ContactDetailOutput": {
+                "required": [
+                    "id",
+                    "fullName",
+                    "email",
+                    "status",
+                    "createdAt",
+                    "lastActivityAt",
+                    "consentAt",
+                    "anonymized",
+                    "submissions"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "fullName": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "category": {
+                        "nullable": true,
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/CategoryRefOutput"
+                            }
+                        ]
+                    },
+                    "sourcePage": {
+                        "nullable": true,
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/PageRefOutput"
+                            }
+                        ]
+                    },
+                    "createdAt": {
+                        "title": "ISO 8601.",
+                        "type": "string"
+                    },
+                    "lastActivityAt": {
+                        "title": "ISO 8601.",
+                        "type": "string"
+                    },
+                    "consentAt": {
+                        "title": "ISO 8601: when they last accepted the privacy policy.",
+                        "type": "string"
+                    },
+                    "anonymized": {
+                        "type": "boolean"
+                    },
+                    "submissions": {
+                        "title": "newest first",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SubmissionOutput"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "AdminDashboardOutput": {
+                "required": [
+                    "newLeadsLast7Days",
+                    "publishedPages",
+                    "maxPublishedPages"
+                ],
+                "properties": {
+                    "newLeadsLast7Days": {
+                        "type": "integer"
+                    },
+                    "publishedPages": {
+                        "type": "integer"
+                    },
+                    "maxPublishedPages": {
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "MediaAssetOutput": {
+                "required": [
+                    "id",
+                    "originalName",
+                    "width",
+                    "height",
+                    "sizeBytes",
+                    "altText",
+                    "active",
+                    "createdAt",
+                    "thumbUrl",
+                    "url"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "originalName": {
+                        "type": "string"
+                    },
+                    "width": {
+                        "type": "integer"
+                    },
+                    "height": {
+                        "type": "integer"
+                    },
+                    "sizeBytes": {
+                        "title": "The original and its copies, what counts towards storage.",
+                        "type": "integer"
+                    },
+                    "altText": {
+                        "type": "string"
+                    },
+                    "active": {
+                        "type": "boolean"
+                    },
+                    "createdAt": {
+                        "title": "ISO 8601.",
+                        "type": "string"
+                    },
+                    "thumbUrl": {
+                        "title": "A small copy, for thumbnails.",
+                        "type": "string"
+                    },
+                    "url": {
+                        "title": "The widest copy.",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "PageSummaryOutput": {
+                "required": [
+                    "id",
+                    "title",
+                    "slug",
+                    "path",
+                    "template",
+                    "status",
+                    "home",
+                    "hasUnpublishedChanges",
+                    "leadsLast30Days",
+                    "updatedAt"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "slug": {
+                        "type": "string"
+                    },
+                    "path": {
+                        "title": "Where visitors find it: /<consultant> for the home page, /<consultant>/<slug> for the rest.",
+                        "type": "string"
+                    },
+                    "template": {
+                        "title": "A PageTemplate value.",
+                        "type": "string"
+                    },
+                    "status": {
+                        "title": "\"draft\", \"published\" or \"disabled\".",
+                        "type": "string"
+                    },
+                    "home": {
+                        "type": "boolean"
+                    },
+                    "hasUnpublishedChanges": {
+                        "title": "The draft differs from what visitors see.",
+                        "type": "boolean"
+                    },
+                    "leadsLast30Days": {
+                        "type": "integer"
+                    },
+                    "updatedAt": {
+                        "title": "ISO 8601.",
+                        "type": "string"
+                    },
+                    "publishedAt": {
+                        "title": "ISO 8601; null until first published.",
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "TemplateSectionOutput": {
+                "required": [
+                    "id",
+                    "type"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "title": "A key of PageCatalogOutput::$sectionTypes.",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "TemplateOutput": {
+                "required": [
+                    "key",
+                    "enabled",
+                    "sections"
+                ],
+                "properties": {
+                    "key": {
+                        "title": "A PageTemplate value.",
+                        "type": "string"
+                    },
+                    "enabled": {
+                        "type": "boolean"
+                    },
+                    "sections": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TemplateSectionOutput"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "ItemFieldSpecOutput": {
+                "required": [
+                    "name",
+                    "kind",
+                    "required"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "kind": {
+                        "type": "string"
+                    },
+                    "required": {
+                        "type": "boolean"
+                    },
+                    "max": {
+                        "type": "integer",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "FieldSpecOutput": {
+                "required": [
+                    "name",
+                    "kind",
+                    "required",
+                    "fields"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "kind": {
+                        "title": "\"text\", \"textarea\", \"image\", \"date\", \"url\" or \"items\".",
+                        "type": "string"
+                    },
+                    "required": {
+                        "type": "boolean"
+                    },
+                    "max": {
+                        "title": "Characters, for text kinds.",
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "maxItems": {
+                        "title": "For \"items\": how many at most.",
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "fields": {
+                        "title": "for \"items\": the fields of each item",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ItemFieldSpecOutput"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "SectionTypeOutput": {
+                "required": [
+                    "type",
+                    "fields"
+                ],
+                "properties": {
+                    "type": {
+                        "type": "string"
+                    },
+                    "fields": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/FieldSpecOutput"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "AccentOutput": {
+                "required": [
+                    "key",
+                    "color"
+                ],
+                "properties": {
+                    "key": {
+                        "type": "string"
+                    },
+                    "color": {
+                        "title": "Its main colour, for the picker's swatch.",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "PageCatalogOutput": {
+                "required": [
+                    "templates",
+                    "sectionTypes",
+                    "accents",
+                    "fieldTypes",
+                    "maxExtraFields"
+                ],
+                "properties": {
+                    "templates": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TemplateOutput"
+                        }
+                    },
+                    "sectionTypes": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SectionTypeOutput"
+                        }
+                    },
+                    "accents": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AccentOutput"
+                        }
+                    },
+                    "fieldTypes": {
+                        "title": "the types an extra form field can have",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "maxExtraFields": {
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "PageDetailOutput": {
+                "required": [
+                    "id",
+                    "title",
+                    "slug",
+                    "path",
+                    "template",
+                    "status",
+                    "home",
+                    "hasUnpublishedChanges",
+                    "updatedAt",
+                    "draft"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "slug": {
+                        "type": "string"
+                    },
+                    "path": {
+                        "type": "string"
+                    },
+                    "template": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "home": {
+                        "type": "boolean"
+                    },
+                    "hasUnpublishedChanges": {
+                        "type": "boolean"
+                    },
+                    "updatedAt": {
+                        "title": "ISO 8601.",
+                        "type": "string"
+                    },
+                    "publishedAt": {
+                        "title": "ISO 8601; null until first published.",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "draft": {
+                        "title": "sections, form, seo, settings (see TemplateCatalog::newContent())",
+                        "type": "object",
+                        "additionalProperties": {
+                            "nullable": true
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "PrivacyOutput": {
+                "required": [
+                    "text",
+                    "usingDefault",
+                    "defaultText"
+                ],
+                "properties": {
+                    "text": {
+                        "title": "What the forms link to: the consultant's text, or the platform's default when they have none.",
+                        "type": "string"
+                    },
+                    "usingDefault": {
+                        "type": "boolean"
+                    },
+                    "defaultText": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
             "TeamMemberOutput": {
                 "required": [
                     "id",

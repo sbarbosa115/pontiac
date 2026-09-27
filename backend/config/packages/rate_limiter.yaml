@@ -19,6 +19,11 @@ framework:
             policy: sliding_window
             limit: 10
             interval: '1 hour'
+        # A landing page's form, per page and client IP.
+        lead_form:
+            policy: sliding_window
+            limit: 10
+            interval: '10 minutes'
 
 when@test:
     framework:
@@ -39,3 +44,7 @@ when@test:
                 policy: sliding_window
                 limit: 1000
                 interval: '1 hour'
+            lead_form:
+                policy: sliding_window
+                limit: 1000
+                interval: '10 minutes'

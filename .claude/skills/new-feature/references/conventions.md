@@ -97,7 +97,10 @@ group thousands.
 
 - `ApiTestCase` (WebTestCase, DAMA rolled-back transactions on `app_test`) with helpers: `createAccount`,
   `createOwner`, `createAssistant`, `createClientLogin`, `createSuperAdmin`, `actAs`, `signOut`, `api`, `upload`,
-  `responseStatus`, `runWorker`. `actAs()` clears the entity manager: create fixtures before it, or re-fetch them.
+  `responseStatus`, `runWorker`, `createPage`, `createCategory`, `formData` (a person's form, with a valid time token),
+  `imageFile`. `actAs()` clears the entity manager: create fixtures before it, or re-fetch them. A request leaves its
+  account entered; `asPlatform()` (called by `save()`) lets the test read and write every account's data.
+- `assets/react/lib/i18n.test.ts` fails on a `t('key')` whose key is missing.
 - Shared tests every list joins: **search** (`?q=` filters) and **query count** (one row vs five must not change it).
 - PHPStan level 6 with an empty baseline.
 - `phpunit.dist.xml` pins `APP_URL` so tests pass on any port.

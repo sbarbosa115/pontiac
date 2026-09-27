@@ -120,6 +120,8 @@ const PATHS = {
     download: <path d="M12 3.5v12M7.5 11l4.5 4.5 4.5-4.5M4.5 20.5h15" />,
     plus: <path d="M12 5v14M5 12h14" />,
     pencil: <path d="M4 20h4L19.5 8.5a2.8 2.8 0 0 0-4-4L4 16zM13.5 6.5l4 4" />,
+    chevronUp: <path d="m6 15 6-6 6 6" />,
+    chevronDown: <path d="m6 9 6 6 6-6" />,
     ban: (
         <>
             <circle cx="12" cy="12" r="9" />

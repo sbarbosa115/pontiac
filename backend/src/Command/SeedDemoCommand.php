@@ -4,8 +4,14 @@ declare(strict_types=1);
 
 namespace App\Command;
 
+use App\Doctrine\AccountContext;
 use App\Entity\Account;
+use App\Entity\LandingPage;
+use App\Entity\LeadCategory;
 use App\Entity\User;
+use App\Enum\PageTemplate;
+use App\Page\TemplateCatalog;
+use App\Repository\LandingPageRepository;
 use App\Repository\AccountRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -31,6 +37,8 @@ final class SeedDemoCommand extends Command
         private readonly AccountRepository $accounts,
         private readonly UserRepository $users,
         private readonly UserPasswordHasherInterface $hasher,
+        private readonly AccountContext $context,
+        private readonly LandingPageRepository $pages,
     ) {
         parent::__construct();
     }
@@ -60,6 +68,7 @@ final class SeedDemoCommand extends Command
         }
 
         $this->em->flush();
+        $this->seedPages($account);
 
         $io->success('Demo data ready.');
         $io->table(['Role', 'Sign in at', 'Email', 'Password'], [
@@ -70,6 +79,46 @@ final class SeedDemoCommand extends Command
         ]);
 
         return Command::SUCCESS;
+    }
+
+    /**
+     * Three lead categories, a published home page whose form sorts people into them, and a draft plan page.
+     */
+    private function seedPages(Account $account): void
+    {
+        // A console command reaches a consultant's data only once it enters their account.
+        $this->context->enterAccount($account);
+        if (null !== $this->pages->findHome()) {
+            return;
+        }
+
+        $categories = [];
+        foreach (['Deudas' => 'rose', 'Ahorro e inversión' => 'success', 'Pensión' => 'indigo'] as $name => $color) {
+            $categories[$name] = new LeadCategory($account, $name, $color);
+            $this->em->persist($categories[$name]);
+        }
+
+        $content = TemplateCatalog::newContent(PageTemplate::FreeDiagnostic, 'Diagnóstico financiero gratuito');
+        $content['seo']['description'] = 'Una sesión gratuita de 45 minutos para ordenar tus finanzas y salir con un plan.';
+        $content['form']['fields'] = [[
+            'key' => 'preocupacion',
+            'label' => '¿Qué te preocupa más de tus finanzas?',
+            'type' => 'select',
+            'required' => true,
+            'options' => ['Mis deudas', 'Ahorrar e invertir', 'Mi pensión'],
+            'optionCategories' => [
+                'Mis deudas' => (string) $categories['Deudas']->getId(),
+                'Ahorrar e invertir' => (string) $categories['Ahorro e inversión']->getId(),
+                'Mi pensión' => (string) $categories['Pensión']->getId(),
+            ],
+        ]];
+        $home = (new LandingPage($account, 'Diagnóstico gratuito', 'diagnostico', PageTemplate::FreeDiagnostic, $content))->setHome(true);
+        $home->publish();
+        $this->em->persist($home);
+
+        $plan = new LandingPage($account, 'Plan de 2 sesiones', 'plan-2-sesiones', PageTemplate::PlanOffer, TemplateCatalog::newContent(PageTemplate::PlanOffer, 'Plan de finanzas personales'));
+        $this->em->persist($plan);
+        $this->em->flush();
     }
 
     private function withPassword(User $user): void

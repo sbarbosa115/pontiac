@@ -1,0 +1,11 @@
+<section id="{{ section.id }}">
+    <div class="wrap">
+        {% if fields.heading %}<{{ first ? 'h1' : 'h2' }}>{{ fields.heading }}</{{ first ? 'h1' : 'h2' }}>{% endif %}
+        {% for item in fields.items %}
+            <details>
+                <summary>{{ item.question }}</summary>
+                <p>{{ item.answer|nl2br }}</p>
+            </details>
+        {% endfor %}
+    </div>
+</section>

@@ -7,6 +7,7 @@ namespace App\Platform;
 use App\Api\ApiValidationException;
 use App\Entity\Account;
 use App\Repository\AccountRepository;
+use App\Repository\AccountSlugRedirectRepository;
 use App\Repository\PlatformSettingsRepository;
 
 /**
@@ -18,6 +19,7 @@ final class AccountSlugPolicy
     public function __construct(
         private readonly AccountRepository $accounts,
         private readonly PlatformSettingsRepository $settings,
+        private readonly AccountSlugRedirectRepository $redirects,
     ) {
     }
 
@@ -37,6 +39,11 @@ final class AccountSlugPolicy
         }
         $owner = $this->accounts->findOneBySlug($slug);
         if (null !== $owner && (null === $for || !$owner->getId()->equals($for->getId()))) {
+            throw ApiValidationException::single('slug', 'This address is already taken.');
+        }
+        // Another consultant's former address still sends their visitors to them: it is not free.
+        $former = $this->redirects->findOneByOldSlug($slug);
+        if (null !== $former && (null === $for || !$former->getAccount()->getId()->equals($for->getId()))) {
             throw ApiValidationException::single('slug', 'This address is already taken.');
         }
 

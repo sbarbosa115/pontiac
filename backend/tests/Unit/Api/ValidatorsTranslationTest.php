@@ -15,7 +15,7 @@ use Symfony\Component\Yaml\Yaml;
 final class ValidatorsTranslationTest extends TestCase
 {
     /** Where a violation's message is written: the API exception, the validator, a constraint, an error array. */
-    private const SOURCES = '/(ApiValidationException::single\(|buildViolation\(|\bmessage:\s*|\'message\'\s*=>\s*)/';
+    private const SOURCES = '/(ApiValidationException::single\(|buildViolation\(|->fail\(\s*[^,]+,\s*|\bmessage:\s*|\'message\'\s*=>\s*)/';
 
     public function testEveryValidationMessageHasASpanishTranslation(): void
     {
