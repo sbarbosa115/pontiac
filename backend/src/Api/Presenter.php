@@ -6,6 +6,7 @@ namespace App\Api;
 
 use App\Api\Output\AccentOutput;
 use App\Api\Output\ClientFileOutput;
+use App\Api\Output\ContactFlowOutput;
 use App\Api\Output\PortalAccessOutput;
 use App\Api\Output\PortalNoteOutput;
 use App\Api\Output\PortalPaymentOutput;
@@ -408,9 +409,10 @@ final class Presenter
     /**
      * @param list<LeadSubmission>   $submissions
      * @param list<BookingSession>   $sessions
-     * @param list<EnrollmentOutput> $enrollments
+     * @param list<EnrollmentOutput>  $enrollments
+     * @param list<ContactFlowOutput> $flows
      */
-    public static function contactDetail(Contact $contact, array $submissions, array $sessions = [], array $enrollments = [], ?PortalAccessOutput $portal = null): ContactDetailOutput
+    public static function contactDetail(Contact $contact, array $submissions, array $sessions = [], array $enrollments = [], ?PortalAccessOutput $portal = null, array $flows = []): ContactDetailOutput
     {
         return new ContactDetailOutput(
             id: (string) $contact->getId(),
@@ -435,6 +437,7 @@ final class Presenter
             sessions: array_map(self::session(...), $sessions),
             enrollments: $enrollments,
             portal: $portal ?? new PortalAccessOutput(status: 'none', lastSignInAt: null),
+            flows: $flows,
         );
     }
 

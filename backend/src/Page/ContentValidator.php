@@ -8,6 +8,7 @@ use App\Api\ApiValidationException;
 use App\Enum\PageTemplate;
 use App\Repository\LeadCategoryRepository;
 use App\Repository\MediaAssetRepository;
+use App\Repository\FlowRepository;
 use App\Repository\PlanRepository;
 use Symfony\Component\String\Slugger\AsciiSlugger;
 
@@ -32,6 +33,7 @@ final class ContentValidator
         private readonly MediaAssetRepository $media,
         private readonly LeadCategoryRepository $categories,
         private readonly PlanRepository $plans,
+        private readonly FlowRepository $flows,
     ) {
     }
 
@@ -55,6 +57,7 @@ final class ContentValidator
         $this->checkImages($clean);
         $this->checkCategories($clean);
         $this->checkPlans($clean);
+        $this->checkFlow($clean);
 
         if ([] !== $this->violations) {
             throw new ApiValidationException($this->violations);
@@ -336,7 +339,7 @@ final class ContentValidator
     /**
      * @param array<string, mixed> $settings
      *
-     * @return array{defaultCategoryId: string|null, accent: string}
+     * @return array{defaultCategoryId: string|null, accent: string, flowId: string|null}
      */
     private function settings(array $settings): array
     {
@@ -346,8 +349,14 @@ final class ContentValidator
             $accent = 'navy';
         }
         $category = $settings['defaultCategoryId'] ?? null;
+        $flow = $settings['flowId'] ?? null;
 
-        return ['defaultCategoryId' => \is_string($category) && '' !== $category ? $category : null, 'accent' => $accent];
+        return [
+            'defaultCategoryId' => \is_string($category) && '' !== $category ? $category : null,
+            'accent' => $accent,
+            // The flow the people of this page enter (Flujos); none: they enter no flow on their own.
+            'flowId' => \is_string($flow) && '' !== $flow ? $flow : null,
+        ];
     }
 
     /**
@@ -373,6 +382,23 @@ final class ContentValidator
             if (!isset($found[$id])) {
                 $this->fail($path, 'Choose an image from your library.');
             }
+        }
+    }
+
+    /**
+     * The flow a page feeds is one of this consultant's, and active.
+     *
+     * @param array<string, mixed> $content
+     */
+    private function checkFlow(array $content): void
+    {
+        $id = $content['settings']['flowId'];
+        if (null === $id) {
+            return;
+        }
+        $flow = $this->flows->findOneById($id);
+        if (null === $flow || !$flow->isActive()) {
+            $this->fail('settings.flowId', 'Choose one of your active flows.');
         }
     }
 

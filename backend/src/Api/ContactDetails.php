@@ -8,6 +8,7 @@ use App\Api\Output\ContactDetailOutput;
 use App\Entity\Account;
 use App\Entity\Contact;
 use App\Api\Output\PortalAccessOutput;
+use App\Flow\FlowViews;
 use App\Payment\PaymentLinks;
 use App\Portal\PortalAccess;
 use App\Repository\UserRepository;
@@ -27,6 +28,7 @@ final class ContactDetails
         private readonly PaymentLinks $links,
         private readonly UserRepository $users,
         private readonly PortalAccess $portal,
+        private readonly FlowViews $flows,
     ) {
     }
 
@@ -47,6 +49,7 @@ final class ContactDetails
             $this->sessions->findForContact($contact),
             array_map(fn ($e) => Presenter::enrollment($e, $counts[(string) $e->getId()], $this->links->url($account, $e), $payments[(string) $e->getId()] ?? []), $enrollments),
             new PortalAccessOutput(status: $this->portal->status($login), lastSignInAt: Presenter::timestamp($login?->getLastSignInAt())),
+            $this->flows->ofContact($contact),
         );
     }
 }

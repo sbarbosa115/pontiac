@@ -10,6 +10,7 @@ use App\Entity\Account;
 use App\Entity\BookingSession;
 use App\Entity\Contact;
 use App\Entity\Enrollment;
+use App\Entity\Flow;
 use App\Entity\LandingPage;
 use App\Entity\LeadCategory;
 use App\Entity\Payment;
@@ -18,6 +19,7 @@ use App\Entity\WompiSettings;
 use App\Entity\User;
 use App\Enum\PageTemplate;
 use App\Page\TemplateCatalog;
+use App\Flow\FlowGraph;
 use App\Page\TimeToken;
 use App\Api\Input\WompiSettingsInput;
 use App\Payment\WompiKeys;
@@ -244,6 +246,17 @@ abstract class ApiTestCase extends WebTestCase
             'payment_method_type' => 'CARD',
             'status' => $status,
         ];
+    }
+
+    /** A flow from the ready example: Nuevo → Sesión agendada → Seguimiento → Cliente → Finalizado. */
+    protected function createFlow(Account $account, string $name = 'Diagnóstico'): Flow
+    {
+        $this->asPlatform();
+        static::getContainer()->get(AccountContext::class)->enterAccount($account);
+        $flow = static::getContainer()->get(FlowGraph::class)->starter($account, $name);
+        $this->asPlatform();
+
+        return $flow;
     }
 
     /**

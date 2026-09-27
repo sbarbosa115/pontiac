@@ -1,0 +1,10 @@
+{% extends 'emails/layout.html.twig' %}
+
+{# A flow stage's email: the consultant's words, escaped with their links made clickable (FlowMailer::html()), and the
+   way out. #}
+{% block content %}
+{% for paragraph in paragraphs %}
+<p>{{ paragraph|raw }}</p>
+{% endfor %}
+<p style="color:#5b6576;font-size:12px;margin-top:24px;">¿No quieres recibir más correos como este? <a href="{{ optOutUrl }}" style="color:#5b6576;">No quiero recibir más correos</a>.</p>
+{% endblock %}

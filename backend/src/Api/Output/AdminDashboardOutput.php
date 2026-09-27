@@ -17,6 +17,8 @@ final readonly class AdminDashboardOutput
         /** Approved payments in the last 7 days: how many and how much. */
         public int $paymentsLast7Days,
         public MoneyOutput $paidLast7Days,
+        /** @var list<OverdueOutput> people waiting in a flow stage longer than its alert, the longest first */
+        public array $overdue,
     ) {
     }
 }

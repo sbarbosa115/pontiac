@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Api;
 
 use App\Entity\Account;
+use App\Entity\EmailTemplate;
 use App\Entity\Enrollment;
 use App\Entity\Payment;
 use App\Entity\User;
@@ -53,6 +54,12 @@ final class ListSearchTest extends ApiTestCase
             $this->save($enrollment, Payment::manual($enrollment, 'cash', null, $this->owner, new \DateTimeImmutable()));
         }
 
+        // Two flows and two flow emails.
+        $this->createFlow($this->account, 'Diagnóstico');
+        $this->createFlow($this->account, 'Renovación');
+        $this->save(new EmailTemplate($this->account, 'Bienvenida', 'Hola {nombre}', 'Gracias por escribir.'));
+        $this->save(new EmailTemplate($this->account, 'Seguimiento', 'Cómo vas con tu plan', 'Cuéntanos.'));
+
         // Two settings changes by two people, and two emails for two consultants.
         $this->actAs($this->superAdmin);
         $this->api('PATCH', '/api/platform/settings', ['senderName' => 'Equipo']);
@@ -99,6 +106,9 @@ final class ListSearchTest extends ApiTestCase
         yield 'sessions by contact email' => ['owner', '/api/admin/sessions', 'citas.test', 'jorge@'];
         yield 'payments by person' => ['owner', '/api/admin/payments', 'Marta', 'Peña'];
         yield 'payments by email' => ['owner', '/api/admin/payments', 'marta@', 'agenda.test'];
+        yield 'flows by name' => ['owner', '/api/admin/flows', 'Diagnóstico', 'Renovación'];
+        yield 'flow emails by name' => ['owner', '/api/admin/email-templates', 'Bienvenida', 'Seguimiento'];
+        yield 'flow emails by subject' => ['owner', '/api/admin/email-templates', 'Hola {', 'Cómo vas'];
     }
 
     #[DataProvider('lists')]

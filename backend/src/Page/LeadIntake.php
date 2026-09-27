@@ -8,11 +8,14 @@ use App\Entity\Account;
 use App\Entity\Contact;
 use App\Entity\LandingPage;
 use App\Entity\LeadSubmission;
+use App\Enum\FlowTrigger;
+use App\Flow\ContactMoment;
 use App\Mail\LeadMailer;
 use App\Repository\ContactRepository;
 use App\Repository\LeadCategoryRepository;
 use App\Repository\PlatformSettingsRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * A visitor sent a page's form: check what they wrote, make them a prospecto (or add to the one they already are),
@@ -31,6 +34,7 @@ final class LeadIntake
         private readonly PlatformSettingsRepository $settings,
         private readonly TimeToken $timeToken,
         private readonly LeadMailer $mailer,
+        private readonly EventDispatcherInterface $events,
     ) {
     }
 
@@ -169,6 +173,7 @@ final class LeadIntake
 
         $this->em->persist(new LeadSubmission($contact, $page, $answers, $utm, $referrer));
         $this->em->flush();
+        $this->events->dispatch(new ContactMoment($account, $contact, FlowTrigger::LeadSubmitted, $page));
 
         $this->mailer->newLead($account, $contact, $page, $answers);
         foreach ($content['sections'] as $section) {

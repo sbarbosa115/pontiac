@@ -12,8 +12,11 @@ use App\Entity\Plan;
 use App\Enum\AccountFeature;
 use App\Enum\EnrollmentOutcome;
 use App\Enum\EnrollmentStatus;
+use App\Enum\FlowTrigger;
+use App\Flow\ContactMoment;
 use App\Mail\PaymentMailer;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * A person's plans, as the consultant runs them: assign one (a paid one emails its payment link), send the link
@@ -25,6 +28,7 @@ final class Enrollments
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly PaymentMailer $mailer,
+        private readonly EventDispatcherInterface $events,
     ) {
     }
 
@@ -83,6 +87,8 @@ final class Enrollments
         $this->conclude($enrollment, EnrollmentOutcome::Finished);
         $enrollment->getContact()->finish();
         $this->em->flush();
+        $account = $enrollment->getAccount() ?? throw new \LogicException('An enrollment belongs to an account.');
+        $this->events->dispatch(new ContactMoment($account, $enrollment->getContact(), FlowTrigger::ConsultancyFinished));
 
         return $enrollment;
     }

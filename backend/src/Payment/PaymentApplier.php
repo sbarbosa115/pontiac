@@ -11,11 +11,14 @@ use App\Entity\Payment;
 use App\Entity\User;
 use App\Enum\EnrollmentStatus;
 use App\Enum\PaymentStatus;
+use App\Enum\FlowTrigger;
+use App\Flow\ContactMoment;
 use App\Mail\PaymentMailer;
 use App\Portal\PortalAccess;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Lock\LockFactory;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Applies a payment's result, from wherever it comes (Wompi's event, Wompi's API asked by the result page, or the
@@ -29,6 +32,7 @@ final class PaymentApplier
         private readonly LockFactory $locks,
         private readonly PaymentMailer $mailer,
         private readonly PortalAccess $portal,
+        private readonly EventDispatcherInterface $events,
         private readonly LoggerInterface $logger,
     ) {
     }
@@ -106,6 +110,7 @@ final class PaymentApplier
         if (!$payment->getEnrollment()->isFree()) {
             $this->portal->inviteAfterPayment($account, $payment->getContact());
         }
+        $this->events->dispatch(new ContactMoment($account, $payment->getContact(), FlowTrigger::PaymentApproved));
     }
 
     private function approve(Enrollment $enrollment): void

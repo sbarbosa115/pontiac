@@ -12,12 +12,15 @@ use App\Entity\Enrollment;
 use App\Entity\LandingPage;
 use App\Entity\Plan;
 use App\Enum\EnrollmentStatus;
+use App\Enum\FlowTrigger;
+use App\Flow\ContactMoment;
 use App\Enum\SessionStatus;
 use App\Mail\BookingMailer;
 use App\Repository\AvailabilityRepository;
 use App\Repository\BookingSessionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Lock\LockFactory;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Books, moves and cancels sessions. A slot is taken under the account's booking lock, after checking again that it
@@ -32,6 +35,7 @@ final class Booker
         private readonly BookingSessionRepository $sessions,
         private readonly LockFactory $locks,
         private readonly BookingMailer $mailer,
+        private readonly EventDispatcherInterface $events,
     ) {
     }
 
@@ -125,6 +129,8 @@ final class Booker
         }
         $this->em->flush();
         $this->progress($session, $now);
+        $account = $session->getAccount() ?? throw new \LogicException('A session belongs to an account.');
+        $this->events->dispatch(new ContactMoment($account, $session->getContact(), SessionStatus::Done === $outcome ? FlowTrigger::SessionDone : FlowTrigger::SessionNoShow));
 
         return $session;
     }
@@ -171,6 +177,7 @@ final class Booker
         }
 
         $this->mailer->confirmed($account, $session, $token);
+        $this->events->dispatch(new ContactMoment($account, $session->getContact(), FlowTrigger::SessionBooked, $enrollment->getSourcePage()));
 
         return $session;
     }
@@ -179,8 +186,12 @@ final class Booker
     private function progress(BookingSession $session, \DateTimeImmutable $now): void
     {
         $enrollment = $session->getEnrollment();
-        $enrollment->progress($this->sessions->countsByEnrollment([$enrollment])[(string) $enrollment->getId()]['used'], $now);
+        $completed = $enrollment->progress($this->sessions->countsByEnrollment([$enrollment])[(string) $enrollment->getId()]['used'], $now);
         $this->em->flush();
+        if ($completed) {
+            $account = $enrollment->getAccount() ?? throw new \LogicException('An enrollment belongs to an account.');
+            $this->events->dispatch(new ContactMoment($account, $enrollment->getContact(), FlowTrigger::EnrollmentCompleted));
+        }
     }
 
     private function overlaps(BookingSession $session, \DateTimeImmutable $startsAt, int $bufferMinutes): bool

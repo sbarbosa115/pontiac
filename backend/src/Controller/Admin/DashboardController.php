@@ -8,6 +8,8 @@ use App\Api\ApiController;
 use App\Api\ApiResponse;
 use App\Api\Output\AdminDashboardOutput;
 use App\Api\Output\MoneyOutput;
+use App\Enum\AccountFeature;
+use App\Flow\FlowViews;
 use App\Repository\BookingSessionRepository;
 use App\Repository\ContactRepository;
 use App\Repository\PaymentRepository;
@@ -20,7 +22,7 @@ final class DashboardController extends ApiController
 {
     #[Route('/api/admin/dashboard', name: 'api_admin_dashboard', methods: ['GET'])]
     #[ApiResponse(AdminDashboardOutput::class)]
-    public function __invoke(ContactRepository $contacts, LandingPageRepository $pages, BookingSessionRepository $sessions, PaymentRepository $payments): JsonResponse
+    public function __invoke(ContactRepository $contacts, LandingPageRepository $pages, BookingSessionRepository $sessions, PaymentRepository $payments, FlowViews $flows): JsonResponse
     {
         $today = (new \DateTimeImmutable('today', new \DateTimeZone($this->account()->getTimezone())));
         $paid = $payments->approvedSince(new \DateTimeImmutable('-7 days'));
@@ -33,6 +35,7 @@ final class DashboardController extends ApiController
             sessionsTomorrow: \count($sessions->findScheduledBetween($today->modify('+1 day'), $today->modify('+2 days'))),
             paymentsLast7Days: $paid['count'],
             paidLast7Days: new MoneyOutput(amount: $paid['total'], currency: $this->account()->getCurrency()),
+            overdue: $this->account()->hasFeature(AccountFeature::Flows) ? $flows->overdue() : [],
         ));
     }
 }

@@ -227,6 +227,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/contacts/{id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_api_admin_contact_history"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/dashboard": {
         parameters: {
             query?: never;
@@ -237,6 +253,72 @@ export interface paths {
         get: operations["get_api_admin_dashboard"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/email-templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** ?q= searches the name and subject; ?includeInactive=1 shows disabled ones too. */
+        get: operations["get_api_admin_email_template_list"];
+        put?: never;
+        post: operations["post_api_admin_email_template_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/email-templates/all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_api_admin_email_template_all"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/email-templates/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["put_api_admin_email_template_update"];
+        post?: never;
+        /** Disabled: stages that use it send nothing until it is enabled again. */
+        delete: operations["delete_api_admin_email_template_disable"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/email-templates/{id}/enable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post_api_admin_email_template_enable"];
         delete?: never;
         options?: never;
         head?: never;
@@ -339,6 +421,141 @@ export interface paths {
         /** "Finalizar asesoría": the used-up plan is closed and the person is finished (paying again brings them back). */
         post: operations["post_api_admin_enrollment_finish"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/flows": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** ?q= searches the name; ?includeInactive=1 shows disabled ones too. */
+        get: operations["get_api_admin_flow_list"];
+        put?: never;
+        /** "Nuevo flujo": from the ready example, to change in the editor. */
+        post: operations["post_api_admin_flow_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/flows/all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Every flow, active first: pickers. */
+        get: operations["get_api_admin_flow_all"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/flows/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_api_admin_flow_show"];
+        put: operations["put_api_admin_flow_update"];
+        post?: never;
+        /** Disabled: nobody moves in it any more; its people stay where they are. */
+        delete: operations["delete_api_admin_flow_disable"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/flows/{id}/enable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post_api_admin_flow_enable"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/flows/{id}/board": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_api_admin_flow_board"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/flows/{id}/people": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** "Agregar a un flujo": into its start stage. Answers the person's flows. */
+        post: operations["post_api_admin_flow_add"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/flows/{id}/people/{contactId}/move": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** A hand move (the board, the person's page): to any stage of the flow. */
+        post: operations["post_api_admin_flow_move"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/flows/{id}/people/{contactId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** "Sacar del flujo". */
+        delete: operations["delete_api_admin_flow_remove"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1733,6 +1950,20 @@ export interface components {
             /** ISO 8601. */
             lastSignInAt?: string | null;
         };
+        StageRefOutput: {
+            id: string;
+            name: string;
+        };
+        ContactFlowOutput: {
+            flowId: string;
+            flowName: string;
+            stageId: string;
+            stageName: string;
+            /** ISO 8601. */
+            enteredAt: string;
+            /** the stages they can be moved to */
+            stages: components["schemas"]["StageRefOutput"][];
+        };
         ContactDetailOutput: {
             id: string;
             fullName: string;
@@ -1755,6 +1986,31 @@ export interface components {
             /** newest first */
             enrollments: components["schemas"]["EnrollmentOutput"][];
             portal: components["schemas"]["PortalAccessOutput"];
+            flows: components["schemas"]["ContactFlowOutput"][];
+        };
+        HistoryItemOutput: {
+            /** "flow" or "email". */
+            type: string;
+            /** ISO 8601. */
+            at: string;
+            flowName?: string | null;
+            fromStage?: string | null;
+            toStage?: string | null;
+            /** For a move: a FlowTrigger value, "added", "removed" or "manual". For an email: its kind. */
+            reason: string;
+            /** Who moved them, when a person did. */
+            by?: string | null;
+            /** For an email: its subject and whether it left. */
+            subject?: string | null;
+            emailStatus?: string | null;
+        };
+        OverdueOutput: {
+            contactId: string;
+            fullName: string;
+            flowId: string;
+            flowName: string;
+            stageName: string;
+            days: number;
         };
         AdminDashboardOutput: {
             newLeadsLast7Days: number;
@@ -1766,6 +2022,77 @@ export interface components {
             /** Approved payments in the last 7 days: how many and how much. */
             paymentsLast7Days: number;
             paidLast7Days: components["schemas"]["MoneyOutput"];
+            /** people waiting in a flow stage longer than its alert, the longest first */
+            overdue: components["schemas"]["OverdueOutput"][];
+        };
+        EmailTemplateOutput: {
+            id: string;
+            name: string;
+            subject: string;
+            body: string;
+            active: boolean;
+        };
+        FlowSummaryOutput: {
+            id: string;
+            name: string;
+            active: boolean;
+            stages: number;
+            /** People in it now. */
+            people: number;
+        };
+        FlowStageOutput: {
+            id: string;
+            name: string;
+            /** "start", "step" or "end". */
+            kind: string;
+            x: number;
+            y: number;
+            emailTemplateId?: string | null;
+            alertDays?: number | null;
+            /** People in it now. */
+            people: number;
+        };
+        FlowTransitionOutput: {
+            from: string;
+            to: string;
+            /** A FlowTrigger value: "manual", "lead_submitted", "session_booked", … */
+            trigger: string;
+        };
+        FlowOutput: {
+            id: string;
+            name: string;
+            active: boolean;
+            /** in board order */
+            stages: components["schemas"]["FlowStageOutput"][];
+            transitions: components["schemas"]["FlowTransitionOutput"][];
+            /** pages whose people enter this flow */
+            pages: components["schemas"]["PageRefOutput"][];
+        };
+        BoardCardOutput: {
+            contactId: string;
+            fullName: string;
+            /** "lead", "client" or "finished". */
+            status: string;
+            category?: components["schemas"]["CategoryRefOutput"] | null;
+            /** ISO 8601: when they entered this stage. */
+            enteredAt: string;
+            /** Whole days in this stage. */
+            days: number;
+            /** Longer than the stage's alert. */
+            overdue: boolean;
+        };
+        BoardColumnOutput: {
+            stageId: string;
+            name: string;
+            kind: string;
+            alertDays?: number | null;
+            /** the longest waiting first */
+            cards: components["schemas"]["BoardCardOutput"][];
+        };
+        BoardOutput: {
+            flowId: string;
+            flowName: string;
+            columns: components["schemas"]["BoardColumnOutput"][];
         };
         MediaAssetOutput: {
             id: string;
@@ -2605,6 +2932,30 @@ export interface operations {
             };
         };
     };
+    get_api_admin_contact_history: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["HistoryItemOutput"][];
+                    };
+                };
+            };
+        };
+    };
     get_api_admin_dashboard: {
         parameters: {
             query?: never;
@@ -2621,6 +2972,139 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminDashboardOutput"];
+                };
+            };
+        };
+    };
+    get_api_admin_email_template_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["EmailTemplateOutput"][];
+                        total: number;
+                        page: number;
+                        perPage: number;
+                    };
+                };
+            };
+        };
+    };
+    post_api_admin_email_template_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Created. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmailTemplateOutput"];
+                };
+            };
+        };
+    };
+    get_api_admin_email_template_all: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["EmailTemplateOutput"][];
+                    };
+                };
+            };
+        };
+    };
+    put_api_admin_email_template_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmailTemplateOutput"];
+                };
+            };
+        };
+    };
+    delete_api_admin_email_template_disable: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmailTemplateOutput"];
+                };
+            };
+        };
+    };
+    post_api_admin_email_template_enable: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmailTemplateOutput"];
                 };
             };
         };
@@ -2753,6 +3237,257 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ContactDetailOutput"];
+                };
+            };
+        };
+    };
+    get_api_admin_flow_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["FlowSummaryOutput"][];
+                        total: number;
+                        page: number;
+                        perPage: number;
+                    };
+                };
+            };
+        };
+    };
+    post_api_admin_flow_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Created. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FlowOutput"];
+                };
+            };
+        };
+    };
+    get_api_admin_flow_all: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["FlowSummaryOutput"][];
+                    };
+                };
+            };
+        };
+    };
+    get_api_admin_flow_show: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FlowOutput"];
+                };
+            };
+        };
+    };
+    put_api_admin_flow_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FlowOutput"];
+                };
+            };
+        };
+    };
+    delete_api_admin_flow_disable: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FlowOutput"];
+                };
+            };
+        };
+    };
+    post_api_admin_flow_enable: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FlowOutput"];
+                };
+            };
+        };
+    };
+    get_api_admin_flow_board: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BoardOutput"];
+                };
+            };
+        };
+    };
+    post_api_admin_flow_add: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Created. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["ContactFlowOutput"][];
+                    };
+                };
+            };
+        };
+    };
+    post_api_admin_flow_move: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                contactId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["ContactFlowOutput"][];
+                    };
+                };
+            };
+        };
+    };
+    delete_api_admin_flow_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                contactId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["ContactFlowOutput"][];
+                    };
                 };
             };
         };

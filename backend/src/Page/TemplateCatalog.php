@@ -226,7 +226,7 @@ final class TemplateCatalog
             'sections' => self::sections($template),
             'form' => ['fields' => []],
             'seo' => ['title' => $title, 'description' => '', 'imageId' => null, 'index' => true],
-            'settings' => ['defaultCategoryId' => null, 'accent' => 'navy'],
+            'settings' => ['defaultCategoryId' => null, 'accent' => 'navy', 'flowId' => null],
         ];
     }
 

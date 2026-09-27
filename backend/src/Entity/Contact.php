@@ -58,6 +58,9 @@ class Contact implements AccountOwnedInterface
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $anonymizedAt = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $flowEmailsStoppedAt = null;
+
     public function __construct(Account $account, string $fullName, string $email, ?string $phone, ?LandingPage $sourcePage, string $consentPolicyHash)
     {
         $this->id = Uuid::v7();
@@ -118,6 +121,19 @@ class Contact implements AccountOwnedInterface
         $this->anonymizedAt = new \DateTimeImmutable();
 
         return $this;
+    }
+
+    /** "No quiero recibir más correos": flows stop emailing them (confirmations and receipts still go). */
+    public function stopFlowEmails(\DateTimeImmutable $now): static
+    {
+        $this->flowEmailsStoppedAt ??= $now;
+
+        return $this;
+    }
+
+    public function getFlowEmailsStoppedAt(): ?\DateTimeImmutable
+    {
+        return $this->flowEmailsStoppedAt;
     }
 
     public function getFullName(): string

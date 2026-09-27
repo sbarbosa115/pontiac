@@ -62,4 +62,22 @@ class OutgoingEmailRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult();
     }
+
+    /**
+     * The emails a consultant's contact was sent (their Historial), the latest first.
+     *
+     * @return list<OutgoingEmail>
+     */
+    public function findForRecipient(\App\Entity\Account $account, string $email): array
+    {
+        return $this->createQueryBuilder('e')
+            ->andWhere('e.account = :account')
+            ->andWhere('e.recipient = :email')
+            ->setParameter('account', $account->getId(), \Symfony\Bridge\Doctrine\Types\UuidType::NAME)
+            ->setParameter('email', $email)
+            ->orderBy('e.sentAt', 'DESC')
+            ->setMaxResults(100)
+            ->getQuery()
+            ->getResult();
+    }
 }

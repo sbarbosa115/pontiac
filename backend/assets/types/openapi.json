@@ -530,6 +530,45 @@
                 }
             }
         },
+        "/api/admin/contacts/{id}/history": {
+            "get": {
+                "operationId": "get_api_admin_contact_history",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "items"
+                                    ],
+                                    "properties": {
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/HistoryItemOutput"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/admin/dashboard": {
             "get": {
                 "operationId": "get_api_admin_dashboard",
@@ -540,6 +579,173 @@
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/AdminDashboardOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/email-templates": {
+            "get": {
+                "summary": "?q= searches the name and subject; ?includeInactive=1 shows disabled ones too.",
+                "operationId": "get_api_admin_email_template_list",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "items",
+                                        "total",
+                                        "page",
+                                        "perPage"
+                                    ],
+                                    "properties": {
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/EmailTemplateOutput"
+                                            }
+                                        },
+                                        "total": {
+                                            "type": "integer"
+                                        },
+                                        "page": {
+                                            "type": "integer"
+                                        },
+                                        "perPage": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "operationId": "post_api_admin_email_template_create",
+                "responses": {
+                    "201": {
+                        "description": "Created.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EmailTemplateOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/email-templates/all": {
+            "get": {
+                "operationId": "get_api_admin_email_template_all",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "items"
+                                    ],
+                                    "properties": {
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/EmailTemplateOutput"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/email-templates/{id}": {
+            "put": {
+                "operationId": "put_api_admin_email_template_update",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EmailTemplateOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Disabled: stages that use it send nothing until it is enabled again.",
+                "operationId": "delete_api_admin_email_template_disable",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EmailTemplateOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/email-templates/{id}/enable": {
+            "post": {
+                "operationId": "post_api_admin_email_template_enable",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EmailTemplateOutput"
                                 }
                             }
                         }
@@ -713,6 +919,367 @@
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/ContactDetailOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/flows": {
+            "get": {
+                "summary": "?q= searches the name; ?includeInactive=1 shows disabled ones too.",
+                "operationId": "get_api_admin_flow_list",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "items",
+                                        "total",
+                                        "page",
+                                        "perPage"
+                                    ],
+                                    "properties": {
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/FlowSummaryOutput"
+                                            }
+                                        },
+                                        "total": {
+                                            "type": "integer"
+                                        },
+                                        "page": {
+                                            "type": "integer"
+                                        },
+                                        "perPage": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "\"Nuevo flujo\": from the ready example, to change in the editor.",
+                "operationId": "post_api_admin_flow_create",
+                "responses": {
+                    "201": {
+                        "description": "Created.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FlowOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/flows/all": {
+            "get": {
+                "summary": "Every flow, active first: pickers.",
+                "operationId": "get_api_admin_flow_all",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "items"
+                                    ],
+                                    "properties": {
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/FlowSummaryOutput"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/flows/{id}": {
+            "get": {
+                "operationId": "get_api_admin_flow_show",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FlowOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "operationId": "put_api_admin_flow_update",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FlowOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Disabled: nobody moves in it any more; its people stay where they are.",
+                "operationId": "delete_api_admin_flow_disable",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FlowOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/flows/{id}/enable": {
+            "post": {
+                "operationId": "post_api_admin_flow_enable",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FlowOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/flows/{id}/board": {
+            "get": {
+                "operationId": "get_api_admin_flow_board",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BoardOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/flows/{id}/people": {
+            "post": {
+                "summary": "\"Agregar a un flujo\": into its start stage. Answers the person's flows.",
+                "operationId": "post_api_admin_flow_add",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "items"
+                                    ],
+                                    "properties": {
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ContactFlowOutput"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/flows/{id}/people/{contactId}/move": {
+            "post": {
+                "summary": "A hand move (the board, the person's page): to any stage of the flow.",
+                "operationId": "post_api_admin_flow_move",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    },
+                    {
+                        "name": "contactId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "items"
+                                    ],
+                                    "properties": {
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ContactFlowOutput"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/flows/{id}/people/{contactId}": {
+            "delete": {
+                "summary": "\"Sacar del flujo\".",
+                "operationId": "delete_api_admin_flow_remove",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    },
+                    {
+                        "name": "contactId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "items"
+                                    ],
+                                    "properties": {
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ContactFlowOutput"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
@@ -3705,6 +4272,57 @@
                 },
                 "type": "object"
             },
+            "StageRefOutput": {
+                "required": [
+                    "id",
+                    "name"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "ContactFlowOutput": {
+                "required": [
+                    "flowId",
+                    "flowName",
+                    "stageId",
+                    "stageName",
+                    "enteredAt",
+                    "stages"
+                ],
+                "properties": {
+                    "flowId": {
+                        "type": "string"
+                    },
+                    "flowName": {
+                        "type": "string"
+                    },
+                    "stageId": {
+                        "type": "string"
+                    },
+                    "stageName": {
+                        "type": "string"
+                    },
+                    "enteredAt": {
+                        "title": "ISO 8601.",
+                        "type": "string"
+                    },
+                    "stages": {
+                        "title": "the stages they can be moved to",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/StageRefOutput"
+                        }
+                    }
+                },
+                "type": "object"
+            },
             "ContactDetailOutput": {
                 "required": [
                     "id",
@@ -3718,7 +4336,8 @@
                     "submissions",
                     "sessions",
                     "enrollments",
-                    "portal"
+                    "portal",
+                    "flows"
                 ],
                 "properties": {
                     "id": {
@@ -3791,6 +4410,91 @@
                     },
                     "portal": {
                         "$ref": "#/components/schemas/PortalAccessOutput"
+                    },
+                    "flows": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ContactFlowOutput"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "HistoryItemOutput": {
+                "required": [
+                    "type",
+                    "at",
+                    "reason"
+                ],
+                "properties": {
+                    "type": {
+                        "title": "\"flow\" or \"email\".",
+                        "type": "string"
+                    },
+                    "at": {
+                        "title": "ISO 8601.",
+                        "type": "string"
+                    },
+                    "flowName": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "fromStage": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "toStage": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "reason": {
+                        "title": "For a move: a FlowTrigger value, \"added\", \"removed\" or \"manual\". For an email: its kind.",
+                        "type": "string"
+                    },
+                    "by": {
+                        "title": "Who moved them, when a person did.",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "subject": {
+                        "title": "For an email: its subject and whether it left.",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "emailStatus": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "OverdueOutput": {
+                "required": [
+                    "contactId",
+                    "fullName",
+                    "flowId",
+                    "flowName",
+                    "stageName",
+                    "days"
+                ],
+                "properties": {
+                    "contactId": {
+                        "type": "string"
+                    },
+                    "fullName": {
+                        "type": "string"
+                    },
+                    "flowId": {
+                        "type": "string"
+                    },
+                    "flowName": {
+                        "type": "string"
+                    },
+                    "stageName": {
+                        "type": "string"
+                    },
+                    "days": {
+                        "type": "integer"
                     }
                 },
                 "type": "object"
@@ -3803,7 +4507,8 @@
                     "sessionsToday",
                     "sessionsTomorrow",
                     "paymentsLast7Days",
-                    "paidLast7Days"
+                    "paidLast7Days",
+                    "overdue"
                 ],
                 "properties": {
                     "newLeadsLast7Days": {
@@ -3828,6 +4533,267 @@
                     },
                     "paidLast7Days": {
                         "$ref": "#/components/schemas/MoneyOutput"
+                    },
+                    "overdue": {
+                        "title": "people waiting in a flow stage longer than its alert, the longest first",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/OverdueOutput"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "EmailTemplateOutput": {
+                "required": [
+                    "id",
+                    "name",
+                    "subject",
+                    "body",
+                    "active"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "subject": {
+                        "type": "string"
+                    },
+                    "body": {
+                        "type": "string"
+                    },
+                    "active": {
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "FlowSummaryOutput": {
+                "required": [
+                    "id",
+                    "name",
+                    "active",
+                    "stages",
+                    "people"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "active": {
+                        "type": "boolean"
+                    },
+                    "stages": {
+                        "type": "integer"
+                    },
+                    "people": {
+                        "title": "People in it now.",
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "FlowStageOutput": {
+                "required": [
+                    "id",
+                    "name",
+                    "kind",
+                    "x",
+                    "y",
+                    "people"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "kind": {
+                        "title": "\"start\", \"step\" or \"end\".",
+                        "type": "string"
+                    },
+                    "x": {
+                        "type": "integer"
+                    },
+                    "y": {
+                        "type": "integer"
+                    },
+                    "emailTemplateId": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "alertDays": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "people": {
+                        "title": "People in it now.",
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "FlowTransitionOutput": {
+                "required": [
+                    "from",
+                    "to",
+                    "trigger"
+                ],
+                "properties": {
+                    "from": {
+                        "type": "string"
+                    },
+                    "to": {
+                        "type": "string"
+                    },
+                    "trigger": {
+                        "title": "A FlowTrigger value: \"manual\", \"lead_submitted\", \"session_booked\", \u2026",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "FlowOutput": {
+                "required": [
+                    "id",
+                    "name",
+                    "active",
+                    "stages",
+                    "transitions",
+                    "pages"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "active": {
+                        "type": "boolean"
+                    },
+                    "stages": {
+                        "title": "in board order",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/FlowStageOutput"
+                        }
+                    },
+                    "transitions": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/FlowTransitionOutput"
+                        }
+                    },
+                    "pages": {
+                        "title": "pages whose people enter this flow",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PageRefOutput"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "BoardCardOutput": {
+                "required": [
+                    "contactId",
+                    "fullName",
+                    "status",
+                    "enteredAt",
+                    "days",
+                    "overdue"
+                ],
+                "properties": {
+                    "contactId": {
+                        "type": "string"
+                    },
+                    "fullName": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "title": "\"lead\", \"client\" or \"finished\".",
+                        "type": "string"
+                    },
+                    "category": {
+                        "nullable": true,
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/CategoryRefOutput"
+                            }
+                        ]
+                    },
+                    "enteredAt": {
+                        "title": "ISO 8601: when they entered this stage.",
+                        "type": "string"
+                    },
+                    "days": {
+                        "title": "Whole days in this stage.",
+                        "type": "integer"
+                    },
+                    "overdue": {
+                        "title": "Longer than the stage's alert.",
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "BoardColumnOutput": {
+                "required": [
+                    "stageId",
+                    "name",
+                    "kind",
+                    "cards"
+                ],
+                "properties": {
+                    "stageId": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "kind": {
+                        "type": "string"
+                    },
+                    "alertDays": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "cards": {
+                        "title": "the longest waiting first",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/BoardCardOutput"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "BoardOutput": {
+                "required": [
+                    "flowId",
+                    "flowName",
+                    "columns"
+                ],
+                "properties": {
+                    "flowId": {
+                        "type": "string"
+                    },
+                    "flowName": {
+                        "type": "string"
+                    },
+                    "columns": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/BoardColumnOutput"
+                        }
                     }
                 },
                 "type": "object"

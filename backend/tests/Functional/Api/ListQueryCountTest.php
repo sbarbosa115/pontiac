@@ -6,6 +6,8 @@ namespace App\Tests\Functional\Api;
 
 use App\Entity\Account;
 use App\Entity\Contact;
+use App\Entity\ContactFlowState;
+use App\Entity\EmailTemplate;
 use App\Entity\Enrollment;
 use App\Entity\Payment;
 use App\Entity\MediaAsset;
@@ -57,6 +59,8 @@ final class ListQueryCountTest extends ApiTestCase
         yield 'sesiones' => ['owner', '/api/admin/sessions', 'session'];
         yield 'semana' => ['owner', '/api/admin/sessions/week', 'session'];
         yield 'pagos' => ['owner', '/api/admin/payments', 'payment'];
+        yield 'flujos' => ['owner', '/api/admin/flows', 'flow'];
+        yield 'correos de flujos' => ['owner', '/api/admin/email-templates', 'emailTemplate'];
     }
 
     #[DataProvider('lists')]
@@ -191,5 +195,19 @@ final class ListQueryCountTest extends ApiTestCase
         ++$this->row;
         $enrollment = new Enrollment($this->createContact($this->account, 'Persona '.$this->row, sprintf('persona%d@demo.test', $this->row)), $this->createPlan($this->account, 'Plan '.$this->row, '100000'), null);
         $this->save($enrollment, Payment::manual($enrollment, 'cash', null, $this->owner, new \DateTimeImmutable()));
+    }
+
+    private function flow(): void
+    {
+        // With people in it: the list counts them.
+        ++$this->row;
+        $flow = $this->createFlow($this->account, 'Flujo '.$this->row);
+        $contact = $this->createContact($this->account, 'Persona '.$this->row, sprintf('persona%d@demo.test', $this->row));
+        $this->save(new ContactFlowState($contact, $flow->startStage() ?? throw new \LogicException('A starter has a start.'), new \DateTimeImmutable()));
+    }
+
+    private function emailTemplate(): void
+    {
+        $this->save(new EmailTemplate($this->account, 'Correo '.++$this->row, 'Asunto', 'Cuerpo'));
     }
 }

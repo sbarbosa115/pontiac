@@ -108,18 +108,25 @@ class Enrollment implements AccountOwnedInterface
         return $this;
     }
 
-    /** Every session used (done or no-show); a session reopened by mistake makes it active again. */
-    public function progress(int $sessionsUsed, \DateTimeImmutable $now): static
+    /**
+     * Every session used (done or no-show); a session reopened by mistake makes it active again.
+     *
+     * @return bool whether this completed it
+     */
+    public function progress(int $sessionsUsed, \DateTimeImmutable $now): bool
     {
         if (EnrollmentStatus::Active === $this->status && $sessionsUsed >= $this->sessionsIncluded) {
             $this->status = EnrollmentStatus::Completed;
             $this->completedAt = $now;
-        } elseif (EnrollmentStatus::Completed === $this->status && $sessionsUsed < $this->sessionsIncluded && null === $this->outcome) {
+
+            return true;
+        }
+        if (EnrollmentStatus::Completed === $this->status && $sessionsUsed < $this->sessionsIncluded && null === $this->outcome) {
             $this->status = EnrollmentStatus::Active;
             $this->completedAt = null;
         }
 
-        return $this;
+        return false;
     }
 
     public function conclude(EnrollmentOutcome $outcome): static
