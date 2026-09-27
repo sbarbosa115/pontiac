@@ -43,7 +43,8 @@ test('a visitor books a free session, cancels it from the emailed link, and the 
     await page.getByRole('link', { name: 'Agenda', exact: true }).click();
     await page.getByRole('tab', { name: 'Sesiones' }).click();
     await page.getByPlaceholder(/Buscar por nombre o correo/).fill(email);
-    const row = page.getByRole('row').filter({ hasText: 'Reserva de Prueba' });
+    // By this run's email: the name is the same on every run.
+    const row = page.getByRole('row').filter({ hasText: email });
     await expect(row).toContainText('Me salió un viaje');
     await expect(row).toHaveAttribute('title', 'Cancelada');
 });

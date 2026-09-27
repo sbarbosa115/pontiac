@@ -65,3 +65,18 @@ The manual browser pass, one case per use case. Run it on a fresh stack with the
 | BOOK-15 | consultant | A contact's page | Their sessions with actions and "Agendar sesión"; the form history shows "Sesión reservada" |
 | BOOK-16 | consultant | Páginas › the home page › Reserva | "Plan que se reserva" offers free plans only |
 | BOOK-17 | super admin | Turn off a consultant's booking | Their Agenda leaves the menu; their pages hide the Reserva section |
+| PAY-01 | visitor | `/finanzas-claras/plan-2-sesiones`, Precios y pago: send it empty | Errors under name, email and consent, in Spanish |
+| PAY-02 | visitor | Fill it in and "Pagar con Wompi" | Sent to `checkout.wompi.co/p/` with the reference, amount in cents and signature (with the demo keys Wompi shows an error: that is expected) |
+| PAY-03 | anyone | `app:wompi:simulate-event <reference>`, then `/finanzas-claras/pago/<reference>` | "¡Pago aprobado!"; Mailpit: "Recibimos tu pago" to the person and "Nuevo pago" to the owner; the person is a Cliente |
+| PAY-04 | anyone | `…/pago/<reference>` of a payment still pending | "Estamos confirmando tu pago", the page refreshes itself |
+| PAY-05 | owner | A contact › Planes y pagos › Asignar plan, a paid one | Amber row "Esperando pago" with Registrar pago · Copiar enlace · Reenviar enlace · Cancelar; the person gets "Tu plan con …" with the link |
+| PAY-06 | owner | Registrar pago (transferencia, a note) | Green row, the payment in the history by day with "Registrado por", the person becomes Cliente |
+| PAY-07 | assistant | The same contact | No "Registrar pago"; the rest as the owner |
+| PAY-08 | consultant | A used-up plan: Renovar with another plan; another: Finalizar asesoría | "Renovado" under the old one and a new plan; "Asesoría finalizada" and the person Finalizado |
+| PAY-09 | consultant | Sesiones › Agendar sesión | The person's paid plans with sessions left come first, oldest first, then free plans |
+| PAY-10 | owner | Notas on a session: empty, then a private and a shared note | "Escribe la nota."; both listed with who reads them |
+| PAY-11 | assistant | Notas on the same session | Only the shared note, without "Editar"; their own notes are shared |
+| PAY-12 | consultant | Pagos: "Pendiente" with none, "Ver todos" | Empty state, then every payment tinted by status |
+| PAY-13 | owner | Ajustes › Pagos Wompi: a bad public key; Probar conexión with the demo key | The error under the field; "Wompi no reconoce esta llave pública…" |
+| PAY-14 | assistant | Ajustes | No "Pagos Wompi" tab; `?tab=pagos` shows Equipo |
+| PAY-15 | owner | Páginas › plan-2-sesiones › Precios y pago | "Planes que se pagan aquí" lists paid plans, at most three ticked |

@@ -66,6 +66,11 @@ The plumbing lives in `backend/src/Api` (namespace `App\Api`); Input DTOs in `Ap
 - Rate limiters live in their own config file with generous `when@test` values.
 - One notification mailer and template; mail is rendered in the request and queued, sent after the flush.
 - Files are stored by key under the account, type detected from content, served only through the API.
+- A third-party API is called through one small client service whose HTTP client the test environment replaces
+  with a fake (`when@test` in `config/services.yaml`); its webhooks verify the provider's signature before reading
+  anything, answer 200 to what they ignore (so the provider stops retrying) and apply each event once.
+- Secrets a customer gives the app (API keys) are encrypted at rest (libsodium, key in the environment), write-only
+  in the API (the screen shows their last characters).
 - Scheduled work is a console command with a lock, run every minute (a `scheduler` compose service; a cron line in
   production). It enters each account in turn and claims each piece of work with an insert the database refuses
   twice (unique key), so overlapping or repeated runs do nothing twice.

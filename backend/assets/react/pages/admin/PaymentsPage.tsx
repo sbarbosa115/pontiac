@@ -2,10 +2,10 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { addDays } from '../../lib/agenda';
 import { useLocaleSettings } from '../../lib/auth';
-import { formatDateTime, formatMoney, todayIn } from '../../lib/format';
+import { formatMoney, todayIn } from '../../lib/format';
 import { useList } from '../../lib/hooks';
 import { t } from '../../lib/i18n';
-import { methodKey, type Payment, PAYMENT_STATUSES } from '../../lib/payments';
+import { methodKey, paidWhen, type Payment, PAYMENT_STATUSES } from '../../lib/payments';
 import { Actions, FilterBar, IconButton, ListView, PageHeader, Row, RowLegend } from '../../components/ui';
 
 const PERIODS = ['all', '7', '30'] as const;
@@ -51,7 +51,7 @@ export default function PaymentsPage() {
                 columns={[t('payments.date'), t('agenda.contact'), t('agenda.plan'), t('payments.amount'), t('payments.methodLabel'), t('payments.reference')]}
                 renderRow={(payment) => (
                     <Row key={payment.id} status={payment.status} label={t(`payments.status.${payment.status}`)}>
-                        <td>{formatDateTime(payment.paidAt ?? payment.createdAt, locale, timezone)}</td>
+                        <td>{paidWhen(payment, locale, timezone)}</td>
                         <td>
                             {payment.contact.fullName}
                             <div className="small muted">{payment.contact.email}</div>

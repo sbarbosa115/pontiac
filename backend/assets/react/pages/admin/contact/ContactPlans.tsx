@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { api } from '../../../lib/api';
 import { ROLE_OWNER, useAuth, useLocaleSettings } from '../../../lib/auth';
-import { formatDate, formatDateTime, formatMoney } from '../../../lib/format';
+import { formatDate, formatMoney } from '../../../lib/format';
 import { rowErrorMessage, t } from '../../../lib/i18n';
-import { allPayments, type Enrollment, ENROLLMENT_STATUSES, enrollmentActions, methodKey, PAYMENT_STATUSES } from '../../../lib/payments';
+import { allPayments, type Enrollment, ENROLLMENT_STATUSES, enrollmentActions, methodKey, paidWhen, PAYMENT_STATUSES } from '../../../lib/payments';
 import type { Schema } from '../../../lib/types';
 import { AssignPlanModal, ManualPaymentModal } from '../../../components/PlanModals';
 import { ActionButton, Actions, Alert, Button, DataTable, EmptyState, Row, RowLegend, TabIntro } from '../../../components/ui';
@@ -59,7 +59,7 @@ export default function ContactPlans({ contact, onChanged }: { contact: Contact;
 
     return (
         <>
-            <TabIntro action={assignButton}>{payments ? t('plans.contactIntro') : t('plans.contactIntroNoPayments')}</TabIntro>
+            <TabIntro action={contact.enrollments.length > 0 ? assignButton : null}>{payments ? t('plans.contactIntro') : t('plans.contactIntroNoPayments')}</TabIntro>
             <Alert kind="success" onDismiss={() => setNotice(null)}>
                 {notice}
             </Alert>
@@ -133,7 +133,7 @@ export default function ContactPlans({ contact, onChanged }: { contact: Contact;
                         rows={history}
                         renderRow={(payment) => (
                             <Row key={payment.id} status={payment.status} label={t(`payments.status.${payment.status}`)}>
-                                <td>{formatDateTime(payment.paidAt ?? payment.createdAt, locale, timezone)}</td>
+                                <td>{paidWhen(payment, locale, timezone)}</td>
                                 <td>{payment.planName}</td>
                                 <td className="strong">{formatMoney(payment.amount, locale)}</td>
                                 <td>

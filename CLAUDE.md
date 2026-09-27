@@ -48,8 +48,18 @@ filtered: every query that lists them names the account itself.
   the account's timezone — `SlotFinder`, `SessionTime`, `lib/agenda.ts` (`localDate`, `mondayOf`).
 - A booking goes through `App\Booking\Booker` (the lock per consultant, the emails); never create a `BookingSession`
   elsewhere outside tests.
+- A paid plan's sessions are booked only while it is active with sessions left (`Booker::bookForEnrollment`).
 - A scheduled job is a console command run every minute (the `scheduler` service; a cron line on cPanel): it walks
   active accounts, enters each, and claims each piece of work with an insert the database refuses twice.
+
+## Payments
+
+- Money moves only through `App\Payment`: `Checkout` (a pending payment and Wompi's signed checkout URL),
+  `PaymentApplier` (Wompi's result or a payment recorded by hand: once, under a lock, checked against our reference,
+  amount and currency), `Enrollments` (assign, link, cancel, renew, finish).
+- A secret a consultant gives us is stored with `App\Security\SecretBox` and never leaves the server.
+- Wompi is never called in tests: its HTTP client is `App\Tests\Support\FakeWompi` (register transactions and
+  merchants); events are signed with `ApiTestCase::wompiEvent()`. Locally, `app:wompi:simulate-event <reference>`.
 
 ## Tables
 

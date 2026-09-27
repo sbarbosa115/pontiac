@@ -4,7 +4,7 @@ import { type Session, sessionActions } from '../lib/agenda';
 import { sessionsLeft } from '../lib/payments';
 import { SessionNotesModal } from './SessionNotes';
 import { useLocaleSettings } from '../lib/auth';
-import { formatDateTime } from '../lib/format';
+import { formatDate, formatDateTime } from '../lib/format';
 import { useApi, useSubmit } from '../lib/hooks';
 import { rowErrorMessage, t } from '../lib/i18n';
 import type { Get, Schema } from '../lib/types';
@@ -70,13 +70,19 @@ function SlotPicker({ query, value, onChange, error }: { query: { planId: string
  * enrollment), at one of the consultant's free slots.
  */
 export function BookSessionModal({ contact, onClose, onBooked }: { contact?: { id: string; fullName: string }; onClose: () => void; onBooked: (session: Session) => void }) {
+    const { locale } = useLocaleSettings();
     const plans = useApi(() => api.get<Get<'/api/admin/plans/all'>>('/api/admin/plans/all'), []);
     const [contactId, setContactId] = useState(contact?.id ?? '');
     const detail = useApi(() => (contactId ? api.get<Schema<'ContactDetailOutput'>>(`/api/admin/contacts/${contactId}`) : Promise.resolve(null)), [contactId]);
     const options = [
+        // The oldest plan first: its sessions are used before a newer one's.
         ...(detail.data?.enrollments ?? [])
             .filter((enrollment) => enrollment.status === 'active' && sessionsLeft(enrollment) > 0)
-            .map((enrollment) => ({ value: `enrollment:${enrollment.id}`, label: t('agenda.enrollmentOption', { name: enrollment.planName, left: sessionsLeft(enrollment), minutes: enrollment.durationMinutes }) })),
+            .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+            .map((enrollment) => ({
+                value: `enrollment:${enrollment.id}`,
+                label: t('agenda.enrollmentOption', { name: enrollment.planName, since: formatDate(enrollment.createdAt.slice(0, 10), locale), left: sessionsLeft(enrollment), minutes: enrollment.durationMinutes }),
+            })),
         ...(plans.data?.items ?? []).filter((plan) => plan.active && plan.free).map((plan) => ({ value: `plan:${plan.id}`, label: t('agenda.planOption', { name: plan.name, minutes: plan.durationMinutes }) })),
     ];
     const [choice, setChoice] = useState('');

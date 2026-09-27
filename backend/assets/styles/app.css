@@ -564,6 +564,15 @@ code {
     gap: 12px;
 }
 
+/* Cards one after another (a form in sections); a card grid spaces its own. */
+:not(.card-grid) > .card + .card {
+    margin-top: 16px;
+}
+
+.card > .section-title:first-child {
+    margin-top: 0;
+}
+
 .card p {
     margin: 0;
 }

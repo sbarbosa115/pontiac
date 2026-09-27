@@ -18,7 +18,7 @@ export default function ContactSessions({ contact, onChanged }: { contact: Conta
 
     return (
         <>
-            <TabIntro action={bookButton}>{t('contacts.sessionsIntro')}</TabIntro>
+            <TabIntro action={contact.sessions.length > 0 ? bookButton : null}>{t('contacts.sessionsIntro')}</TabIntro>
             <Alert kind="error" onDismiss={actions.clearError}>
                 {actions.error}
             </Alert>

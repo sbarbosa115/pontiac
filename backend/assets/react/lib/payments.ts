@@ -1,3 +1,5 @@
+import { localDate } from './agenda';
+import { formatDate, formatDateTime } from './format';
 import type { Schema } from './types';
 
 export type Enrollment = Schema<'EnrollmentOutput'>;
@@ -39,4 +41,10 @@ export function methodKey(method: string | null | undefined): string {
 /** Payments of every plan a person has, newest first. */
 export function allPayments(enrollments: readonly Enrollment[]): Payment[] {
     return enrollments.flatMap((enrollment) => enrollment.payments).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+/** When it was paid: a recorded payment by its day (only the day was given), a Wompi one to the minute. */
+export function paidWhen(payment: Pick<Payment, 'manual' | 'paidAt' | 'createdAt'>, locale: string, timeZone: string): string {
+    const at = payment.paidAt ?? payment.createdAt;
+    return payment.manual ? formatDate(localDate(at, timeZone), locale) : formatDateTime(at, locale, timeZone);
 }

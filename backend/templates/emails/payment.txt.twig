@@ -2,6 +2,7 @@
 
 {% if kind == 'payment_link' %}{{ consultant }} te preparó este plan. Cuando quieras empezar, págalo en línea con Wompi (tarjeta, PSE o Nequi).{% elseif kind == 'payment_received' %}Recibimos tu pago. Gracias por confiar en {{ consultant }}: te escribiremos para agendar tus sesiones.{% elseif kind == 'payment_new' %}{{ contactName }} ({{ contactEmail }}) pagó un plan.{% endif %}
 
+
 Plan: {{ plan }}
 Incluye: {{ sessions }} {{ sessions == 1 ? 'sesión' : 'sesiones' }} de {{ minutes }} minutos
 {% if kind == 'payment_link' %}Valor: {{ price }}

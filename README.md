@@ -36,7 +36,11 @@ the password `demo-password-123`:
 | Client | `/finanzas-claras/portal` | cliente@pontiac.test |
 
 The consultant has two plans (a free *Diagnóstico gratuito* and *Plan A*, 250.000 × 2 sessions) and its home page
-books the free one in its *Reserva* section, Monday to Friday 9–12 and 14–18 (Bogotá).
+books the free one in its *Reserva* section, Monday to Friday 9–12 and 14–18 (Bogotá). Its page `plan-2-sesiones`
+sells Plan A in its *Precios y pago* section, with Wompi test keys that are not real: the checkout signature is
+right, and Wompi's answer is simulated with `php bin/console app:wompi:simulate-event <PON-reference>` (it sends our
+webhook the signed event Wompi would send). To see Wompi's real checkout, save your own sandbox keys in Ajustes ›
+Pagos Wompi.
 
 A real super admin: `SUPER_ADMIN_PASSWORD=… php bin/console app:create-super-admin you@example.com -n`.
 
@@ -130,7 +134,7 @@ Every error is `{"error": "<code>", "message": "…"}`, plus `violations: [{fiel
 | GET, POST | `/api/admin/categories`, `/all` | owner, assistant | Lead categories (`?q=`); every one for pickers; create |
 | PUT, DELETE | `/api/admin/categories/{id}` | owner, assistant | Rename and recolour; disable (`POST …/enable` to undo) |
 | GET | `/api/admin/contacts` | owner, assistant | Prospectos (`?q=&status=&category=<id or none>&sourcePage=<id>`) |
-| GET, PATCH | `/api/admin/contacts/{id}` | owner, assistant | A contact with every form they sent and their sessions; `{categoryId}` |
+| GET, PATCH | `/api/admin/contacts/{id}` | owner, assistant | A contact with every form they sent, their sessions, and their plans with payments; `{categoryId}` |
 | POST | `/api/admin/contacts/{id}/anonymize` | owner | Erase the person's data (Ley 1581) |
 | GET, PUT | `/api/admin/privacy` | owner (PUT), assistant (GET) | The privacy policy the forms link to |
 | GET, POST | `/api/admin/plans`, `/all` | owner (POST), assistant (GET) | Plans (`?q=&includeInactive=1`); every one for pickers; create `{name, description, price, sessions, durationMinutes}` |
@@ -140,12 +144,24 @@ Every error is `{"error": "<code>", "message": "…"}`, plus `violations: [{fiel
 | GET, POST | `/api/admin/sessions` | owner, assistant (booking) | Sessions (`?q=&status=&from=&to=`, local dates); book one for a contact on a free plan (409 `slot_taken`, 422 `plan_not_bookable`) |
 | GET | `/api/admin/sessions/week` | owner, assistant (booking) | The scheduled sessions of the week starting `?start=` (Y-m-d) |
 | POST | `/api/admin/sessions/{id}/reschedule`, `/cancel` | owner, assistant (booking) | Move `{startsAt}`; cancel `{reason}`; the person is emailed |
-| POST | `/api/admin/sessions/{id}/done`, `/no-show`, `/reopen` | owner, assistant (booking) | Close once it has started (409 `session_not_closable`); undo |
+| POST | `/api/admin/sessions/{id}/done`, `/no-show`, `/reopen` | owner, assistant (booking) | Close once it has started (409 `session_not_closable`); undo. Closing the last session completes its plan |
+| GET, POST | `/api/admin/sessions/{id}/notes` | owner, assistant (booking) | A session's notes (an assistant gets the shared ones); write one `{body, visibility: private\|shared}` (private: owner only) |
+| PUT | `/api/admin/session-notes/{id}` | author or owner | Change a note |
+| POST | `/api/admin/contacts/{id}/enrollments` | owner, assistant | Assign a plan `{planId}`: a free one starts; a paid one waits for payment and emails its link (payments feature) |
+| POST | `/api/admin/enrollments/{id}/send-link`, `/cancel` | owner, assistant | Email the payment link again (payments); cancel a plan waiting for payment |
+| POST | `/api/admin/enrollments/{id}/payments` | owner (payments) | Record money received `{method: cash\|transfer\|other, note, paidOn}`: the plan starts, the person becomes a client |
+| POST | `/api/admin/enrollments/{id}/renew`, `/finish` | owner, assistant | A used-up plan: another one `{planId}`, or the end of the consultancy (409 `enrollment_not_completed`) |
+| GET | `/api/admin/payments` | owner, assistant (payments) | Payments (`?q=&status=&from=&to=`) |
+| GET, PUT | `/api/admin/wompi` | owner (payments) | Wompi keys: the public key, secrets by their last 4 characters, the events URL; save (empty secret: keep) |
+| POST | `/api/admin/wompi/test` | owner (payments) | Ask Wompi for the public key's merchant (409 `wompi_rejected`) |
 
 Public (server-rendered): `/<consultant>` (home page), `/<consultant>/<page>`, `POST …/enviar` (the form),
 `/<consultant>/privacidad`, `/<consultant>/media/<id>-<width>.webp`, `/<consultant>/sitemap.xml`, `/sitemap.xml`,
 `/robots.txt`, `POST …/reservar` (a page's Reserva section), `/<consultant>/reservar/<token>` with
-`POST …/cambiar` and `…/cancelar` (the person's session, from the emailed link). A former address (a consultant's or
+`POST …/cambiar` and `…/cancelar` (the person's session, from the emailed link), `POST …/pagar` (a page's *Precios
+y pago* section → Wompi's checkout), `/<consultant>/pagar/<token>` (a plan's payment link) and
+`/<consultant>/pago/<reference>` (where Wompi sends the person back), `POST /webhooks/wompi/<account id>` (Wompi's
+events). A former address (a consultant's or
 a page's) answers 301; a disabled page 410; a draft 404.
 
 ## Data model decisions
@@ -187,17 +203,30 @@ a page's) answers 301; a disabled page 410; a draft 404.
   old link stops working). The person can move or cancel it until the consultant's cancellation limit.
 - A reminder is not sent for a time that had already passed when the session was booked (booked 3 hours before, no
   24-hour reminder). The meeting link is copied into the session when it is booked.
+- Payments go through Wompi's Web Checkout (a redirect, no JavaScript on our pages), signed with the consultant's
+  integrity secret. A payment is settled only by Wompi: its event (checksum with the events secret) or its API
+  (asked by the result page, which never trusts the URL). Reference, amount and currency must be ours, or the
+  payment is marked `error`; applying a result is idempotent (a lock per payment, only `pending` changes).
+- An approved payment activates its plan and makes the person a client (a free plan never does); a plan completes
+  when its sessions are used (done or no-show); "Renovar" or "Finalizar asesoría" closes it (`outcome`).
+- Wompi's secrets are encrypted with libsodium (`APP_ENCRYPTION_KEY`) and never returned; the screen shows their
+  last four characters.
+- Session notes are private (owner only) or shared (the assistant, and the client in the portal from milestone 4).
 - Emails keep the server's `MAILER_FROM` address (it must match the SMTP account); the sender name and Reply-To come
   from the platform settings.
 
 ## Deploying to cPanel
 
-Not written yet: it comes with the release milestone (PRD, "Delivery plan").
+Not written yet: it comes with the release milestone (PRD, "Delivery plan"). Already known: production needs its own
+`APP_ENCRYPTION_KEY` (32 bytes in base64, kept forever: changing it makes stored Wompi secrets unreadable), and each
+consultant pastes their events URL (Ajustes › Pagos Wompi) in Wompi's dashboard.
 
 ## Known gaps
 
 - Page, storage and file-size limits and the payments and flows features are stored but only enforced by the
   milestones that build what they limit.
+- Payments: the portal invitation on first payment and clients booking their own sessions come with milestone 4;
+  refunds and voids are done in Wompi's dashboard (their events do not reach an approved payment); no invoices.
 - Booking: no calendar sync (Google/Outlook) — each email carries an `.ics` file instead; paid plans cannot be booked
   until payments (milestone 3); changing the meeting link does not change sessions already booked; the person may
   move a session into a slot inside the cancellation limit.
