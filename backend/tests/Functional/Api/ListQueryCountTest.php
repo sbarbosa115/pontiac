@@ -6,6 +6,8 @@ namespace App\Tests\Functional\Api;
 
 use App\Entity\Account;
 use App\Entity\Contact;
+use App\Entity\Enrollment;
+use App\Entity\Payment;
 use App\Entity\MediaAsset;
 use App\Entity\OutgoingEmail;
 use App\Entity\PlatformSettingsChange;
@@ -54,6 +56,7 @@ final class ListQueryCountTest extends ApiTestCase
         yield 'planes' => ['owner', '/api/admin/plans', 'plan'];
         yield 'sesiones' => ['owner', '/api/admin/sessions', 'session'];
         yield 'semana' => ['owner', '/api/admin/sessions/week', 'session'];
+        yield 'pagos' => ['owner', '/api/admin/payments', 'payment'];
     }
 
     #[DataProvider('lists')]
@@ -180,5 +183,13 @@ final class ListQueryCountTest extends ApiTestCase
         $contact = $this->createContact($this->account, 'Persona '.$this->row, sprintf('persona%d@demo.test', $this->row));
         $startsAt = (new \DateTimeImmutable('monday this week', new \DateTimeZone('America/Bogota')))->setTime(8 + $this->row, 0);
         $this->bookSession($contact, $this->createPlan($this->account, 'Plan '.$this->row), $startsAt);
+    }
+
+    private function payment(): void
+    {
+        // Its person, its plan, and who recorded it: the relations a payment row shows.
+        ++$this->row;
+        $enrollment = new Enrollment($this->createContact($this->account, 'Persona '.$this->row, sprintf('persona%d@demo.test', $this->row)), $this->createPlan($this->account, 'Plan '.$this->row, '100000'), null);
+        $this->save($enrollment, Payment::manual($enrollment, 'cash', null, $this->owner, new \DateTimeImmutable()));
     }
 }

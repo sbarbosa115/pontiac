@@ -26,5 +26,10 @@ when@dev:
 
 when@test:
     services:
+        # Wompi's API, faked: tests register the transactions and merchants it knows.
+        App\Tests\Support\FakeWompi: ~
+        App\Payment\WompiClient:
+            arguments:
+                $httpClient: '@App\Tests\Support\FakeWompi'
         App\Api\OpenApi\ApiResponseDescriber:
             tags: [{ name: nelmio_api_doc.route_describer, priority: -300 }]

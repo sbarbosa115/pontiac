@@ -6,6 +6,8 @@ namespace App\Page;
 
 use App\Booking\SessionTime;
 use App\Booking\SlotFinder;
+use App\Payment\Checkout;
+use App\Payment\MoneyText;
 use App\Entity\Account;
 use App\Entity\LandingPage;
 use App\Entity\MediaAsset;
@@ -32,6 +34,7 @@ final class PageRenderer
         private readonly PlanRepository $plans,
         private readonly AvailabilityRepository $availability,
         private readonly SlotFinder $slots,
+        private readonly Checkout $checkout,
         #[Autowire('%env(APP_URL)%')]
         private readonly string $appUrl,
     ) {
@@ -42,11 +45,13 @@ final class PageRenderer
      * @param array<string, string> $values  what the visitor typed, when the form comes back with errors
      * @param array<string, string> $errors  by field name
      * @param array{values?: array<string, string>, errors?: array<string, string>, booked?: bool} $booking the booking form's state
+     * @param array{values?: array<string, string>, errors?: array<string, string>}                $payment the payment form's state
      */
-    public function render(Account $account, LandingPage $page, array $content, bool $preview = false, array $values = [], array $errors = [], bool $sent = false, int $status = 200, array $booking = []): Response
+    public function render(Account $account, LandingPage $page, array $content, bool $preview = false, array $values = [], array $errors = [], bool $sent = false, int $status = 200, array $booking = [], array $payment = []): Response
     {
         $images = $this->images($content);
         $bookings = $this->bookings($account, $content);
+        $payments = $this->payments($account, $content);
         $path = '/'.$account->getSlug().($page->isHome() ? '' : '/'.$page->getSlug());
         $url = rtrim($this->appUrl, '/').$path;
         $accent = TemplateCatalog::ACCENTS[$content['settings']['accent'] ?? 'navy'] ?? TemplateCatalog::ACCENTS['navy'];
@@ -56,8 +61,15 @@ final class PageRenderer
             'account' => $account,
             'page' => $page,
             'content' => $content,
-            // A booking section shows only while it has something to book: the feature on, its free plan active.
-            'sections' => array_values(array_filter($content['sections'], static fn (array $s) => $s['enabled'] && ('booking' !== $s['type'] || isset($bookings[$s['id']])))),
+            // A booking section shows only while it has something to book (the feature on, its free plan active); a
+            // payment section while it has something to sell (payments on, Wompi set up, an active paid plan).
+            'sections' => array_values(array_filter($content['sections'], static fn (array $s) => $s['enabled']
+                && ('booking' !== $s['type'] || isset($bookings[$s['id']]))
+                && ('payment' !== $s['type'] || isset($payments[$s['id']])))),
+            'payments' => $payments,
+            'paymentValues' => $payment['values'] ?? [],
+            'paymentErrors' => $payment['errors'] ?? [],
+            'paymentAction' => $path.'/pagar',
             'bookings' => $bookings,
             'bookingValues' => $booking['values'] ?? [],
             'bookingErrors' => $booking['errors'] ?? [],
@@ -72,7 +84,7 @@ final class PageRenderer
             'privacyUrl' => '/'.$account->getSlug().'/privacidad',
             'mediaBase' => '/'.$account->getSlug().'/media/',
             'socialImage' => null === $seoImage ? null : rtrim($this->appUrl, '/').'/'.$account->getSlug().'/media/'.$seoImage->getId().'-'.$seoImage->variantFor(1200).'.webp',
-            'jsonLd' => $this->jsonLd($account, $content, $url),
+            'jsonLd' => $this->jsonLd($account, $content, $url, $payments),
             'timeToken' => $this->timeToken->issue(),
             'values' => $values,
             'errors' => $errors,
@@ -165,6 +177,35 @@ final class PageRenderer
     }
 
     /**
+     * For each enabled payment section: the active paid plans it sells, with their prices as the page shows them.
+     *
+     * @param array<string, mixed> $content
+     *
+     * @return array<string, list<array{plan: Plan, price: string}>>
+     */
+    private function payments(Account $account, array $content): array
+    {
+        if (!$this->checkout->isAvailable($account)) {
+            return [];
+        }
+        $payments = [];
+        foreach ($content['sections'] as $section) {
+            if ('payment' !== $section['type'] || !$section['enabled']) {
+                continue;
+            }
+            $plans = array_filter($this->plans->findByIds($section['fields']['planIds'] ?? []), static fn (Plan $plan) => $plan->isActive() && !$plan->isFree());
+            // In the order the consultant chose.
+            $order = array_flip($section['fields']['planIds']);
+            usort($plans, static fn (Plan $a, Plan $b) => $order[(string) $a->getId()] <=> $order[(string) $b->getId()]);
+            if ([] !== $plans) {
+                $payments[$section['id']] = array_map(static fn (Plan $plan) => ['plan' => $plan, 'price' => MoneyText::format($account, $plan->getPrice(), $plan->getCurrency())], $plans);
+            }
+        }
+
+        return $payments;
+    }
+
+    /**
      * The event dates as the account's locale writes them ("sábado, 14 de noviembre de 2026"), by section id.
      *
      * @param array<string, mixed> $content
@@ -185,11 +226,12 @@ final class PageRenderer
     }
 
     /**
-     * Structured data for search engines: who the consultant is, their FAQ, their event.
+     * Structured data for search engines: who the consultant is, their FAQ, their event, the plans they sell.
      *
-     * @param array<string, mixed> $content
+     * @param array<string, mixed>                                  $content
+     * @param array<string, list<array{plan: Plan, price: string}>> $payments
      */
-    private function jsonLd(Account $account, array $content, string $url): string
+    private function jsonLd(Account $account, array $content, string $url, array $payments = []): string
     {
         $graph = [[
             '@type' => 'ProfessionalService',
@@ -210,6 +252,17 @@ final class PageRenderer
                         'name' => $item['question'],
                         'acceptedAnswer' => ['@type' => 'Answer', 'text' => $item['answer']],
                     ], $section['fields']['items']),
+                ];
+            }
+            foreach ($payments[$section['id']] ?? [] as ['plan' => $plan]) {
+                $graph[] = [
+                    '@type' => 'Offer',
+                    'name' => $plan->getName(),
+                    'description' => '' !== $plan->getDescription() ? $plan->getDescription() : null,
+                    'price' => $plan->getPrice(),
+                    'priceCurrency' => $plan->getCurrency(),
+                    'url' => $url,
+                    'seller' => ['@type' => 'Organization', 'name' => $account->getName()],
                 ];
             }
             if ('event' === $section['type'] && null !== $section['fields']['date']) {

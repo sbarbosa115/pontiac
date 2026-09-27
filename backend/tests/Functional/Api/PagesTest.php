@@ -141,6 +141,30 @@ final class PagesTest extends ApiTestCase
         self::assertSame(['reserva', false], [$saved['draft']['sections'][5]['id'], $saved['draft']['sections'][5]['enabled']]);
     }
 
+    public function testABookingSectionBooksAFreePlanAndAPaymentSectionSellsPaidOnes(): void
+    {
+        $this->client->setServerParameter('HTTP_ACCEPT_LANGUAGE', 'es');
+        $free = (string) $this->createPlan($this->account, 'Diagnóstico')->getId();
+        $paid = (string) $this->createPlan($this->account, 'Plan A', '250000.00', 2, 60)->getId();
+        $theirs = (string) $this->createPlan($this->createAccount('Plata Sana'), 'Suyo', '100000.00')->getId();
+        $four = array_map(fn (int $i) => (string) $this->createPlan($this->account, 'Plan '.$i, '100000.00')->getId(), range(1, 4));
+        $diagnostic = $this->createPage($this->account, published: false);
+        $offer = $this->createPage($this->account, 'plan', PageTemplate::PlanOffer, published: false);
+        $this->actAs($this->owner);
+
+        $draft = $this->withSection($diagnostic->getDraft(), 'booking', ['planId' => $paid]);
+        $error = $this->api('PATCH', '/api/admin/pages/'.$diagnostic->getId(), ['draft' => $draft]);
+        self::assertSame('Elige el plan gratuito que la gente reserva aquí.', $error['violations'][0]['message']);
+        self::assertSame(200, $this->patchStatus($diagnostic->getId(), $this->withSection($diagnostic->getDraft(), 'booking', ['planId' => $free])));
+
+        foreach ([[], [$free], [$theirs], $four] as $planIds) {
+            $error = $this->api('PATCH', '/api/admin/pages/'.$offer->getId(), ['draft' => $this->withSection($offer->getDraft(), 'payment', ['planIds' => $planIds])]);
+            self::assertSame(422, $this->responseStatus(), json_encode($planIds) ?: '');
+            self::assertStringEndsWith('fields.planIds', $error['violations'][0]['field']);
+        }
+        self::assertSame(200, $this->patchStatus($offer->getId(), $this->withSection($offer->getDraft(), 'payment', ['planIds' => [$paid, $paid, ...\array_slice($four, 0, 2)]])), 'a repeated id counts once');
+    }
+
     public function testExtraFormFieldsGetStableKeys(): void
     {
         $page = $this->createPage($this->account, published: false);
@@ -293,5 +317,35 @@ final class PagesTest extends ApiTestCase
             self::assertSame(404, $this->responseStatus(), $method.$suffix);
         }
         self::assertSame(0, $this->api('GET', '/api/admin/pages')['total']);
+    }
+
+    /**
+     * The draft with the section of that type turned on and those fields set.
+     *
+     * @param array<string, mixed> $draft
+     * @param array<string, mixed> $fields
+     *
+     * @return array<string, mixed>
+     */
+    private function withSection(array $draft, string $type, array $fields): array
+    {
+        foreach ($draft['sections'] as &$section) {
+            if ($type === $section['type']) {
+                $section['enabled'] = true;
+                $section['fields'] = $fields + $section['fields'];
+            }
+        }
+
+        return $draft;
+    }
+
+    /**
+     * @param array<string, mixed> $draft
+     */
+    private function patchStatus(mixed $id, array $draft): int
+    {
+        $this->api('PATCH', '/api/admin/pages/'.$id, ['draft' => $draft]);
+
+        return $this->responseStatus();
     }
 }

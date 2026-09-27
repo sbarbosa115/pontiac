@@ -7,6 +7,7 @@ namespace App\Controller\Admin;
 use App\Api\ApiController;
 use App\Api\ApiException;
 use App\Api\ApiResponse;
+use App\Api\ApiValidationException;
 use App\Api\Input\SessionCancelInput;
 use App\Api\Input\SessionChangeInput;
 use App\Api\Input\SessionCreateInput;
@@ -19,6 +20,7 @@ use App\Enum\AccountFeature;
 use App\Enum\SessionStatus;
 use App\Repository\BookingSessionRepository;
 use App\Repository\ContactRepository;
+use App\Repository\EnrollmentRepository;
 use App\Repository\PlanRepository;
 use App\Security\RequiresFeature;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -65,14 +67,29 @@ final class SessionController extends ApiController
         return $this->json(['items' => array_map(Presenter::session(...), $this->sessions->findScheduledBetween($start, $start->modify('+7 days')))]);
     }
 
-    /** The consultant books a session for a contact, on an active free plan. */
+    /**
+     * The consultant books a session for a contact: on a plan they have with sessions left (`enrollmentId`), or on an
+     * active free plan (`planId`, a new enrollment).
+     */
     #[Route('', name: 'create', methods: ['POST'])]
     #[ApiResponse(SessionOutput::class, status: 201)]
-    public function create(Request $request, ContactRepository $contacts, PlanRepository $plans): JsonResponse
+    public function create(Request $request, ContactRepository $contacts, PlanRepository $plans, EnrollmentRepository $enrollments): JsonResponse
     {
         $data = $this->input->map($this->input->json($request), SessionCreateInput::class);
         $contact = $this->found($contacts->findOneById((string) $data->contactId));
-        $plan = $this->found($plans->findOneById((string) $data->planId));
+        if (null !== $data->enrollmentId && '' !== $data->enrollmentId) {
+            $enrollment = $this->found($enrollments->findOneById($data->enrollmentId));
+            if (!$enrollment->getContact()->getId()->equals($contact->getId())) {
+                throw ApiException::notFound();
+            }
+            $session = $this->booker->bookForEnrollment($this->account(), $enrollment, self::at((string) $data->startsAt));
+
+            return $this->json(Presenter::session($session), 201);
+        }
+        if (null === $data->planId || '' === $data->planId) {
+            throw ApiValidationException::single('planId', 'Choose a plan.');
+        }
+        $plan = $this->found($plans->findOneById($data->planId));
         $session = $this->booker->bookForContact($this->account(), $contact, $plan, self::at((string) $data->startsAt));
 
         return $this->json(Presenter::session($session), 201);

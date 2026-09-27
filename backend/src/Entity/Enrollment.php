@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Enum\EnrollmentOutcome;
 use App\Enum\EnrollmentStatus;
 use App\Repository\EnrollmentRepository;
 use Doctrine\DBAL\Types\Types;
@@ -13,6 +14,9 @@ use Symfony\Component\Uid\Uuid;
 /**
  * One contact taking one plan once: its sessions and how many are used. The plan's name, price, sessions and length
  * are copied in, so changing the plan later does not change what this person signed up for.
+ *
+ * pending_payment → active (paid, or free) → completed (its sessions used) → renewed or finished (`outcome`);
+ * a plan waiting for payment can be cancelled. A paid plan carries the token of its payment link.
  */
 #[ORM\Entity(repositoryClass: EnrollmentRepository::class)]
 #[ORM\Index(name: 'idx_enrollment_account_contact', columns: ['account_id', 'contact_id'])]
@@ -54,6 +58,16 @@ class Enrollment implements AccountOwnedInterface
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
 
+    // The payment link's secret part (/<consultant>/pagar/<token>): random, only lets someone pay this plan.
+    #[ORM\Column(length: 43, unique: true, nullable: true)]
+    private ?string $paymentToken = null;
+
+    #[ORM\Column(length: 10, nullable: true, enumType: EnrollmentOutcome::class)]
+    private ?EnrollmentOutcome $outcome = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $completedAt = null;
+
     public function __construct(Contact $contact, Plan $plan, ?LandingPage $sourcePage)
     {
         $this->id = Uuid::v7();
@@ -69,6 +83,73 @@ class Enrollment implements AccountOwnedInterface
         $this->status = $plan->isFree() ? EnrollmentStatus::Active : EnrollmentStatus::PendingPayment;
         $this->sourcePage = $sourcePage;
         $this->createdAt = new \DateTimeImmutable();
+        if (!$plan->isFree()) {
+            $this->paymentToken = rtrim(strtr(base64_encode(random_bytes(24)), '+/', '-_'), '=');
+        }
+    }
+
+    /** Paid (or paid again after it was cancelled: the money came in). */
+    public function activate(): static
+    {
+        if (\in_array($this->status, [EnrollmentStatus::PendingPayment, EnrollmentStatus::Cancelled], true)) {
+            $this->status = EnrollmentStatus::Active;
+        }
+
+        return $this;
+    }
+
+    public function cancel(): static
+    {
+        if (EnrollmentStatus::PendingPayment !== $this->status) {
+            throw new \DomainException('Only a plan waiting for payment is cancelled.');
+        }
+        $this->status = EnrollmentStatus::Cancelled;
+
+        return $this;
+    }
+
+    /** Every session used (done or no-show); a session reopened by mistake makes it active again. */
+    public function progress(int $sessionsUsed, \DateTimeImmutable $now): static
+    {
+        if (EnrollmentStatus::Active === $this->status && $sessionsUsed >= $this->sessionsIncluded) {
+            $this->status = EnrollmentStatus::Completed;
+            $this->completedAt = $now;
+        } elseif (EnrollmentStatus::Completed === $this->status && $sessionsUsed < $this->sessionsIncluded && null === $this->outcome) {
+            $this->status = EnrollmentStatus::Active;
+            $this->completedAt = null;
+        }
+
+        return $this;
+    }
+
+    public function conclude(EnrollmentOutcome $outcome): static
+    {
+        if (EnrollmentStatus::Completed !== $this->status || null !== $this->outcome) {
+            throw new \DomainException('Only a completed plan without an outcome is renewed or finished.');
+        }
+        $this->outcome = $outcome;
+
+        return $this;
+    }
+
+    public function isFree(): bool
+    {
+        return '0.00' === $this->price || 1 === preg_match('/^0+(\.0+)?$/', $this->price);
+    }
+
+    public function getPaymentToken(): ?string
+    {
+        return $this->paymentToken;
+    }
+
+    public function getOutcome(): ?EnrollmentOutcome
+    {
+        return $this->outcome;
+    }
+
+    public function getCompletedAt(): ?\DateTimeImmutable
+    {
+        return $this->completedAt;
     }
 
     public function getContact(): Contact

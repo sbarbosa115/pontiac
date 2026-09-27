@@ -15,7 +15,7 @@ use App\Enum\PageTemplate;
  * cannot add sections a template does not have.
  *
  * Field kinds: text (one line), textarea, image (a MediaAsset id), date (Y-m-d), url, items (a repeatable group),
- * plan (a free Plan id: what a booking section books).
+ * plan (a free Plan id: what a booking section books), plans (1 to 3 paid Plan ids: what a payment section sells).
  *
  * A template may gain sections over time: a page made before gets them appended, switched off (ContentValidator).
  */
@@ -86,6 +86,13 @@ final class TemplateCatalog
             'submitLabel' => ['kind' => 'text', 'max' => 40, 'required' => true],
             'successMessage' => ['kind' => 'textarea', 'max' => 300, 'required' => true],
         ],
+        'payment' => [
+            'heading' => ['kind' => 'text', 'max' => 120],
+            'body' => ['kind' => 'textarea', 'max' => 500],
+            'planIds' => ['kind' => 'plans', 'required' => true, 'maxItems' => 3],
+            'submitLabel' => ['kind' => 'text', 'max' => 40, 'required' => true],
+            'note' => ['kind' => 'textarea', 'max' => 300],
+        ],
         'form' => [
             'heading' => ['kind' => 'text', 'max' => 120],
             'body' => ['kind' => 'textarea', 'max' => 500],
@@ -105,6 +112,19 @@ final class TemplateCatalog
         'rust' => ['#9a3b12', '#ffffff', '#fbeae2'],
         'graphite' => ['#2f3640', '#ffffff', '#eceef2'],
     ];
+
+    /**
+     * A payment section, off until the consultant picks the paid plans it sells (Planes) and turns it on.
+     *
+     * @return array{id: string, type: string, enabled: bool, fields: array<string, mixed>}
+     */
+    private static function payment(string $id, string $heading, string $body): array
+    {
+        return ['id' => $id, 'type' => 'payment', 'enabled' => false, 'fields' => [
+            'heading' => $heading, 'body' => $body, 'planIds' => [], 'submitLabel' => 'Pagar con Wompi',
+            'note' => 'Pago seguro con Wompi: tarjeta, PSE o Nequi. Te enviamos el comprobante a tu correo.',
+        ]];
+    }
 
     /**
      * The sections of a template, in their default order, with default content.
@@ -151,6 +171,7 @@ final class TemplateCatalog
                     ['title' => 'Plantilla de presupuesto', 'body' => 'Tu presupuesto armado y listo para seguir.'],
                     ['title' => 'Seguimiento por correo', 'body' => 'Resolvemos tus dudas entre una sesión y otra.'],
                 ]]),
+                self::payment('precios', 'Empieza hoy', 'Elige tu plan, págalo en línea y te escribimos para agendar tus sesiones.'),
                 $testimonials,
                 $faq,
                 $form('¿Hablamos?', 'Déjanos tus datos y te contamos cómo empezar.', 'Quiero más información', '¡Gracias! Te escribiremos muy pronto con los detalles del plan.'),
@@ -177,6 +198,7 @@ final class TemplateCatalog
                     ['title' => 'Deudas: por dónde empezar', 'body' => 'Bola de nieve o avalancha: cuál te conviene.'],
                     ['title' => 'Ahorro que sí se cumple', 'body' => 'Metas, fondos de emergencia y automatización.'],
                 ]]),
+                self::payment('pago', 'Paga tu cupo', 'Asegura tu lugar pagando en línea.'),
                 self::section('quien-dicta', 'profile', ['heading' => 'Quién dicta el taller', 'body' => 'Asesor financiero con más de diez años de experiencia en finanzas personales.', 'image' => null, 'credentials' => []]),
                 $faq,
                 $form('Reserva tu cupo', 'Déjanos tus datos y te enviamos el enlace de conexión.', 'Reservar mi cupo', '¡Listo! Te enviaremos el enlace y los detalles antes del taller.'),

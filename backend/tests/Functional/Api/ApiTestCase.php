@@ -12,12 +12,19 @@ use App\Entity\Contact;
 use App\Entity\Enrollment;
 use App\Entity\LandingPage;
 use App\Entity\LeadCategory;
+use App\Entity\Payment;
 use App\Entity\Plan;
+use App\Entity\WompiSettings;
 use App\Entity\User;
 use App\Enum\PageTemplate;
 use App\Page\TemplateCatalog;
 use App\Page\TimeToken;
+use App\Api\Input\WompiSettingsInput;
+use App\Payment\WompiKeys;
+use App\Payment\WompiSignature;
 use App\Repository\AvailabilityRepository;
+use App\Repository\WompiSettingsRepository;
+use App\Tests\Support\FakeWompi;
 use Doctrine\ORM\EntityManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
@@ -42,6 +49,7 @@ abstract class ApiTestCase extends WebTestCase
     protected function setUp(): void
     {
         $this->client = static::createClient();
+        FakeWompi::forget();
     }
 
     protected function em(): EntityManagerInterface
@@ -169,6 +177,65 @@ abstract class ApiTestCase extends WebTestCase
         $this->em()->flush();
 
         return static::getContainer()->get(SlotFinder::class)->slots($account, $availability, $durationMinutes, new \DateTimeImmutable());
+    }
+
+    public const WOMPI_EVENTS_SECRET = 'test_events_secreto123';
+    public const WOMPI_INTEGRITY_SECRET = 'test_integrity_secreto456';
+
+    /** Test keys for the account, as the owner would save them in Ajustes › Pagos Wompi. */
+    protected function configureWompi(Account $account): WompiSettings
+    {
+        $this->asPlatform();
+        static::getContainer()->get(AccountContext::class)->enterAccount($account);
+        $input = new WompiSettingsInput();
+        $input->publicKey = 'pub_test_llavepublica';
+        $input->privateKey = 'prv_test_llaveprivada';
+        $input->eventsSecret = self::WOMPI_EVENTS_SECRET;
+        $input->integritySecret = self::WOMPI_INTEGRITY_SECRET;
+        $settings = static::getContainer()->get(WompiKeys::class)->apply(static::getContainer()->get(WompiSettingsRepository::class)->forAccount($account), $input);
+        $this->em()->flush();
+        $this->asPlatform();
+
+        return $settings;
+    }
+
+    /**
+     * Wompi's "transaction.updated" event for a transaction, signed as Wompi signs it.
+     *
+     * @param array<string, mixed> $transaction
+     *
+     * @return array<string, mixed>
+     */
+    protected function wompiEvent(array $transaction, string $eventsSecret = self::WOMPI_EVENTS_SECRET): array
+    {
+        $event = [
+            'event' => 'transaction.updated',
+            'data' => ['transaction' => $transaction],
+            'environment' => 'test',
+            'signature' => ['properties' => ['transaction.id', 'transaction.status', 'transaction.amount_in_cents']],
+            'timestamp' => time(),
+            'sent_at' => date(\DATE_ATOM),
+        ];
+        $event['signature']['checksum'] = WompiSignature::checksum($event, $eventsSecret);
+
+        return $event;
+    }
+
+    /**
+     * A Wompi transaction for our payment, as the API and the events carry it.
+     *
+     * @return array<string, mixed>
+     */
+    protected function wompiTransaction(Payment $payment, string $status = 'APPROVED', string $id = 'tx-1', ?int $amountInCents = null): array
+    {
+        return [
+            'id' => $id,
+            'amount_in_cents' => $amountInCents ?? $payment->getAmountInCents(),
+            'reference' => $payment->getReference(),
+            'currency' => $payment->getCurrency(),
+            'payment_method_type' => 'CARD',
+            'status' => $status,
+        ];
     }
 
     /**

@@ -135,6 +135,7 @@ final class ContentValidator
                 'items' => $this->items($spec, $value, $at, $required),
                 'image' => $this->imageId($value, $at),
                 'plan' => $this->planId($value, $at, $required && ($spec['required'] ?? false)),
+                'plans' => $this->planIds($spec, $value, $at, $required && ($spec['required'] ?? false)),
                 'date' => $this->date($value, $at),
                 default => $this->text($spec, $value, $at, $required),
             };
@@ -199,6 +200,24 @@ final class ContentValidator
         }
 
         return $value;
+    }
+
+    /**
+     * @param array<string, mixed> $spec
+     *
+     * @return list<string>
+     */
+    private function planIds(array $spec, mixed $value, string $path, bool $required): array
+    {
+        $ids = \is_array($value) ? array_values(array_unique(array_filter($value, \is_string(...)))) : [];
+        if ([] === $ids && $required) {
+            $this->fail($path, 'Choose the paid plans people pay for here.');
+        }
+        if (\count($ids) > ($spec['maxItems'] ?? 3)) {
+            $this->fail($path, 'At most %max% items.', ['%max%' => $spec['maxItems'] ?? 3]);
+        }
+
+        return $ids;
     }
 
     private function planId(mixed $value, string $path, bool $required): ?string
@@ -386,29 +405,41 @@ final class ContentValidator
 
     /**
      * Every plan a booking section books is an active free plan of this consultant (a paid one is booked after its
-     * payment).
+     * payment); every plan a payment section sells, an active paid one.
      *
      * @param array<string, mixed> $content
      */
     private function checkPlans(array $content): void
     {
-        $refs = [];
+        $free = [];
+        $paid = [];
         foreach ($content['sections'] as $index => $section) {
             foreach (TemplateCatalog::SECTION_TYPES[$section['type']] as $name => $spec) {
                 if ('plan' === $spec['kind'] && null !== $section['fields'][$name]) {
-                    $refs["sections[$index].fields.$name"] = $section['fields'][$name];
+                    $free["sections[$index].fields.$name"] = $section['fields'][$name];
+                }
+                if ('plans' === $spec['kind']) {
+                    foreach ($section['fields'][$name] as $id) {
+                        $paid["sections[$index].fields.$name"][] = $id;
+                    }
                 }
             }
         }
-        $free = [];
-        foreach ($this->plans->findByIds(array_values(array_unique($refs))) as $plan) {
-            if ($plan->isActive() && $plan->isFree()) {
-                $free[(string) $plan->getId()] = true;
+        $plans = [];
+        foreach ($this->plans->findByIds(array_values(array_unique([...array_values($free), ...array_merge([], ...array_values($paid))]))) as $plan) {
+            $plans[(string) $plan->getId()] = $plan;
+        }
+        foreach ($free as $path => $id) {
+            if (!isset($plans[$id]) || !$plans[$id]->isActive() || !$plans[$id]->isFree()) {
+                $this->fail($path, 'Choose the free plan people book here.');
             }
         }
-        foreach ($refs as $path => $id) {
-            if (!isset($free[$id])) {
-                $this->fail($path, 'Choose the free plan people book here.');
+        foreach ($paid as $path => $ids) {
+            foreach ($ids as $id) {
+                if (!isset($plans[$id]) || !$plans[$id]->isActive() || $plans[$id]->isFree()) {
+                    $this->fail($path, 'Choose the paid plans people pay for here.');
+                    break;
+                }
             }
         }
     }

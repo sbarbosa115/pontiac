@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Admin;
 
 use App\Api\ApiController;
+use App\Api\ContactDetails;
 use App\Api\ApiException;
 use App\Api\ApiResponse;
 use App\Api\ApiValidationException;
@@ -15,7 +16,6 @@ use App\Api\Presenter;
 use App\Entity\Contact;
 use App\Entity\User;
 use App\Enum\ContactStatus;
-use App\Repository\BookingSessionRepository;
 use App\Repository\ContactRepository;
 use App\Repository\LeadCategoryRepository;
 use App\Repository\LeadSubmissionRepository;
@@ -33,7 +33,7 @@ final class ContactController extends ApiController
     public function __construct(
         private readonly ContactRepository $contacts,
         private readonly LeadSubmissionRepository $submissions,
-        private readonly BookingSessionRepository $sessions,
+        private readonly ContactDetails $details,
         private readonly EntityManagerInterface $em,
     ) {
     }
@@ -60,7 +60,7 @@ final class ContactController extends ApiController
     {
         $contact = $this->load($id);
 
-        return $this->json(Presenter::contactDetail($contact, $this->submissions->findForContact($contact), $this->sessions->findForContact($contact)));
+        return $this->json($this->details->of($this->account(), $contact));
     }
 
     /** {categoryId}: one of the consultant's categories, or null for none. */
@@ -80,7 +80,7 @@ final class ContactController extends ApiController
         }
         $this->em->flush();
 
-        return $this->json(Presenter::contactDetail($contact, $this->submissions->findForContact($contact), $this->sessions->findForContact($contact)));
+        return $this->json($this->details->of($this->account(), $contact));
     }
 
     /**
@@ -103,7 +103,7 @@ final class ContactController extends ApiController
         }
         $this->em->flush();
 
-        return $this->json(Presenter::contactDetail($contact, $submissions, $this->sessions->findForContact($contact)));
+        return $this->json($this->details->of($this->account(), $contact));
     }
 
     private function load(string $id): Contact

@@ -1,0 +1,33 @@
+{% extends 'public/base.html.twig' %}
+
+{% block title %}Tu pago · {{ account.name }}{% endblock %}
+
+{% block meta %}
+    <meta name="robots" content="noindex">
+    <meta name="referrer" content="no-referrer">
+    {# While Wompi has no result yet, this page asks again every few seconds (no JavaScript). #}
+    {% if payment.status.value == 'pending' %}<meta http-equiv="refresh" content="5">{% endif %}
+{% endblock %}
+
+{% block body %}
+    <p><a href="/{{ account.slug }}">← {{ account.name }}</a></p>
+    {% set status = payment.status.value %}
+    {% if status == 'approved' %}
+        <h1>¡Pago aprobado!</h1>
+        <p class="notice" role="status">Gracias. {{ account.name }} te escribirá para agendar tus sesiones. Te enviamos el comprobante a tu correo.</p>
+    {% elseif status == 'pending' %}
+        <h1>Estamos confirmando tu pago</h1>
+        <p class="notice" role="status">Wompi aún no nos confirma el resultado. Esta página se actualiza sola; también te avisaremos por correo.</p>
+    {% else %}
+        <h1>El pago no se completó</h1>
+        <p class="notice notice-error" role="alert">{{ status == 'declined' ? 'La entidad rechazó el pago; no se hizo ningún cobro.' : (status == 'voided' ? 'El pago fue anulado.' : 'Hubo un problema con el pago. Escríbele a ' ~ account.name ~ ' con la referencia.') }}</p>
+        {% if retryUrl %}<p><a class="btn" href="{{ retryUrl }}">Intentar de nuevo</a></p>{% endif %}
+    {% endif %}
+
+    <dl class="summary">
+        <dt>Plan</dt><dd>{{ payment.enrollment.planName }}</dd>
+        <dt>Valor</dt><dd>{{ amount }}</dd>
+        {% if paidOn %}<dt>Fecha</dt><dd>{{ paidOn }}</dd>{% endif %}
+        <dt>Referencia</dt><dd>{{ payment.reference }}</dd>
+    </dl>
+{% endblock %}

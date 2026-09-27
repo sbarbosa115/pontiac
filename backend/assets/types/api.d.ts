@@ -28,8 +28,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * The free slots for a plan's session length (?planId=), or to move a session (?sessionId=: its own time counts
-         *     as free), grouped by day.
+         * The free slots for a session of a plan (?planId=) or of a plan someone has (?enrollmentId=), or to move a
+         *     session (?sessionId=: its own time counts as free), grouped by day.
          */
         get: operations["get_api_admin_availability_slots"];
         put?: never;
@@ -171,6 +171,107 @@ export interface paths {
         get: operations["get_api_admin_dashboard"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/contacts/{id}/enrollments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** "Asignar plan": a free one starts at once; a paid one waits for its payment and emails the link. */
+        post: operations["post_api_admin_enrollment_assign"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/enrollments/{id}/send-link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post_api_admin_enrollment_send_link"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/enrollments/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Only a plan still waiting for its payment. */
+        post: operations["post_api_admin_enrollment_cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/enrollments/{id}/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Money received outside Wompi (cash, a transfer): the plan starts and the person becomes a client. */
+        post: operations["post_api_admin_enrollment_manual_payment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/enrollments/{id}/renew": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** "Renovar": the used-up plan is closed and another one starts (a paid one sends its payment link). */
+        post: operations["post_api_admin_enrollment_renew"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/enrollments/{id}/finish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** "Finalizar asesoría": the used-up plan is closed and the person is finished (paying again brings them back). */
+        post: operations["post_api_admin_enrollment_finish"];
         delete?: never;
         options?: never;
         head?: never;
@@ -381,6 +482,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** ?q= searches the person's name and email and the reference; ?status=; ?from= and ?to= (Y-m-d, local days, inclusive). */
+        get: operations["get_api_admin_payment_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/plans": {
         parameters: {
             query?: never;
@@ -476,7 +594,10 @@ export interface paths {
         /** ?q= searches the contact's name and email; ?status=; ?from= and ?to= (Y-m-d, local days, inclusive). */
         get: operations["get_api_admin_session_list"];
         put?: never;
-        /** The consultant books a session for a contact, on an active free plan. */
+        /**
+         * The consultant books a session for a contact: on a plan they have with sessions left (`enrollmentId`), or on an
+         *     active free plan (`planId`, a new enrollment).
+         */
         post: operations["post_api_admin_session_create"];
         delete?: never;
         options?: never;
@@ -582,6 +703,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/sessions/{id}/notes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_api_admin_session_note_list"];
+        put?: never;
+        post: operations["post_api_admin_session_note_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/session-notes/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["put_api_admin_session_note_update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/team": {
         parameters: {
             query?: never;
@@ -644,6 +797,39 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["post_api_admin_team_enable"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/wompi": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_api_admin_wompi_show"];
+        put: operations["put_api_admin_wompi_update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/wompi/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** "Probar conexión": does Wompi know the public key? */
+        post: operations["post_api_admin_wompi_test"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1147,6 +1333,58 @@ export interface components {
             /** "visitor" (from a page) or "staff". */
             bookedBy: string;
         };
+        MoneyOutput: {
+            /** "250000.00" */
+            amount: string;
+            /** ISO 4217, e.g. "COP". */
+            currency: string;
+        };
+        PaymentOutput: {
+            id: string;
+            /** Ours, as Wompi shows it: "PON-…". */
+            reference: string;
+            amount: components["schemas"]["MoneyOutput"];
+            /** "pending", "approved", "declined", "voided" or "error". */
+            status: string;
+            /** Wompi's (CARD, PSE, NEQUI, …) or a manual one (cash, transfer, other). */
+            method?: string | null;
+            manual: boolean;
+            note?: string | null;
+            /** Who recorded a manual payment. */
+            recordedBy?: string | null;
+            contact: components["schemas"]["ContactRefOutput"];
+            planName: string;
+            enrollmentId: string;
+            /** ISO 8601. */
+            createdAt: string;
+            /** ISO 8601. */
+            paidAt?: string | null;
+        };
+        EnrollmentOutput: {
+            id: string;
+            planName: string;
+            price: components["schemas"]["MoneyOutput"];
+            free: boolean;
+            sessionsIncluded: number;
+            /** Booked, done or no-show. */
+            sessionsTaken: number;
+            /** Done or no-show. */
+            sessionsUsed: number;
+            durationMinutes: number;
+            /** "pending_payment", "active", "completed" or "cancelled". */
+            status: string;
+            /** Once completed: "renewed" or "finished". */
+            outcome?: string | null;
+            sourcePage?: components["schemas"]["PageRefOutput"] | null;
+            /** ISO 8601. */
+            createdAt: string;
+            /** ISO 8601. */
+            completedAt?: string | null;
+            /** The link to pay it, while it waits for a payment. */
+            paymentUrl?: string | null;
+            /** newest first */
+            payments: components["schemas"]["PaymentOutput"][];
+        };
         ContactDetailOutput: {
             id: string;
             fullName: string;
@@ -1166,11 +1404,19 @@ export interface components {
             submissions: components["schemas"]["SubmissionOutput"][];
             /** the latest first */
             sessions: components["schemas"]["SessionOutput"][];
+            /** newest first */
+            enrollments: components["schemas"]["EnrollmentOutput"][];
         };
         AdminDashboardOutput: {
             newLeadsLast7Days: number;
             publishedPages: number;
             maxPublishedPages: number;
+            /** Scheduled sessions today and tomorrow, in the consultant's timezone. */
+            sessionsToday: number;
+            sessionsTomorrow: number;
+            /** Approved payments in the last 7 days: how many and how much. */
+            paymentsLast7Days: number;
+            paidLast7Days: components["schemas"]["MoneyOutput"];
         };
         MediaAssetOutput: {
             id: string;
@@ -1271,12 +1517,6 @@ export interface components {
                 [key: string]: unknown;
             };
         };
-        MoneyOutput: {
-            /** "250000.00" */
-            amount: string;
-            /** ISO 4217, e.g. "COP". */
-            currency: string;
-        };
         PlanOutput: {
             id: string;
             name: string;
@@ -1294,6 +1534,24 @@ export interface components {
             usingDefault: boolean;
             defaultText: string;
         };
+        PersonOutput: {
+            id: string;
+            fullName: string;
+            email: string;
+        };
+        SessionNoteOutput: {
+            id: string;
+            body: string;
+            /** "private" (owner only) or "shared". */
+            visibility: string;
+            author: components["schemas"]["PersonOutput"];
+            /** ISO 8601. */
+            createdAt: string;
+            /** ISO 8601. */
+            updatedAt: string;
+            /** Whether the person asking may change it (its author, or the owner). */
+            editable: boolean;
+        };
         TeamMemberOutput: {
             id: string;
             email: string;
@@ -1305,6 +1563,23 @@ export interface components {
             loginStatus: string;
             /** ISO 8601; null until they first sign in. */
             lastSignInAt?: string | null;
+        };
+        WompiSettingsOutput: {
+            publicKey: string;
+            /** "test" or "production", from the keys; null until there is a public key. */
+            mode?: string | null;
+            privateKeyEnding?: string | null;
+            eventsSecretEnding?: string | null;
+            integritySecretEnding?: string | null;
+            /** Enough to take payments: public key, events and integrity secrets. */
+            configured: boolean;
+            /** What to paste in Wompi's dashboard as the events URL. */
+            eventsUrl: string;
+        };
+        WompiTestOutput: {
+            /** The merchant's name at Wompi. */
+            merchantName: string;
+            mode: string;
         };
         InvitationOutput: {
             email: string;
@@ -1464,11 +1739,6 @@ export interface components {
             reservedSlugs: string[];
             /** ISO 8601; null until a super admin first saves them. */
             updatedAt?: string | null;
-        };
-        PersonOutput: {
-            id: string;
-            fullName: string;
-            email: string;
         };
         SettingChangeOutput: {
             field: string;
@@ -1796,6 +2066,138 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminDashboardOutput"];
+                };
+            };
+        };
+    };
+    post_api_admin_enrollment_assign: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Created. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContactDetailOutput"];
+                };
+            };
+        };
+    };
+    post_api_admin_enrollment_send_link: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContactDetailOutput"];
+                };
+            };
+        };
+    };
+    post_api_admin_enrollment_cancel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContactDetailOutput"];
+                };
+            };
+        };
+    };
+    post_api_admin_enrollment_manual_payment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Created. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContactDetailOutput"];
+                };
+            };
+        };
+    };
+    post_api_admin_enrollment_renew: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Created. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContactDetailOutput"];
+                };
+            };
+        };
+    };
+    post_api_admin_enrollment_finish: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContactDetailOutput"];
                 };
             };
         };
@@ -2171,6 +2573,31 @@ export interface operations {
             };
         };
     };
+    get_api_admin_payment_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["PaymentOutput"][];
+                        total: number;
+                        page: number;
+                        perPage: number;
+                    };
+                };
+            };
+        };
+    };
     get_api_admin_plan_list: {
         parameters: {
             query?: never;
@@ -2521,6 +2948,74 @@ export interface operations {
             };
         };
     };
+    get_api_admin_session_note_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["SessionNoteOutput"][];
+                    };
+                };
+            };
+        };
+    };
+    post_api_admin_session_note_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Created. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionNoteOutput"];
+                };
+            };
+        };
+    };
+    put_api_admin_session_note_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionNoteOutput"];
+                };
+            };
+        };
+    };
     get_api_admin_team_list: {
         parameters: {
             query?: never;
@@ -2628,6 +3123,66 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TeamMemberOutput"];
+                };
+            };
+        };
+    };
+    get_api_admin_wompi_show: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WompiSettingsOutput"];
+                };
+            };
+        };
+    };
+    put_api_admin_wompi_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WompiSettingsOutput"];
+                };
+            };
+        };
+    };
+    post_api_admin_wompi_test: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WompiTestOutput"];
                 };
             };
         };

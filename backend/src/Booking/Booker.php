@@ -11,6 +11,7 @@ use App\Entity\Contact;
 use App\Entity\Enrollment;
 use App\Entity\LandingPage;
 use App\Entity\Plan;
+use App\Enum\EnrollmentStatus;
 use App\Enum\SessionStatus;
 use App\Mail\BookingMailer;
 use App\Repository\AvailabilityRepository;
@@ -50,6 +51,22 @@ final class Booker
         }
 
         return $this->book($account, new Enrollment($contact, $plan, null), $startsAt, BookingSession::BOOKED_BY_STAFF);
+    }
+
+    /**
+     * A session of a plan the person has (a paid one, once paid): while it is active and has sessions left.
+     */
+    public function bookForEnrollment(Account $account, Enrollment $enrollment, \DateTimeImmutable $startsAt): BookingSession
+    {
+        if (EnrollmentStatus::Active !== $enrollment->getStatus()) {
+            throw ApiException::conflict('enrollment_not_active', 'Only an active plan is booked: a paid one after its payment.');
+        }
+        $taken = $this->sessions->countsByEnrollment([$enrollment])[(string) $enrollment->getId()]['taken'];
+        if ($taken >= $enrollment->getSessionsIncluded()) {
+            throw ApiException::conflict('no_sessions_left', 'Every session of this plan is already booked or used.');
+        }
+
+        return $this->book($account, $enrollment, $startsAt, BookingSession::BOOKED_BY_STAFF);
     }
 
     /**
@@ -106,6 +123,7 @@ final class Booker
             throw ApiException::conflict('session_not_closable', $e->getMessage());
         }
         $this->em->flush();
+        $this->progress($session, $now);
 
         return $session;
     }
@@ -118,6 +136,7 @@ final class Booker
             throw ApiException::conflict('session_not_closed', $e->getMessage());
         }
         $this->em->flush();
+        $this->progress($session, new \DateTimeImmutable());
 
         return $session;
     }
@@ -153,6 +172,14 @@ final class Booker
         $this->mailer->confirmed($account, $session, $token);
 
         return $session;
+    }
+
+    /** Its plan completes when every session is used, and becomes active again when one is reopened. */
+    private function progress(BookingSession $session, \DateTimeImmutable $now): void
+    {
+        $enrollment = $session->getEnrollment();
+        $enrollment->progress($this->sessions->countsByEnrollment([$enrollment])[(string) $enrollment->getId()]['used'], $now);
+        $this->em->flush();
     }
 
     private function overlaps(BookingSession $session, \DateTimeImmutable $startsAt, int $bufferMinutes): bool

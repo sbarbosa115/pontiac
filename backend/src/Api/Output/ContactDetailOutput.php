@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Api\Output;
 
-/** One contact, with every form they sent. */
+/** One contact, with every form they sent, their sessions and their plans. */
 final readonly class ContactDetailOutput
 {
     public function __construct(
@@ -26,6 +26,8 @@ final readonly class ContactDetailOutput
         public array $submissions,
         /** @var list<SessionOutput> the latest first */
         public array $sessions,
+        /** @var list<EnrollmentOutput> newest first */
+        public array $enrollments,
     ) {
     }
 }

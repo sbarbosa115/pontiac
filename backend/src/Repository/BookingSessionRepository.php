@@ -8,10 +8,12 @@ use App\Api\Page;
 use App\Api\Pagination;
 use App\Entity\BookingSession;
 use App\Entity\Contact;
+use App\Entity\Enrollment;
 use App\Enum\SessionStatus;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bridge\Doctrine\Types\UuidType;
+use Symfony\Component\Uid\Uuid;
 
 /**
  * @extends AccountOwnedRepository<BookingSession>
@@ -138,4 +140,43 @@ class BookingSessionRepository extends AccountOwnedRepository
             ->innerJoin('s.enrollment', 'e')
             ->addSelect('e');
     }
+
+    /**
+     * Per enrollment: sessions taken (scheduled, done or no-show) and used (done or no-show). One query for all.
+     *
+     * @param list<Enrollment> $enrollments
+     *
+     * @return array<string, array{taken: int, used: int}> by enrollment id
+     */
+    public function countsByEnrollment(array $enrollments): array
+    {
+        if ([] === $enrollments) {
+            return [];
+        }
+        $rows = $this->createQueryBuilder('s')
+            ->select('IDENTITY(s.enrollment) AS enrollment', 's.status AS status', 'COUNT(s.id) AS n')
+            ->andWhere('s.enrollment IN (:enrollments)')
+            ->andWhere('s.status != :cancelled')
+            ->setParameter('enrollments', array_map(static fn (Enrollment $e) => $e->getId()->toBinary(), $enrollments))
+            ->setParameter('cancelled', SessionStatus::Cancelled)
+            ->groupBy('s.enrollment', 's.status')
+            ->getQuery()
+            ->getArrayResult();
+
+        $counts = [];
+        foreach ($enrollments as $enrollment) {
+            $counts[(string) $enrollment->getId()] = ['taken' => 0, 'used' => 0];
+        }
+        foreach ($rows as $row) {
+            $id = (string) Uuid::fromBinary($row['enrollment']);
+            $status = $row['status'] instanceof SessionStatus ? $row['status'] : SessionStatus::from((string) $row['status']);
+            $counts[$id]['taken'] += (int) $row['n'];
+            if (SessionStatus::Scheduled !== $status) {
+                $counts[$id]['used'] += (int) $row['n'];
+            }
+        }
+
+        return $counts;
+    }
 }
+

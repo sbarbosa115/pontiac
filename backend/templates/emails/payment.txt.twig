@@ -1,0 +1,14 @@
+{{ audience == 'contact' ? 'Hola, ' ~ contactName ~ ':' : 'Hola:' }}
+
+{% if kind == 'payment_link' %}{{ consultant }} te preparó este plan. Cuando quieras empezar, págalo en línea con Wompi (tarjeta, PSE o Nequi).{% elseif kind == 'payment_received' %}Recibimos tu pago. Gracias por confiar en {{ consultant }}: te escribiremos para agendar tus sesiones.{% elseif kind == 'payment_new' %}{{ contactName }} ({{ contactEmail }}) pagó un plan.{% endif %}
+
+Plan: {{ plan }}
+Incluye: {{ sessions }} {{ sessions == 1 ? 'sesión' : 'sesiones' }} de {{ minutes }} minutos
+{% if kind == 'payment_link' %}Valor: {{ price }}
+{% if payUrl %}
+Pagar mi plan: {{ payUrl }}
+{% endif %}{% else %}Pagado: {{ amount }}, {{ paidOn }}
+Referencia: {{ reference }}
+{% endif %}{% if contactUrl is defined %}
+Ver a {{ contactName }} en Pontiac: {{ contactUrl }}
+{% endif %}

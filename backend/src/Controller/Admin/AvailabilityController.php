@@ -16,6 +16,7 @@ use App\Booking\SlotFinder;
 use App\Enum\AccountFeature;
 use App\Repository\AvailabilityRepository;
 use App\Repository\BookingSessionRepository;
+use App\Repository\EnrollmentRepository;
 use App\Repository\PlanRepository;
 use App\Security\RequiresFeature;
 use Doctrine\ORM\EntityManagerInterface;
@@ -54,17 +55,20 @@ final class AvailabilityController extends ApiController
     }
 
     /**
-     * The free slots for a plan's session length (?planId=), or to move a session (?sessionId=: its own time counts
-     * as free), grouped by day.
+     * The free slots for a session of a plan (?planId=) or of a plan someone has (?enrollmentId=), or to move a
+     * session (?sessionId=: its own time counts as free), grouped by day.
      */
     #[Route('/slots', name: 'slots', methods: ['GET'])]
     #[ApiResponse(SlotDayOutput::class, list: true, key: 'days')]
-    public function slots(Request $request, SlotFinder $finder, PlanRepository $plans, BookingSessionRepository $sessions): JsonResponse
+    public function slots(Request $request, SlotFinder $finder, PlanRepository $plans, BookingSessionRepository $sessions, EnrollmentRepository $enrollments): JsonResponse
     {
-        $session = '' === $request->query->getString('sessionId') ? null : $this->found($sessions->findOneById($request->query->getString('sessionId')));
-        $duration = null !== $session
-            ? $session->getEnrollment()->getDurationMinutes()
-            : $this->found($plans->findOneById($request->query->getString('planId')))->getDurationMinutes();
+        $query = $request->query;
+        $session = '' === $query->getString('sessionId') ? null : $this->found($sessions->findOneById($query->getString('sessionId')));
+        $duration = match (true) {
+            null !== $session => $session->getEnrollment()->getDurationMinutes(),
+            '' !== $query->getString('enrollmentId') => $this->found($enrollments->findOneById($query->getString('enrollmentId')))->getDurationMinutes(),
+            default => $this->found($plans->findOneById($query->getString('planId')))->getDurationMinutes(),
+        };
         $slots = $finder->slots($this->account(), $this->availability->forAccount($this->account()), $duration, new \DateTimeImmutable(), $session);
 
         return $this->json(['days' => Presenter::slotDays($this->account(), $slots)]);

@@ -5,6 +5,14 @@ declare(strict_types=1);
 namespace App\Api;
 
 use App\Api\Output\AccentOutput;
+use App\Api\Output\EnrollmentOutput;
+use App\Api\Output\PaymentOutput;
+use App\Api\Output\SessionNoteOutput;
+use App\Api\Output\WompiSettingsOutput;
+use App\Entity\Enrollment;
+use App\Entity\Payment;
+use App\Entity\SessionNote;
+use App\Entity\WompiSettings;
 use App\Api\Output\AvailabilityExceptionOutput;
 use App\Api\Output\AvailabilityOutput;
 use App\Api\Output\ContactRefOutput;
@@ -391,10 +399,11 @@ final class Presenter
     }
 
     /**
-     * @param list<LeadSubmission> $submissions
-     * @param list<BookingSession> $sessions
+     * @param list<LeadSubmission>   $submissions
+     * @param list<BookingSession>   $sessions
+     * @param list<EnrollmentOutput> $enrollments
      */
-    public static function contactDetail(Contact $contact, array $submissions, array $sessions = []): ContactDetailOutput
+    public static function contactDetail(Contact $contact, array $submissions, array $sessions = [], array $enrollments = []): ContactDetailOutput
     {
         return new ContactDetailOutput(
             id: (string) $contact->getId(),
@@ -417,6 +426,79 @@ final class Presenter
                 referrer: $s->getReferrer(),
             ), $submissions),
             sessions: array_map(self::session(...), $sessions),
+            enrollments: $enrollments,
+        );
+    }
+
+    public static function payment(Payment $payment): PaymentOutput
+    {
+        return new PaymentOutput(
+            id: (string) $payment->getId(),
+            reference: $payment->getReference(),
+            amount: new MoneyOutput(amount: $payment->getAmount(), currency: $payment->getCurrency()),
+            status: $payment->getStatus()->value,
+            method: $payment->getMethod(),
+            manual: $payment->isManual(),
+            note: $payment->getNote(),
+            recordedBy: $payment->getRecordedBy()?->getFullName(),
+            contact: new ContactRefOutput(id: (string) $payment->getContact()->getId(), fullName: $payment->getContact()->getFullName(), email: $payment->getContact()->getEmail()),
+            planName: $payment->getEnrollment()->getPlanName(),
+            enrollmentId: (string) $payment->getEnrollment()->getId(),
+            createdAt: (string) self::timestamp($payment->getCreatedAt()),
+            paidAt: self::timestamp($payment->getPaidAt()),
+        );
+    }
+
+    /**
+     * @param array{taken: int, used: int} $counts
+     * @param list<Payment>                $payments this enrollment's, newest first
+     */
+    public static function enrollment(Enrollment $enrollment, array $counts, ?string $paymentUrl, array $payments): EnrollmentOutput
+    {
+        return new EnrollmentOutput(
+            id: (string) $enrollment->getId(),
+            planName: $enrollment->getPlanName(),
+            price: new MoneyOutput(amount: $enrollment->getPrice(), currency: $enrollment->getCurrency()),
+            free: $enrollment->isFree(),
+            sessionsIncluded: $enrollment->getSessionsIncluded(),
+            sessionsTaken: $counts['taken'],
+            sessionsUsed: $counts['used'],
+            durationMinutes: $enrollment->getDurationMinutes(),
+            status: $enrollment->getStatus()->value,
+            outcome: $enrollment->getOutcome()?->value,
+            sourcePage: null === $enrollment->getSourcePage() ? null : self::pageRef($enrollment->getSourcePage()),
+            createdAt: (string) self::timestamp($enrollment->getCreatedAt()),
+            completedAt: self::timestamp($enrollment->getCompletedAt()),
+            paymentUrl: $paymentUrl,
+            payments: array_map(self::payment(...), $payments),
+        );
+    }
+
+    public static function sessionNote(SessionNote $note, bool $editable): SessionNoteOutput
+    {
+        $author = $note->getAuthor();
+
+        return new SessionNoteOutput(
+            id: (string) $note->getId(),
+            body: $note->getBody(),
+            visibility: $note->getVisibility()->value,
+            author: new PersonOutput(id: (string) $author->getId(), fullName: $author->getFullName(), email: $author->getEmail()),
+            createdAt: (string) self::timestamp($note->getCreatedAt()),
+            updatedAt: (string) self::timestamp($note->getUpdatedAt()),
+            editable: $editable,
+        );
+    }
+
+    public static function wompiSettings(WompiSettings $settings, string $eventsUrl): WompiSettingsOutput
+    {
+        return new WompiSettingsOutput(
+            publicKey: $settings->getPublicKey(),
+            mode: $settings->getMode(),
+            privateKeyEnding: $settings->getEnding('privateKey'),
+            eventsSecretEnding: $settings->getEnding('eventsSecret'),
+            integritySecretEnding: $settings->getEnding('integritySecret'),
+            configured: $settings->isConfigured(),
+            eventsUrl: $eventsUrl,
         );
     }
 

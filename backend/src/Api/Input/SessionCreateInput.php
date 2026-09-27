@@ -12,9 +12,11 @@ final class SessionCreateInput
     #[Assert\NotBlank(message: 'Choose the person.')]
     public ?string $contactId = null;
 
-    /** An active free plan (a paid one is booked after its payment). */
-    #[Assert\NotBlank(message: 'Choose a plan.')]
+    /** An active free plan: a new enrollment in it. Either this or enrollmentId. */
     public ?string $planId = null;
+
+    /** A plan the contact has (a paid one, once paid) with sessions left. Either this or planId. */
+    public ?string $enrollmentId = null;
 
     /** ISO 8601 with its offset, e.g. "2026-10-06T15:00:00+00:00". */
     #[Assert\NotBlank(message: 'Choose a day and a time.')]

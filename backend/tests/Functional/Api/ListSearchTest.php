@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Api;
 
 use App\Entity\Account;
+use App\Entity\Enrollment;
+use App\Entity\Payment;
 use App\Entity\User;
 use App\Enum\PageTemplate;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -40,8 +42,16 @@ final class ListSearchTest extends ApiTestCase
         $diagnostic = $this->createPlan($this->account, 'Diagnóstico');
         $this->save($diagnostic->change('Diagnóstico', 'Primera sesión gratuita', '0', 1, 45));
         $this->save($this->createPlan($this->account, 'Plan A', '250000')->change('Plan A', 'Dos sesiones de seguimiento', '250000', 2, 60));
-        $this->bookSession($this->createContact($this->account, 'Marta Díaz', 'marta@citas.test'), $diagnostic, new \DateTimeImmutable('+3 days'));
-        $this->bookSession($this->createContact($this->account, 'Jorge Peña', 'jorge@agenda.test'), $diagnostic, new \DateTimeImmutable('+4 days'));
+        $marta = $this->createContact($this->account, 'Marta Díaz', 'marta@citas.test');
+        $jorge = $this->createContact($this->account, 'Jorge Peña', 'jorge@agenda.test');
+        $this->bookSession($marta, $diagnostic, new \DateTimeImmutable('+3 days'));
+        $this->bookSession($jorge, $diagnostic, new \DateTimeImmutable('+4 days'));
+        // Two payments, by the same two people.
+        $planB = $this->createPlan($this->account, 'Plan B', '100000');
+        foreach ([$marta, $jorge] as $person) {
+            $enrollment = new Enrollment($person, $planB, null);
+            $this->save($enrollment, Payment::manual($enrollment, 'cash', null, $this->owner, new \DateTimeImmutable()));
+        }
 
         // Two settings changes by two people, and two emails for two consultants.
         $this->actAs($this->superAdmin);
@@ -87,6 +97,8 @@ final class ListSearchTest extends ApiTestCase
         yield 'plans by description' => ['owner', '/api/admin/plans', 'gratuita', 'Dos sesiones'];
         yield 'sessions by contact name' => ['owner', '/api/admin/sessions', 'Marta', 'Jorge'];
         yield 'sessions by contact email' => ['owner', '/api/admin/sessions', 'citas.test', 'jorge@'];
+        yield 'payments by person' => ['owner', '/api/admin/payments', 'Marta', 'Peña'];
+        yield 'payments by email' => ['owner', '/api/admin/payments', 'marta@', 'agenda.test'];
     }
 
     #[DataProvider('lists')]

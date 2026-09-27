@@ -29,8 +29,21 @@ class EnrollmentRepository extends AccountOwnedRepository
         return $this->createQueryBuilder('e')
             ->andWhere('e.contact = :contact')
             ->setParameter('contact', $contact->getId(), UuidType::NAME)
+            // Ids are time-ordered (UUIDv7): they settle what the seconds of createdAt cannot.
             ->orderBy('e.createdAt', 'DESC')
+            ->addOrderBy('e.id', 'DESC')
             ->getQuery()
             ->getResult();
+    }
+
+    public function findOneByPaymentToken(string $token): ?Enrollment
+    {
+        return $this->createQueryBuilder('e')
+            ->innerJoin('e.contact', 'c')
+            ->addSelect('c')
+            ->andWhere('e.paymentToken = :token')
+            ->setParameter('token', $token)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 }

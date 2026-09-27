@@ -1,0 +1,54 @@
+{# Paying for a plan: the plans on sale as cards to choose from, who is paying, then Wompi's checkout. A plain HTML
+   form like the others (`website` is the bots' trap, `_t` when it was drawn); the server answers with a redirect to
+   Wompi. #}
+{% set plans = payments[section.id] %}
+{% set chosen = paymentValues.planId ?? (plans|first).plan.id %}
+<section id="{{ section.id }}">
+    <div class="wrap form-box">
+        {% if fields.heading %}<{{ first ? 'h1' : 'h2' }}>{{ fields.heading }}</{{ first ? 'h1' : 'h2' }}>{% endif %}
+        {% if fields.body %}<p>{{ fields.body }}</p>{% endif %}
+        {% if paymentErrors['_form'] is defined %}<p class="notice notice-error" role="alert">{{ paymentErrors['_form'] }}</p>{% endif %}
+        <form method="post" action="{{ preview ? '#' ~ section.id : paymentAction }}" novalidate{% if preview %} onsubmit="return false"{% endif %}>
+            <fieldset class="price-cards">
+                <legend>{{ plans|length > 1 ? 'Elige tu plan' : 'Tu plan' }}</legend>
+                {% for item in plans %}
+                    <label class="price-card">
+                        <input type="radio" name="planId" value="{{ item.plan.id }}"{{ chosen == item.plan.id ? ' checked' }}>
+                        <span class="price-card-name">{{ item.plan.name }}</span>
+                        <span class="price-card-price">{{ item.price }}</span>
+                        <span class="price-card-detail">{{ item.plan.sessions }} {{ item.plan.sessions == 1 ? 'sesión' : 'sesiones' }} de {{ item.plan.durationMinutes }} minutos</span>
+                        {% if item.plan.description %}<span class="price-card-detail">{{ item.plan.description }}</span>{% endif %}
+                    </label>
+                {% endfor %}
+                {% if paymentErrors.planId is defined %}<p class="error">{{ paymentErrors.planId }}</p>{% endif %}
+            </fieldset>
+            <div class="field">
+                <label for="p-name">Nombre completo</label>
+                <input type="text" id="p-name" name="name" autocomplete="name" maxlength="180" value="{{ paymentValues.name ?? '' }}">
+                {% if paymentErrors.name is defined %}<p class="error">{{ paymentErrors.name }}</p>{% endif %}
+            </div>
+            <div class="field">
+                <label for="p-email">Correo electrónico</label>
+                <input type="email" id="p-email" name="email" autocomplete="email" maxlength="180" value="{{ paymentValues.email ?? '' }}">
+                {% if paymentErrors.email is defined %}<p class="error">{{ paymentErrors.email }}</p>{% endif %}
+            </div>
+            <div class="field">
+                <label for="p-phone">Teléfono (opcional)</label>
+                <input type="tel" id="p-phone" name="phone" autocomplete="tel" maxlength="40" value="{{ paymentValues.phone ?? '' }}">
+                {% if paymentErrors.phone is defined %}<p class="error">{{ paymentErrors.phone }}</p>{% endif %}
+            </div>
+            <div class="field">
+                <label class="check"><input type="checkbox" name="consent" value="1"{{ (paymentValues.consent ?? '') ? ' checked' }}> <span>Autorizo el tratamiento de mis datos según la <a href="{{ privacyUrl }}" target="_blank" rel="noopener">política de privacidad</a>.</span></label>
+                {% if paymentErrors.consent is defined %}<p class="error">{{ paymentErrors.consent }}</p>{% endif %}
+            </div>
+            <div class="hp" aria-hidden="true">
+                <label for="p-website">No llenes este campo</label>
+                <input type="text" id="p-website" name="website" tabindex="-1" autocomplete="off">
+            </div>
+            <input type="hidden" name="section" value="{{ section.id }}">
+            <input type="hidden" name="_t" value="{{ timeToken }}">
+            <button class="btn" type="submit">{{ fields.submitLabel }}</button>
+            {% if fields.note %}<p class="small">{{ fields.note }}</p>{% endif %}
+        </form>
+    </div>
+</section>

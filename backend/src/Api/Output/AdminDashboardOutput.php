@@ -11,6 +11,12 @@ final readonly class AdminDashboardOutput
         public int $newLeadsLast7Days,
         public int $publishedPages,
         public int $maxPublishedPages,
+        /** Scheduled sessions today and tomorrow, in the consultant's timezone. */
+        public int $sessionsToday,
+        public int $sessionsTomorrow,
+        /** Approved payments in the last 7 days: how many and how much. */
+        public int $paymentsLast7Days,
+        public MoneyOutput $paidLast7Days,
     ) {
     }
 }

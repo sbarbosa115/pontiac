@@ -1,0 +1,106 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Payment;
+
+use App\Api\ApiException;
+use App\Entity\Account;
+use App\Entity\Enrollment;
+use App\Entity\Payment;
+use App\Entity\User;
+use App\Enum\EnrollmentStatus;
+use App\Enum\PaymentStatus;
+use App\Mail\PaymentMailer;
+use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\Lock\LockFactory;
+
+/**
+ * Applies a payment's result, from wherever it comes (Wompi's event, Wompi's API asked by the result page, or the
+ * owner recording money received): once, under a lock per payment. An approved payment activates its plan and makes
+ * the person a client (a paid plan only), and both sides are told.
+ */
+final class PaymentApplier
+{
+    public function __construct(
+        private readonly EntityManagerInterface $em,
+        private readonly LockFactory $locks,
+        private readonly PaymentMailer $mailer,
+        private readonly LoggerInterface $logger,
+    ) {
+    }
+
+    /**
+     * Wompi's transaction for this payment. Its reference, amount and currency must be ours: anything else marks the
+     * payment `error` and approves nothing.
+     *
+     * @param array<string, mixed> $transaction Wompi's transaction object
+     *
+     * @return bool whether the payment changed
+     */
+    public function fromWompi(Account $account, Payment $payment, array $transaction, \DateTimeImmutable $now = new \DateTimeImmutable()): bool
+    {
+        $lock = $this->locks->createLock('payment-'.$payment->getId());
+        $lock->acquire(true);
+        try {
+            // Another request may have settled it meanwhile.
+            $this->em->refresh($payment);
+            if (PaymentStatus::Pending !== $payment->getStatus()) {
+                return false;
+            }
+            $transactionId = (string) ($transaction['id'] ?? '');
+            $matches = ($transaction['reference'] ?? null) === $payment->getReference()
+                && ($transaction['amount_in_cents'] ?? null) === $payment->getAmountInCents()
+                && ($transaction['currency'] ?? null) === $payment->getCurrency();
+            $status = $matches ? PaymentStatus::fromWompi((string) ($transaction['status'] ?? '')) : PaymentStatus::Error;
+            if (!$matches) {
+                $this->logger->warning('Wompi transaction {id} does not match payment {reference}.', ['id' => $transactionId, 'reference' => $payment->getReference()]);
+            }
+            if (PaymentStatus::Pending === $status) {
+                $payment->track($transactionId);
+                $this->em->flush();
+
+                return false;
+            }
+            $method = \is_string($transaction['payment_method_type'] ?? null) ? $transaction['payment_method_type'] : null;
+            $payment->settle($status, $transactionId, $method, $transaction, $now);
+            $approved = PaymentStatus::Approved === $status;
+            if ($approved) {
+                $this->approve($payment->getEnrollment());
+            }
+            $this->em->flush();
+        } finally {
+            $lock->release();
+        }
+
+        if ($approved) {
+            $this->mailer->received($account, $payment);
+        }
+
+        return true;
+    }
+
+    /** Money the owner received outside Wompi, for a plan waiting for its payment. */
+    public function recordManual(Account $account, Enrollment $enrollment, string $method, ?string $note, User $by, \DateTimeImmutable $paidAt): Payment
+    {
+        if (EnrollmentStatus::PendingPayment !== $enrollment->getStatus() || $enrollment->isFree()) {
+            throw ApiException::conflict('enrollment_not_payable', 'This plan is not waiting for a payment.');
+        }
+        $payment = Payment::manual($enrollment, $method, $note, $by, $paidAt);
+        $this->em->persist($payment);
+        $this->approve($enrollment);
+        $this->em->flush();
+        $this->mailer->received($account, $payment);
+
+        return $payment;
+    }
+
+    private function approve(Enrollment $enrollment): void
+    {
+        $enrollment->activate();
+        if (!$enrollment->isFree()) {
+            $enrollment->getContact()->becomeClient();
+        }
+    }
+}

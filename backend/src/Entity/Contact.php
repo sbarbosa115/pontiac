@@ -89,6 +89,23 @@ class Contact implements AccountOwnedInterface
         return $this;
     }
 
+    /** They paid for a plan (a free one never does this): a client, again if they had finished. */
+    public function becomeClient(): static
+    {
+        $this->status = ContactStatus::Client;
+        $this->lastActivityAt = new \DateTimeImmutable();
+
+        return $this;
+    }
+
+    /** "Finalizar asesoría": the consultancy ended; paying again makes them a client once more. */
+    public function finish(): static
+    {
+        $this->status = ContactStatus::Finished;
+
+        return $this;
+    }
+
     /**
      * Ley 1581, on request: the person's data is erased, while the fact that someone answered stays (so counts and
      * history keep adding up). Irreversible.

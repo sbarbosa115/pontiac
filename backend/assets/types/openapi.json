@@ -40,7 +40,7 @@
         },
         "/api/admin/availability/slots": {
             "get": {
-                "summary": "The free slots for a plan's session length (?planId=), or to move a session (?sessionId=: its own time counts\nas free), grouped by day.",
+                "summary": "The free slots for a session of a plan (?planId=) or of a plan someone has (?enrollmentId=), or to move a\nsession (?sessionId=: its own time counts as free), grouped by day.",
                 "operationId": "get_api_admin_availability_slots",
                 "responses": {
                     "200": {
@@ -370,6 +370,179 @@
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/AdminDashboardOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/contacts/{id}/enrollments": {
+            "post": {
+                "summary": "\"Asignar plan\": a free one starts at once; a paid one waits for its payment and emails the link.",
+                "operationId": "post_api_admin_enrollment_assign",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ContactDetailOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/enrollments/{id}/send-link": {
+            "post": {
+                "operationId": "post_api_admin_enrollment_send_link",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ContactDetailOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/enrollments/{id}/cancel": {
+            "post": {
+                "summary": "Only a plan still waiting for its payment.",
+                "operationId": "post_api_admin_enrollment_cancel",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ContactDetailOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/enrollments/{id}/payments": {
+            "post": {
+                "summary": "Money received outside Wompi (cash, a transfer): the plan starts and the person becomes a client.",
+                "operationId": "post_api_admin_enrollment_manual_payment",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ContactDetailOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/enrollments/{id}/renew": {
+            "post": {
+                "summary": "\"Renovar\": the used-up plan is closed and another one starts (a paid one sends its payment link).",
+                "operationId": "post_api_admin_enrollment_renew",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ContactDetailOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/enrollments/{id}/finish": {
+            "post": {
+                "summary": "\"Finalizar asesor\u00eda\": the used-up plan is closed and the person is finished (paying again brings them back).",
+                "operationId": "post_api_admin_enrollment_finish",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ContactDetailOutput"
                                 }
                             }
                         }
@@ -836,6 +1009,47 @@
                 }
             }
         },
+        "/api/admin/payments": {
+            "get": {
+                "summary": "?q= searches the person's name and email and the reference; ?status=; ?from= and ?to= (Y-m-d, local days, inclusive).",
+                "operationId": "get_api_admin_payment_list",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "items",
+                                        "total",
+                                        "page",
+                                        "perPage"
+                                    ],
+                                    "properties": {
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/PaymentOutput"
+                                            }
+                                        },
+                                        "total": {
+                                            "type": "integer"
+                                        },
+                                        "page": {
+                                            "type": "integer"
+                                        },
+                                        "perPage": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/admin/plans": {
             "get": {
                 "summary": "?q= searches name and description; ?includeInactive=1 shows disabled ones too.",
@@ -1079,7 +1293,7 @@
                 }
             },
             "post": {
-                "summary": "The consultant books a session for a contact, on an active free plan.",
+                "summary": "The consultant books a session for a contact: on a plan they have with sessions left (`enrollmentId`), or on an\nactive free plan (`planId`, a new enrollment).",
                 "operationId": "post_api_admin_session_create",
                 "responses": {
                     "201": {
@@ -1265,6 +1479,99 @@
                 }
             }
         },
+        "/api/admin/sessions/{id}/notes": {
+            "get": {
+                "operationId": "get_api_admin_session_note_list",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "items"
+                                    ],
+                                    "properties": {
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/SessionNoteOutput"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "operationId": "post_api_admin_session_note_create",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SessionNoteOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/session-notes/{id}": {
+            "put": {
+                "operationId": "put_api_admin_session_note_update",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SessionNoteOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/admin/team": {
             "get": {
                 "summary": "?q= searches name and email.",
@@ -1401,6 +1708,56 @@
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/TeamMemberOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/wompi": {
+            "get": {
+                "operationId": "get_api_admin_wompi_show",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WompiSettingsOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "operationId": "put_api_admin_wompi_update",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WompiSettingsOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/wompi/test": {
+            "post": {
+                "summary": "\"Probar conexi\u00f3n\": does Wompi know the public key?",
+                "operationId": "post_api_admin_wompi_test",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WompiTestOutput"
                                 }
                             }
                         }
@@ -2532,6 +2889,170 @@
                 },
                 "type": "object"
             },
+            "MoneyOutput": {
+                "required": [
+                    "amount",
+                    "currency"
+                ],
+                "properties": {
+                    "amount": {
+                        "title": "\"250000.00\"",
+                        "type": "string"
+                    },
+                    "currency": {
+                        "title": "ISO 4217, e.g. \"COP\".",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "PaymentOutput": {
+                "required": [
+                    "id",
+                    "reference",
+                    "amount",
+                    "status",
+                    "manual",
+                    "contact",
+                    "planName",
+                    "enrollmentId",
+                    "createdAt"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "reference": {
+                        "title": "Ours, as Wompi shows it: \"PON-\u2026\".",
+                        "type": "string"
+                    },
+                    "amount": {
+                        "$ref": "#/components/schemas/MoneyOutput"
+                    },
+                    "status": {
+                        "title": "\"pending\", \"approved\", \"declined\", \"voided\" or \"error\".",
+                        "type": "string"
+                    },
+                    "method": {
+                        "title": "Wompi's (CARD, PSE, NEQUI, \u2026) or a manual one (cash, transfer, other).",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "manual": {
+                        "type": "boolean"
+                    },
+                    "note": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "recordedBy": {
+                        "title": "Who recorded a manual payment.",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "contact": {
+                        "$ref": "#/components/schemas/ContactRefOutput"
+                    },
+                    "planName": {
+                        "type": "string"
+                    },
+                    "enrollmentId": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "title": "ISO 8601.",
+                        "type": "string"
+                    },
+                    "paidAt": {
+                        "title": "ISO 8601.",
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "EnrollmentOutput": {
+                "required": [
+                    "id",
+                    "planName",
+                    "price",
+                    "free",
+                    "sessionsIncluded",
+                    "sessionsTaken",
+                    "sessionsUsed",
+                    "durationMinutes",
+                    "status",
+                    "createdAt",
+                    "payments"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "planName": {
+                        "type": "string"
+                    },
+                    "price": {
+                        "$ref": "#/components/schemas/MoneyOutput"
+                    },
+                    "free": {
+                        "type": "boolean"
+                    },
+                    "sessionsIncluded": {
+                        "type": "integer"
+                    },
+                    "sessionsTaken": {
+                        "title": "Booked, done or no-show.",
+                        "type": "integer"
+                    },
+                    "sessionsUsed": {
+                        "title": "Done or no-show.",
+                        "type": "integer"
+                    },
+                    "durationMinutes": {
+                        "type": "integer"
+                    },
+                    "status": {
+                        "title": "\"pending_payment\", \"active\", \"completed\" or \"cancelled\".",
+                        "type": "string"
+                    },
+                    "outcome": {
+                        "title": "Once completed: \"renewed\" or \"finished\".",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "sourcePage": {
+                        "nullable": true,
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/PageRefOutput"
+                            }
+                        ]
+                    },
+                    "createdAt": {
+                        "title": "ISO 8601.",
+                        "type": "string"
+                    },
+                    "completedAt": {
+                        "title": "ISO 8601.",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "paymentUrl": {
+                        "title": "The link to pay it, while it waits for a payment.",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "payments": {
+                        "title": "newest first",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PaymentOutput"
+                        }
+                    }
+                },
+                "type": "object"
+            },
             "ContactDetailOutput": {
                 "required": [
                     "id",
@@ -2543,7 +3064,8 @@
                     "consentAt",
                     "anonymized",
                     "submissions",
-                    "sessions"
+                    "sessions",
+                    "enrollments"
                 ],
                 "properties": {
                     "id": {
@@ -2606,6 +3128,13 @@
                         "items": {
                             "$ref": "#/components/schemas/SessionOutput"
                         }
+                    },
+                    "enrollments": {
+                        "title": "newest first",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/EnrollmentOutput"
+                        }
                     }
                 },
                 "type": "object"
@@ -2614,7 +3143,11 @@
                 "required": [
                     "newLeadsLast7Days",
                     "publishedPages",
-                    "maxPublishedPages"
+                    "maxPublishedPages",
+                    "sessionsToday",
+                    "sessionsTomorrow",
+                    "paymentsLast7Days",
+                    "paidLast7Days"
                 ],
                 "properties": {
                     "newLeadsLast7Days": {
@@ -2625,6 +3158,20 @@
                     },
                     "maxPublishedPages": {
                         "type": "integer"
+                    },
+                    "sessionsToday": {
+                        "title": "Scheduled sessions today and tomorrow, in the consultant's timezone.",
+                        "type": "integer"
+                    },
+                    "sessionsTomorrow": {
+                        "type": "integer"
+                    },
+                    "paymentsLast7Days": {
+                        "title": "Approved payments in the last 7 days: how many and how much.",
+                        "type": "integer"
+                    },
+                    "paidLast7Days": {
+                        "$ref": "#/components/schemas/MoneyOutput"
                     }
                 },
                 "type": "object"
@@ -2968,23 +3515,6 @@
                 },
                 "type": "object"
             },
-            "MoneyOutput": {
-                "required": [
-                    "amount",
-                    "currency"
-                ],
-                "properties": {
-                    "amount": {
-                        "title": "\"250000.00\"",
-                        "type": "string"
-                    },
-                    "currency": {
-                        "title": "ISO 4217, e.g. \"COP\".",
-                        "type": "string"
-                    }
-                },
-                "type": "object"
-            },
             "PlanOutput": {
                 "required": [
                     "id",
@@ -3045,6 +3575,64 @@
                 },
                 "type": "object"
             },
+            "PersonOutput": {
+                "required": [
+                    "id",
+                    "fullName",
+                    "email"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "fullName": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "SessionNoteOutput": {
+                "required": [
+                    "id",
+                    "body",
+                    "visibility",
+                    "author",
+                    "createdAt",
+                    "updatedAt",
+                    "editable"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "body": {
+                        "type": "string"
+                    },
+                    "visibility": {
+                        "title": "\"private\" (owner only) or \"shared\".",
+                        "type": "string"
+                    },
+                    "author": {
+                        "$ref": "#/components/schemas/PersonOutput"
+                    },
+                    "createdAt": {
+                        "title": "ISO 8601.",
+                        "type": "string"
+                    },
+                    "updatedAt": {
+                        "title": "ISO 8601.",
+                        "type": "string"
+                    },
+                    "editable": {
+                        "title": "Whether the person asking may change it (its author, or the owner).",
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
             "TeamMemberOutput": {
                 "required": [
                     "id",
@@ -3079,6 +3667,60 @@
                         "title": "ISO 8601; null until they first sign in.",
                         "type": "string",
                         "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "WompiSettingsOutput": {
+                "required": [
+                    "publicKey",
+                    "configured",
+                    "eventsUrl"
+                ],
+                "properties": {
+                    "publicKey": {
+                        "type": "string"
+                    },
+                    "mode": {
+                        "title": "\"test\" or \"production\", from the keys; null until there is a public key.",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "privateKeyEnding": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "eventsSecretEnding": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "integritySecretEnding": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "configured": {
+                        "title": "Enough to take payments: public key, events and integrity secrets.",
+                        "type": "boolean"
+                    },
+                    "eventsUrl": {
+                        "title": "What to paste in Wompi's dashboard as the events URL.",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "WompiTestOutput": {
+                "required": [
+                    "merchantName",
+                    "mode"
+                ],
+                "properties": {
+                    "merchantName": {
+                        "title": "The merchant's name at Wompi.",
+                        "type": "string"
+                    },
+                    "mode": {
+                        "type": "string"
                     }
                 },
                 "type": "object"
@@ -3654,25 +4296,6 @@
                         "title": "ISO 8601; null until a super admin first saves them.",
                         "type": "string",
                         "nullable": true
-                    }
-                },
-                "type": "object"
-            },
-            "PersonOutput": {
-                "required": [
-                    "id",
-                    "fullName",
-                    "email"
-                ],
-                "properties": {
-                    "id": {
-                        "type": "string"
-                    },
-                    "fullName": {
-                        "type": "string"
-                    },
-                    "email": {
-                        "type": "string"
                     }
                 },
                 "type": "object"
