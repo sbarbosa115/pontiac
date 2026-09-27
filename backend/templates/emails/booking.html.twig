@@ -1,0 +1,33 @@
+{% extends 'emails/layout.html.twig' %}
+
+{# Every email about a session, for the contact or the consultant. `kind` says which moment it is. #}
+{% block content %}
+<p>{{ audience == 'contact' ? 'Hola, ' ~ contactName ~ ':' : 'Hola:' }}</p>
+
+<p>
+{% if kind == 'booking_confirmed' %}Tu sesión con <strong>{{ consultant }}</strong> quedó reservada.
+{% elseif kind == 'booking_new' %}<strong>{{ contactName }}</strong> ({{ contactEmail }}) reservó una sesión.
+{% elseif kind == 'booking_rescheduled' %}{{ audience == 'contact' ? 'Tu sesión cambió de hora.' : 'La sesión con ' ~ contactName ~ ' cambió de hora.' }}
+{% elseif kind == 'booking_cancelled' %}{{ audience == 'contact' ? 'Tu sesión fue cancelada.' : 'La sesión con ' ~ contactName ~ ' fue cancelada.' }}
+{% elseif kind == 'booking_reminder' %}{{ audience == 'contact' ? 'Te recordamos tu sesión ' ~ in ~ '.' : 'Tienes una sesión con ' ~ contactName ~ ' ' ~ in ~ '.' }}
+{% endif %}
+</p>
+
+<table style="border-collapse:collapse;margin:0 0 16px;">
+    <tr><td style="padding:4px 12px 4px 0;color:#5b6576;">Fecha</td><td style="padding:4px 0;"><strong>{{ date }}</strong></td></tr>
+    <tr><td style="padding:4px 12px 4px 0;color:#5b6576;">Hora</td><td style="padding:4px 0;"><strong>{{ time }}</strong> ({{ minutes }} minutos)</td></tr>
+    <tr><td style="padding:4px 12px 4px 0;color:#5b6576;">Sesión</td><td style="padding:4px 0;">{{ plan }}</td></tr>
+    {% if meetingLink and kind != 'booking_cancelled' %}<tr><td style="padding:4px 12px 4px 0;color:#5b6576;">Dónde</td><td style="padding:4px 0;">{% if meetingLink starts with 'http' %}<a href="{{ meetingLink }}">{{ meetingLink }}</a>{% else %}{{ meetingLink }}{% endif %}</td></tr>{% endif %}
+    {% if cancelReason and kind == 'booking_cancelled' %}<tr><td style="padding:4px 12px 4px 0;color:#5b6576;">Motivo</td><td style="padding:4px 0;">{{ cancelReason }}</td></tr>{% endif %}
+</table>
+
+{% if manageUrl %}
+<p>
+    <a href="{{ manageUrl }}" style="display:inline-block;padding:12px 20px;background:#1e3a5f;color:#ffffff;text-decoration:none;border-radius:6px;">Cambiar o cancelar</a>
+</p>
+{% endif %}
+{% if contactUrl is defined %}
+<p><a href="{{ contactUrl }}">Ver a {{ contactName }} en Pontiac</a></p>
+{% endif %}
+{% if kind != 'booking_cancelled' %}<p style="color:#5b6576;font-size:13px;">Adjuntamos la sesión para que la agregues a tu calendario.</p>{% endif %}
+{% endblock %}

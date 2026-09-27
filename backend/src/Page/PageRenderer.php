@@ -4,10 +4,16 @@ declare(strict_types=1);
 
 namespace App\Page;
 
+use App\Booking\SessionTime;
+use App\Booking\SlotFinder;
 use App\Entity\Account;
 use App\Entity\LandingPage;
 use App\Entity\MediaAsset;
+use App\Entity\Plan;
+use App\Enum\AccountFeature;
+use App\Repository\AvailabilityRepository;
 use App\Repository\MediaAssetRepository;
+use App\Repository\PlanRepository;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Response;
 use Twig\Environment;
@@ -23,6 +29,9 @@ final class PageRenderer
         private readonly Environment $twig,
         private readonly MediaAssetRepository $media,
         private readonly TimeToken $timeToken,
+        private readonly PlanRepository $plans,
+        private readonly AvailabilityRepository $availability,
+        private readonly SlotFinder $slots,
         #[Autowire('%env(APP_URL)%')]
         private readonly string $appUrl,
     ) {
@@ -32,10 +41,12 @@ final class PageRenderer
      * @param array<string, mixed>  $content the published content, or a draft for the preview
      * @param array<string, string> $values  what the visitor typed, when the form comes back with errors
      * @param array<string, string> $errors  by field name
+     * @param array{values?: array<string, string>, errors?: array<string, string>, booked?: bool} $booking the booking form's state
      */
-    public function render(Account $account, LandingPage $page, array $content, bool $preview = false, array $values = [], array $errors = [], bool $sent = false, int $status = 200): Response
+    public function render(Account $account, LandingPage $page, array $content, bool $preview = false, array $values = [], array $errors = [], bool $sent = false, int $status = 200, array $booking = []): Response
     {
         $images = $this->images($content);
+        $bookings = $this->bookings($account, $content);
         $path = '/'.$account->getSlug().($page->isHome() ? '' : '/'.$page->getSlug());
         $url = rtrim($this->appUrl, '/').$path;
         $accent = TemplateCatalog::ACCENTS[$content['settings']['accent'] ?? 'navy'] ?? TemplateCatalog::ACCENTS['navy'];
@@ -45,12 +56,18 @@ final class PageRenderer
             'account' => $account,
             'page' => $page,
             'content' => $content,
-            'sections' => array_values(array_filter($content['sections'], static fn (array $s) => $s['enabled'])),
+            // A booking section shows only while it has something to book: the feature on, its free plan active.
+            'sections' => array_values(array_filter($content['sections'], static fn (array $s) => $s['enabled'] && ('booking' !== $s['type'] || isset($bookings[$s['id']])))),
+            'bookings' => $bookings,
+            'bookingValues' => $booking['values'] ?? [],
+            'bookingErrors' => $booking['errors'] ?? [],
+            'booked' => $booking['booked'] ?? false,
             'images' => $images,
             'accent' => ['color' => $accent[0], 'on' => $accent[1], 'soft' => $accent[2]],
             'preview' => $preview,
             'url' => $url,
             'action' => $path.'/enviar',
+            'bookingAction' => $path.'/reservar',
             'eventDates' => $this->eventDates($account, $content),
             'privacyUrl' => '/'.$account->getSlug().'/privacidad',
             'mediaBase' => '/'.$account->getSlug().'/media/',
@@ -110,6 +127,41 @@ final class PageRenderer
         }
 
         return null;
+    }
+
+    /**
+     * For each enabled booking section: its plan and the free slots, grouped by the day they fall on (local time).
+     *
+     * @param array<string, mixed> $content
+     *
+     * @return array<string, array{plan: Plan, days: list<array{label: string, slots: list<array{value: string, label: string}>}>}>
+     */
+    private function bookings(Account $account, array $content): array
+    {
+        if (!$account->hasFeature(AccountFeature::Booking)) {
+            return [];
+        }
+        $bookings = [];
+        foreach ($content['sections'] as $section) {
+            if ('booking' !== $section['type'] || !$section['enabled'] || null === ($section['fields']['planId'] ?? null)) {
+                continue;
+            }
+            $plan = $this->plans->findOneById($section['fields']['planId']);
+            if (null === $plan || !$plan->isActive() || !$plan->isFree()) {
+                continue;
+            }
+            $days = [];
+            foreach ($this->slots->slots($account, $this->availability->forAccount($account), $plan->getDurationMinutes(), new \DateTimeImmutable()) as $slot) {
+                $label = SessionTime::date($account, $slot);
+                $days[$label][] = ['value' => $slot->format(\DATE_ATOM), 'label' => SessionTime::time($account, $slot)];
+            }
+            $bookings[$section['id']] = [
+                'plan' => $plan,
+                'days' => array_map(static fn (string $label, array $slots) => ['label' => $label, 'slots' => $slots], array_keys($days), array_values($days)),
+            ];
+        }
+
+        return $bookings;
     }
 
     /**

@@ -37,6 +37,25 @@ services:
       database:
         condition: service_healthy
 
+  # Queues the session reminders every minute, as the second cron line does on the server.
+  scheduler:
+    build:
+      context: ./docker/php
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    command: ["sh", "-c", "while true; do php bin/console app:send-due-reminders -v; sleep 60; done"]
+    restart: unless-stopped
+    volumes:
+      - ./backend:/app
+      - uploads:/var/uploads
+    environment:
+      UPLOADS_DIR: /var/uploads
+      APP_URL: http://localhost:${HTTP_PORT:-8080}
+    depends_on:
+      database:
+        condition: service_healthy
+
   nginx:
     image: nginx:1.27-alpine
     ports:

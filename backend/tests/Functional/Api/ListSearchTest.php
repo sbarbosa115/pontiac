@@ -36,6 +36,12 @@ final class ListSearchTest extends ApiTestCase
         $this->createPage($this->account, 'plan-ahorro', PageTemplate::PlanOffer);
         $this->createCategory($this->account, 'Deudas');
         $this->createCategory($this->account, 'Pensión', 'indigo');
+        // Two plans, and two sessions with two people.
+        $diagnostic = $this->createPlan($this->account, 'Diagnóstico');
+        $this->save($diagnostic->change('Diagnóstico', 'Primera sesión gratuita', '0', 1, 45));
+        $this->save($this->createPlan($this->account, 'Plan A', '250000')->change('Plan A', 'Dos sesiones de seguimiento', '250000', 2, 60));
+        $this->bookSession($this->createContact($this->account, 'Marta Díaz', 'marta@citas.test'), $diagnostic, new \DateTimeImmutable('+3 days'));
+        $this->bookSession($this->createContact($this->account, 'Jorge Peña', 'jorge@agenda.test'), $diagnostic, new \DateTimeImmutable('+4 days'));
 
         // Two settings changes by two people, and two emails for two consultants.
         $this->actAs($this->superAdmin);
@@ -77,6 +83,10 @@ final class ListSearchTest extends ApiTestCase
         yield 'contacts by name' => ['owner', '/api/admin/contacts', 'Laura', 'Carlos'];
         yield 'contacts by email' => ['owner', '/api/admin/contacts', 'laura@', 'carlos@'];
         yield 'contacts by phone' => ['owner', '/api/admin/contacts', '300 123', '310 555'];
+        yield 'plans by name' => ['owner', '/api/admin/plans', 'Diagnóstico', 'Plan A'];
+        yield 'plans by description' => ['owner', '/api/admin/plans', 'gratuita', 'Dos sesiones'];
+        yield 'sessions by contact name' => ['owner', '/api/admin/sessions', 'Marta', 'Jorge'];
+        yield 'sessions by contact email' => ['owner', '/api/admin/sessions', 'citas.test', 'jorge@'];
     }
 
     #[DataProvider('lists')]

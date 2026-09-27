@@ -8,6 +8,7 @@ use App\Api\ApiValidationException;
 use App\Enum\PageTemplate;
 use App\Repository\LeadCategoryRepository;
 use App\Repository\MediaAssetRepository;
+use App\Repository\PlanRepository;
 use Symfony\Component\String\Slugger\AsciiSlugger;
 
 /**
@@ -30,6 +31,7 @@ final class ContentValidator
     public function __construct(
         private readonly MediaAssetRepository $media,
         private readonly LeadCategoryRepository $categories,
+        private readonly PlanRepository $plans,
     ) {
     }
 
@@ -52,6 +54,7 @@ final class ContentValidator
         ];
         $this->checkImages($clean);
         $this->checkCategories($clean);
+        $this->checkPlans($clean);
 
         if ([] !== $this->violations) {
             throw new ApiValidationException($this->violations);
@@ -82,21 +85,22 @@ final class ContentValidator
      */
     private function sections(PageTemplate $template, mixed $sections): array
     {
-        $expected = [];
+        $defaults = [];
         foreach (TemplateCatalog::sections($template) as $section) {
-            $expected[$section['id']] = $section['type'];
+            $defaults[$section['id']] = $section;
         }
+        $expected = array_map(static fn (array $section) => $section['type'], $defaults);
 
         $given = \is_array($sections) ? array_values($sections) : [];
         $ids = array_map(static fn (mixed $s) => \is_array($s) ? ($s['id'] ?? null) : null, $given);
-        $sorted = $ids;
-        sort($sorted);
-        $expectedIds = array_keys($expected);
-        sort($expectedIds);
-        if ($sorted !== $expectedIds) {
+        if (\count(array_unique($ids, \SORT_REGULAR)) !== \count($ids) || [] !== array_diff($ids, array_keys($expected))) {
             $this->fail('sections', 'The sections must be the ones of the page template.');
 
             return [];
+        }
+        // A section the template gained after this page was made: added at the end, switched off.
+        foreach (array_diff(array_keys($expected), $ids) as $missing) {
+            $given[] = ['enabled' => false] + $defaults[$missing];
         }
 
         $clean = [];
@@ -130,6 +134,7 @@ final class ContentValidator
             $clean[$name] = match ($spec['kind']) {
                 'items' => $this->items($spec, $value, $at, $required),
                 'image' => $this->imageId($value, $at),
+                'plan' => $this->planId($value, $at, $required && ($spec['required'] ?? false)),
                 'date' => $this->date($value, $at),
                 default => $this->text($spec, $value, $at, $required),
             };
@@ -189,6 +194,24 @@ final class ContentValidator
         }
         if (!\is_string($value)) {
             $this->fail($path, 'Choose an image from your library.');
+
+            return null;
+        }
+
+        return $value;
+    }
+
+    private function planId(mixed $value, string $path, bool $required): ?string
+    {
+        if (null === $value || '' === $value) {
+            if ($required) {
+                $this->fail($path, 'Choose the free plan people book here.');
+            }
+
+            return null;
+        }
+        if (!\is_string($value)) {
+            $this->fail($path, 'Choose the free plan people book here.');
 
             return null;
         }
@@ -357,6 +380,35 @@ final class ContentValidator
         foreach ($refs as $path => $id) {
             if (!isset($found[$id])) {
                 $this->fail($path, 'Choose one of your categories.');
+            }
+        }
+    }
+
+    /**
+     * Every plan a booking section books is an active free plan of this consultant (a paid one is booked after its
+     * payment).
+     *
+     * @param array<string, mixed> $content
+     */
+    private function checkPlans(array $content): void
+    {
+        $refs = [];
+        foreach ($content['sections'] as $index => $section) {
+            foreach (TemplateCatalog::SECTION_TYPES[$section['type']] as $name => $spec) {
+                if ('plan' === $spec['kind'] && null !== $section['fields'][$name]) {
+                    $refs["sections[$index].fields.$name"] = $section['fields'][$name];
+                }
+            }
+        }
+        $free = [];
+        foreach ($this->plans->findByIds(array_values(array_unique($refs))) as $plan) {
+            if ($plan->isActive() && $plan->isFree()) {
+                $free[(string) $plan->getId()] = true;
+            }
+        }
+        foreach ($refs as $path => $id) {
+            if (!isset($free[$id])) {
+                $this->fail($path, 'Choose the free plan people book here.');
             }
         }
     }

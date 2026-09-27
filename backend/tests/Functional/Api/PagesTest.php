@@ -33,7 +33,8 @@ final class PagesTest extends ApiTestCase
 
         self::assertSame(201, $this->responseStatus());
         self::assertSame(['diagnostico', 'draft', true, '/finanzas-claras', false], [$page['slug'], $page['status'], $page['home'], $page['path'], null !== $page['publishedAt']]);
-        self::assertSame(['portada', 'problema', 'como-funciona', 'preguntas', 'formulario'], array_column($page['draft']['sections'], 'id'));
+        self::assertSame(['portada', 'problema', 'como-funciona', 'reserva', 'preguntas', 'formulario'], array_column($page['draft']['sections'], 'id'));
+        self::assertFalse($page['draft']['sections'][3]['enabled'], 'booking waits for a free plan');
         self::assertSame('Diagnóstico', $page['draft']['seo']['title']);
 
         $second = $this->api('POST', '/api/admin/pages', ['title' => 'Plan', 'slug' => 'plan', 'template' => 'plan_offer']);
@@ -106,7 +107,7 @@ final class PagesTest extends ApiTestCase
         ], array_column($error['violations'], 'field'), 'an image or category of another consultant is refused like a missing one');
     }
 
-    public function testSectionsTurnOffAndReorderButCannotBeAddedOrRemoved(): void
+    public function testSectionsTurnOffAndReorderButOnlyTheTemplatesExist(): void
     {
         $page = $this->createPage($this->account, published: false);
         $this->actAs($this->owner);
@@ -117,11 +118,27 @@ final class PagesTest extends ApiTestCase
         $draft['sections'][1]['fields']['items'] = [['question' => '', 'answer' => '']];
         $saved = $this->api('PATCH', '/api/admin/pages/'.$page->getId(), ['draft' => $draft]);
         self::assertSame(200, $this->responseStatus(), 'a section switched off may be left half written');
-        self::assertSame(['formulario', 'preguntas', 'como-funciona', 'problema', 'portada'], array_column($saved['draft']['sections'], 'id'));
+        self::assertSame(['formulario', 'preguntas', 'reserva', 'como-funciona', 'problema', 'portada'], array_column($saved['draft']['sections'], 'id'));
 
         $draft['sections'][] = ['id' => 'extra', 'type' => 'text', 'enabled' => true, 'fields' => []];
         $error = $this->api('PATCH', '/api/admin/pages/'.$page->getId(), ['draft' => $draft]);
-        self::assertSame('sections', $error['violations'][0]['field']);
+        self::assertSame('sections', $error['violations'][0]['field'], 'a section the template does not have');
+    }
+
+    public function testADraftFromBeforeATemplateGainedASectionGetsItSwitchedOff(): void
+    {
+        $page = $this->createPage($this->account, published: false, change: static function (array $content): array {
+            // As a page made before the booking section existed.
+            $content['sections'] = array_values(array_filter($content['sections'], static fn (array $s) => 'reserva' !== $s['id']));
+
+            return $content;
+        });
+        $this->actAs($this->owner);
+
+        $saved = $this->api('PATCH', '/api/admin/pages/'.$page->getId(), ['draft' => $page->getDraft()]);
+
+        self::assertSame(200, $this->responseStatus());
+        self::assertSame(['reserva', false], [$saved['draft']['sections'][5]['id'], $saved['draft']['sections'][5]['enabled']]);
     }
 
     public function testExtraFormFieldsGetStableKeys(): void

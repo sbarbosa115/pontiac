@@ -8,11 +8,13 @@ use App\Doctrine\AccountContext;
 use App\Entity\Account;
 use App\Entity\LandingPage;
 use App\Entity\LeadCategory;
+use App\Entity\Plan;
 use App\Entity\User;
 use App\Enum\PageTemplate;
 use App\Page\TemplateCatalog;
-use App\Repository\LandingPageRepository;
 use App\Repository\AccountRepository;
+use App\Repository\LandingPageRepository;
+use App\Repository\PlanRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -39,6 +41,7 @@ final class SeedDemoCommand extends Command
         private readonly UserPasswordHasherInterface $hasher,
         private readonly AccountContext $context,
         private readonly LandingPageRepository $pages,
+        private readonly PlanRepository $plans,
     ) {
         parent::__construct();
     }
@@ -69,6 +72,7 @@ final class SeedDemoCommand extends Command
 
         $this->em->flush();
         $this->seedPages($account);
+        $this->seedPlans($account);
 
         $io->success('Demo data ready.');
         $io->table(['Role', 'Sign in at', 'Email', 'Password'], [
@@ -118,6 +122,42 @@ final class SeedDemoCommand extends Command
 
         $plan = new LandingPage($account, 'Plan de 2 sesiones', 'plan-2-sesiones', PageTemplate::PlanOffer, TemplateCatalog::newContent(PageTemplate::PlanOffer, 'Plan de finanzas personales'));
         $this->em->persist($plan);
+        $this->em->flush();
+    }
+
+    /**
+     * A free diagnostic people book from the home page, and a paid plan of two sessions.
+     */
+    private function seedPlans(Account $account): void
+    {
+        $this->context->enterAccount($account);
+        if ([] !== $this->plans->findAllForPickers()) {
+            return;
+        }
+
+        $free = new Plan($account, 'Diagnóstico gratuito', 'Una sesión de 45 minutos para ver dónde estás y qué hacer primero.', '0', 1, 45);
+        $this->em->persist($free);
+        $this->em->persist(new Plan($account, 'Plan A', 'Dos sesiones para armar tu presupuesto y un plan para tus deudas.', '250000.00', 2, 60));
+
+        $home = $this->pages->findHome();
+        if (null !== $home) {
+            $template = TemplateCatalog::newContent($home->getTemplate(), $home->getTitle());
+            $content = $home->getDraft();
+            $ids = array_column($content['sections'], 'id');
+            foreach ($template['sections'] as $i => $section) {
+                if ('booking' === $section['type'] && !\in_array($section['id'], $ids, true)) {
+                    array_splice($content['sections'], $i, 0, [$section]);
+                }
+            }
+            foreach ($content['sections'] as &$section) {
+                if ('booking' === $section['type']) {
+                    $section['enabled'] = true;
+                    $section['fields']['planId'] = (string) $free->getId();
+                }
+            }
+            unset($section);
+            $home->saveDraft($content)->publish();
+        }
         $this->em->flush();
     }
 

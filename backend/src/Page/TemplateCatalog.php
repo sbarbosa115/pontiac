@@ -14,7 +14,10 @@ use App\Enum\PageTemplate;
  * the consultant changes a word. The consultant turns sections on and off, reorders them and edits their fields; they
  * cannot add sections a template does not have.
  *
- * Field kinds: text (one line), textarea, image (a MediaAsset id), date (Y-m-d), url, items (a repeatable group).
+ * Field kinds: text (one line), textarea, image (a MediaAsset id), date (Y-m-d), url, items (a repeatable group),
+ * plan (a free Plan id: what a booking section books).
+ *
+ * A template may gain sections over time: a page made before gets them appended, switched off (ContentValidator).
  */
 final class TemplateCatalog
 {
@@ -76,6 +79,13 @@ final class TemplateCatalog
             'place' => ['kind' => 'text', 'max' => 160],
             'seats' => ['kind' => 'text', 'max' => 60],
         ],
+        'booking' => [
+            'heading' => ['kind' => 'text', 'max' => 120],
+            'body' => ['kind' => 'textarea', 'max' => 500],
+            'planId' => ['kind' => 'plan', 'required' => true],
+            'submitLabel' => ['kind' => 'text', 'max' => 40, 'required' => true],
+            'successMessage' => ['kind' => 'textarea', 'max' => 300, 'required' => true],
+        ],
         'form' => [
             'heading' => ['kind' => 'text', 'max' => 120],
             'body' => ['kind' => 'textarea', 'max' => 500],
@@ -124,6 +134,8 @@ final class TemplateCatalog
                     ['title' => 'Conversamos 45 minutos', 'body' => 'Revisamos juntos tu situación, sin juicios y con total confidencialidad.'],
                     ['title' => 'Te llevas un plan', 'body' => 'Sales con tres acciones concretas para empezar esta misma semana.'],
                 ]]),
+                // Off until the consultant picks the free plan it books (Planes) and turns it on.
+                ['id' => 'reserva', 'type' => 'booking', 'enabled' => false, 'fields' => ['heading' => 'Elige el día y la hora', 'body' => 'Tu diagnóstico dura 45 minutos, por videollamada. Te enviamos el enlace al confirmar.', 'planId' => null, 'submitLabel' => 'Reservar mi diagnóstico', 'successMessage' => '¡Listo! Tu sesión quedó reservada. Te enviamos la confirmación a tu correo.']],
                 $faq,
                 $form('Agenda tu diagnóstico gratuito', 'Déjanos tus datos y te escribimos para acordar la hora.', 'Quiero mi diagnóstico', '¡Gracias! Te escribiremos muy pronto para agendar tu diagnóstico.'),
             ],

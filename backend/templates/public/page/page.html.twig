@@ -76,6 +76,13 @@
         .notice-error { background: #fbe9e7; border-left-color: var(--error); }
         .hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
         footer.site { padding: 32px 0; color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--line); }
+        fieldset.slots { border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; margin: 0 0 16px; }
+        fieldset.slots legend { font-weight: 600; padding: 0 6px; }
+        fieldset.slots details { border-bottom: 1px solid var(--line); padding: 10px 0; }
+        fieldset.slots details:last-of-type { border-bottom: 0; }
+        .slot-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+        .slot { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border: 1px solid #8a93a1; border-radius: 8px; font-weight: 400; cursor: pointer; }
+        .slot:has(input:checked) { border-color: var(--accent); background: var(--soft); font-weight: 600; }
         .preview-note { background: #fdf1d8; color: #6b4600; text-align: center; padding: 8px; font-size: 0.9rem; }
     </style>
 </head>

@@ -42,7 +42,7 @@ final class PublicPagesTest extends ApiTestCase
     public function testASectionSwitchedOffIsNotShown(): void
     {
         $this->createPage($this->createAccount(), change: static function (array $content): array {
-            $content['sections'][3]['enabled'] = false;
+            $content['sections'][4]['enabled'] = false;
 
             return $content;
         });

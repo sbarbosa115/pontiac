@@ -24,6 +24,8 @@ final readonly class ContactDetailOutput
         public bool $anonymized,
         /** @var list<SubmissionOutput> newest first */
         public array $submissions,
+        /** @var list<SessionOutput> the latest first */
+        public array $sessions,
     ) {
     }
 }

@@ -1,0 +1,14 @@
+{{ audience == 'contact' ? 'Hola, ' ~ contactName ~ ':' : 'Hola:' }}
+
+{% if kind == 'booking_confirmed' %}Tu sesión con {{ consultant }} quedó reservada.{% elseif kind == 'booking_new' %}{{ contactName }} ({{ contactEmail }}) reservó una sesión.{% elseif kind == 'booking_rescheduled' %}{{ audience == 'contact' ? 'Tu sesión cambió de hora.' : 'La sesión con ' ~ contactName ~ ' cambió de hora.' }}{% elseif kind == 'booking_cancelled' %}{{ audience == 'contact' ? 'Tu sesión fue cancelada.' : 'La sesión con ' ~ contactName ~ ' fue cancelada.' }}{% elseif kind == 'booking_reminder' %}{{ audience == 'contact' ? 'Te recordamos tu sesión ' ~ in ~ '.' : 'Tienes una sesión con ' ~ contactName ~ ' ' ~ in ~ '.' }}{% endif %}
+
+Fecha: {{ date }}
+Hora: {{ time }} ({{ minutes }} minutos)
+Sesión: {{ plan }}
+{% if meetingLink and kind != 'booking_cancelled' %}Dónde: {{ meetingLink }}
+{% endif %}{% if cancelReason and kind == 'booking_cancelled' %}Motivo: {{ cancelReason }}
+{% endif %}{% if manageUrl %}
+Cambiar o cancelar: {{ manageUrl }}
+{% endif %}{% if contactUrl is defined %}
+Ver a {{ contactName }} en Pontiac: {{ contactUrl }}
+{% endif %}

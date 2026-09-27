@@ -5,6 +5,19 @@ declare(strict_types=1);
 namespace App\Api;
 
 use App\Api\Output\AccentOutput;
+use App\Api\Output\AvailabilityExceptionOutput;
+use App\Api\Output\AvailabilityOutput;
+use App\Api\Output\ContactRefOutput;
+use App\Api\Output\MoneyOutput;
+use App\Api\Output\PlanOutput;
+use App\Api\Output\SessionOutput;
+use App\Api\Output\SlotDayOutput;
+use App\Api\Output\SlotOutput;
+use App\Api\Output\WeeklyRuleOutput;
+use App\Booking\SessionTime;
+use App\Entity\Availability;
+use App\Entity\BookingSession;
+use App\Entity\Plan;
 use App\Api\Output\AnswerOutput;
 use App\Api\Output\CategoryRefOutput;
 use App\Api\Output\ContactDetailOutput;
@@ -313,10 +326,75 @@ final class Presenter
         );
     }
 
+    public static function plan(Plan $plan): PlanOutput
+    {
+        return new PlanOutput(
+            id: (string) $plan->getId(),
+            name: $plan->getName(),
+            description: $plan->getDescription(),
+            price: new MoneyOutput(amount: $plan->getPrice(), currency: $plan->getCurrency()),
+            free: $plan->isFree(),
+            sessions: $plan->getSessions(),
+            durationMinutes: $plan->getDurationMinutes(),
+            active: $plan->isActive(),
+        );
+    }
+
+    public static function availability(Availability $availability, Account $account): AvailabilityOutput
+    {
+        return new AvailabilityOutput(
+            weeklyRules: array_map(static fn (array $r) => new WeeklyRuleOutput(weekday: $r['weekday'], from: $r['from'], to: $r['to']), $availability->getWeeklyRules()),
+            exceptions: array_map(static fn (array $e) => new AvailabilityExceptionOutput(date: $e['date'], from: $e['from'], to: $e['to']), $availability->getExceptions()),
+            bufferMinutes: $availability->getBufferMinutes(),
+            minNoticeHours: $availability->getMinNoticeHours(),
+            bookingWindowDays: $availability->getBookingWindowDays(),
+            clientCancelHours: $availability->getClientCancelHours(),
+            reminderHours: $availability->getReminderHours(),
+            meetingLink: $availability->getMeetingLink(),
+            timezone: $account->getTimezone(),
+        );
+    }
+
+    public static function session(BookingSession $session): SessionOutput
+    {
+        $contact = $session->getContact();
+
+        return new SessionOutput(
+            id: (string) $session->getId(),
+            startsAt: (string) self::timestamp($session->getStartsAt()),
+            endsAt: (string) self::timestamp($session->getEndsAt()),
+            status: $session->getStatus()->value,
+            contact: new ContactRefOutput(id: (string) $contact->getId(), fullName: $contact->getFullName(), email: $contact->getEmail()),
+            planName: $session->getEnrollment()->getPlanName(),
+            durationMinutes: $session->getEnrollment()->getDurationMinutes(),
+            meetingLink: $session->getMeetingLink(),
+            cancelReason: $session->getCancelReason(),
+            bookedBy: $session->getBookedBy(),
+        );
+    }
+
+    /**
+     * Free slots grouped by the local day they fall on.
+     *
+     * @param list<\DateTimeImmutable> $slots
+     *
+     * @return list<SlotDayOutput>
+     */
+    public static function slotDays(Account $account, array $slots): array
+    {
+        $days = [];
+        foreach ($slots as $slot) {
+            $days[SessionTime::date($account, $slot)][] = new SlotOutput(startsAt: (string) self::timestamp($slot), label: SessionTime::time($account, $slot));
+        }
+
+        return array_map(static fn (string $label, array $s) => new SlotDayOutput(label: $label, slots: $s), array_keys($days), array_values($days));
+    }
+
     /**
      * @param list<LeadSubmission> $submissions
+     * @param list<BookingSession> $sessions
      */
-    public static function contactDetail(Contact $contact, array $submissions): ContactDetailOutput
+    public static function contactDetail(Contact $contact, array $submissions, array $sessions = []): ContactDetailOutput
     {
         return new ContactDetailOutput(
             id: (string) $contact->getId(),
@@ -338,6 +416,7 @@ final class Presenter
                 utm: array_map(static fn (string $name, string $value) => new UtmOutput(name: $name, value: $value), array_keys($s->getUtm()), array_values($s->getUtm())),
                 referrer: $s->getReferrer(),
             ), $submissions),
+            sessions: array_map(self::session(...), $sessions),
         );
     }
 

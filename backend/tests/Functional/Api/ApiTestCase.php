@@ -4,14 +4,20 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Api;
 
+use App\Booking\SlotFinder;
 use App\Doctrine\AccountContext;
 use App\Entity\Account;
+use App\Entity\BookingSession;
+use App\Entity\Contact;
+use App\Entity\Enrollment;
 use App\Entity\LandingPage;
 use App\Entity\LeadCategory;
+use App\Entity\Plan;
 use App\Entity\User;
 use App\Enum\PageTemplate;
 use App\Page\TemplateCatalog;
 use App\Page\TimeToken;
+use App\Repository\AvailabilityRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
@@ -115,6 +121,54 @@ abstract class ApiTestCase extends WebTestCase
         $this->save($category);
 
         return $category;
+    }
+
+    /** A plan; a price of "0" makes it free (bookable from a page). */
+    protected function createPlan(Account $account, string $name = 'Diagnóstico', string $price = '0', int $sessions = 1, int $durationMinutes = 45): Plan
+    {
+        $plan = new Plan($account, $name, '', $price, $sessions, $durationMinutes);
+        $this->save($plan);
+
+        return $plan;
+    }
+
+    protected function createContact(Account $account, string $fullName = 'Laura Gómez', string $email = 'laura@demo.test'): Contact
+    {
+        $contact = new Contact($account, $fullName, $email, null, null, 'hash');
+        $this->save($contact);
+
+        return $contact;
+    }
+
+    /**
+     * A session booked for $contact on $plan, as if booked at $bookedAt (now by default).
+     *
+     * @return array{0: BookingSession, 1: string} the session and its manage token
+     */
+    protected function bookSession(Contact $contact, Plan $plan, \DateTimeImmutable $startsAt, ?\DateTimeImmutable $bookedAt = null): array
+    {
+        $enrollment = new Enrollment($contact, $plan, null);
+        [$session, $token] = BookingSession::book($enrollment, $startsAt, 'https://meet.example/abc', BookingSession::BOOKED_BY_VISITOR);
+        if (null !== $bookedAt) {
+            (fn () => $this->scheduledAt = $bookedAt)->call($session);
+        }
+        $this->save($enrollment, $session);
+
+        return [$session, $token];
+    }
+
+    /**
+     * The account's free slots right now for that session length, as a visitor sees them.
+     *
+     * @return list<\DateTimeImmutable>
+     */
+    protected function freeSlots(Account $account, int $durationMinutes = 45): array
+    {
+        $this->asPlatform();
+        $availability = static::getContainer()->get(AvailabilityRepository::class)->forAccount($account);
+        $this->em()->flush();
+
+        return static::getContainer()->get(SlotFinder::class)->slots($account, $availability, $durationMinutes, new \DateTimeImmutable());
     }
 
     /**

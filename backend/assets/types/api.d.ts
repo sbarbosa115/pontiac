@@ -4,6 +4,42 @@
  */
 
 export interface paths {
+    "/api/admin/availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_api_admin_availability_show"];
+        put: operations["put_api_admin_availability_update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/availability/slots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The free slots for a plan's session length (?planId=), or to move a session (?sessionId=: its own time counts
+         *     as free), grouped by day.
+         */
+        get: operations["get_api_admin_availability_slots"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/categories": {
         parameters: {
             query?: never;
@@ -345,6 +381,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** ?q= searches name and description; ?includeInactive=1 shows disabled ones too. */
+        get: operations["get_api_admin_plan_list"];
+        put?: never;
+        post: operations["post_api_admin_plan_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/plans/all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Every plan, for pickers (active first). */
+        get: operations["get_api_admin_plan_all"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/plans/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Enrollments keep the name, price and sessions they were made with: a change applies from now on. */
+        put: operations["put_api_admin_plan_update"];
+        post?: never;
+        /** No longer offered: pages stop booking it; enrollments already made keep their sessions. */
+        delete: operations["delete_api_admin_plan_disable"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/plans/{id}/enable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post_api_admin_plan_enable"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/privacy": {
         parameters: {
             query?: never;
@@ -356,6 +460,122 @@ export interface paths {
         /** The owner answers for the data (Ley 1581): only they change it. Empty goes back to the platform's text. */
         put: operations["put_api_admin_privacy_update"];
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** ?q= searches the contact's name and email; ?status=; ?from= and ?to= (Y-m-d, local days, inclusive). */
+        get: operations["get_api_admin_session_list"];
+        put?: never;
+        /** The consultant books a session for a contact, on an active free plan. */
+        post: operations["post_api_admin_session_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/sessions/week": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The scheduled sessions of the week that starts on ?start= (Y-m-d, local; this week's Monday by default). */
+        get: operations["get_api_admin_session_week"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/sessions/{id}/reschedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post_api_admin_session_reschedule"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/sessions/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post_api_admin_session_cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/sessions/{id}/done": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post_api_admin_session_done"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/sessions/{id}/no-show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post_api_admin_session_no_show"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/sessions/{id}/reopen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Undoes "done" or "no-show" marked by mistake. */
+        post: operations["post_api_admin_session_reopen"];
         delete?: never;
         options?: never;
         head?: never;
@@ -816,6 +1036,43 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        WeeklyRuleOutput: {
+            /** ISO: 1 Monday … 7 Sunday. */
+            weekday: number;
+            /** "09:00" */
+            from: string;
+            /** "12:00" */
+            to: string;
+        };
+        AvailabilityExceptionOutput: {
+            /** Y-m-d */
+            date: string;
+            from?: string | null;
+            to?: string | null;
+        };
+        AvailabilityOutput: {
+            weeklyRules: components["schemas"]["WeeklyRuleOutput"][];
+            exceptions: components["schemas"]["AvailabilityExceptionOutput"][];
+            bufferMinutes: number;
+            minNoticeHours: number;
+            bookingWindowDays: number;
+            clientCancelHours: number;
+            /** hours before a session, largest first */
+            reminderHours: number[];
+            meetingLink: string;
+            timezone: string;
+        };
+        SlotOutput: {
+            /** ISO 8601 (UTC): what to send back to book it. */
+            startsAt: string;
+            /** "10:00 a. m.", local time. */
+            label: string;
+        };
+        SlotDayOutput: {
+            /** "martes, 6 de octubre de 2026" */
+            label: string;
+            slots: components["schemas"]["SlotOutput"][];
+        };
         LeadCategoryOutput: {
             id: string;
             name: string;
@@ -868,6 +1125,28 @@ export interface components {
             utm: components["schemas"]["UtmOutput"][];
             referrer?: string | null;
         };
+        ContactRefOutput: {
+            id: string;
+            fullName: string;
+            email: string;
+        };
+        SessionOutput: {
+            id: string;
+            /** ISO 8601 (UTC). */
+            startsAt: string;
+            /** ISO 8601 (UTC). */
+            endsAt: string;
+            /** "scheduled", "done", "no_show" or "cancelled". */
+            status: string;
+            contact: components["schemas"]["ContactRefOutput"];
+            /** The plan's name as it was when they enrolled. */
+            planName: string;
+            durationMinutes: number;
+            meetingLink: string;
+            cancelReason?: string | null;
+            /** "visitor" (from a page) or "staff". */
+            bookedBy: string;
+        };
         ContactDetailOutput: {
             id: string;
             fullName: string;
@@ -885,6 +1164,8 @@ export interface components {
             anonymized: boolean;
             /** newest first */
             submissions: components["schemas"]["SubmissionOutput"][];
+            /** the latest first */
+            sessions: components["schemas"]["SessionOutput"][];
         };
         AdminDashboardOutput: {
             newLeadsLast7Days: number;
@@ -989,6 +1270,23 @@ export interface components {
             draft: {
                 [key: string]: unknown;
             };
+        };
+        MoneyOutput: {
+            /** "250000.00" */
+            amount: string;
+            /** ISO 4217, e.g. "COP". */
+            currency: string;
+        };
+        PlanOutput: {
+            id: string;
+            name: string;
+            description: string;
+            price: components["schemas"]["MoneyOutput"];
+            /** Price zero: booked straight from a page. */
+            free: boolean;
+            sessions: number;
+            durationMinutes: number;
+            active: boolean;
         };
         PrivacyOutput: {
             /** What the forms link to: the consultant's text, or the platform's default when they have none. */
@@ -1196,6 +1494,68 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    get_api_admin_availability_show: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AvailabilityOutput"];
+                };
+            };
+        };
+    };
+    put_api_admin_availability_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AvailabilityOutput"];
+                };
+            };
+        };
+    };
+    get_api_admin_availability_slots: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        days: components["schemas"]["SlotDayOutput"][];
+                    };
+                };
+            };
+        };
+    };
     get_api_admin_category_list: {
         parameters: {
             query?: never;
@@ -1811,6 +2171,139 @@ export interface operations {
             };
         };
     };
+    get_api_admin_plan_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["PlanOutput"][];
+                        total: number;
+                        page: number;
+                        perPage: number;
+                    };
+                };
+            };
+        };
+    };
+    post_api_admin_plan_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Created. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanOutput"];
+                };
+            };
+        };
+    };
+    get_api_admin_plan_all: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["PlanOutput"][];
+                    };
+                };
+            };
+        };
+    };
+    put_api_admin_plan_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanOutput"];
+                };
+            };
+        };
+    };
+    delete_api_admin_plan_disable: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanOutput"];
+                };
+            };
+        };
+    };
+    post_api_admin_plan_enable: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanOutput"];
+                };
+            };
+        };
+    };
     get_api_admin_privacy_show: {
         parameters: {
             query?: never;
@@ -1847,6 +2340,183 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PrivacyOutput"];
+                };
+            };
+        };
+    };
+    get_api_admin_session_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["SessionOutput"][];
+                        total: number;
+                        page: number;
+                        perPage: number;
+                    };
+                };
+            };
+        };
+    };
+    post_api_admin_session_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Created. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionOutput"];
+                };
+            };
+        };
+    };
+    get_api_admin_session_week: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["SessionOutput"][];
+                    };
+                };
+            };
+        };
+    };
+    post_api_admin_session_reschedule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionOutput"];
+                };
+            };
+        };
+    };
+    post_api_admin_session_cancel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionOutput"];
+                };
+            };
+        };
+    };
+    post_api_admin_session_done: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionOutput"];
+                };
+            };
+        };
+    };
+    post_api_admin_session_no_show: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionOutput"];
+                };
+            };
+        };
+    };
+    post_api_admin_session_reopen: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionOutput"];
                 };
             };
         };

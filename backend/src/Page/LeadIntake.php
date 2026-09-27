@@ -53,6 +53,37 @@ final class LeadIntake
      */
     public function check(array $content, array $data): array
     {
+        ['values' => $values, 'errors' => $errors] = $this->checkPerson($data);
+        foreach ($content['form']['fields'] as $field) {
+            $value = $values[$field['key']] ?? '';
+            if ($field['required'] && '' === $value) {
+                $errors[$field['key']] = 'checkbox' === $field['type'] ? 'Marca esta casilla para continuar.' : 'Completa este campo.';
+            } elseif ('select' === $field['type'] && '' !== $value && !\in_array($value, $field['options'], true)) {
+                $errors[$field['key']] = 'Elige una de las opciones.';
+            } elseif ('number' === $field['type'] && '' !== $value && !is_numeric($value)) {
+                $errors[$field['key']] = 'Escribe un número.';
+            }
+        }
+        // Consent is asked last on the form: its message comes last too.
+        if (isset($errors['consent'])) {
+            $consent = $errors['consent'];
+            unset($errors['consent']);
+            $errors['consent'] = $consent;
+        }
+
+        return ['values' => $values, 'errors' => $errors];
+    }
+
+    /**
+     * What every form asks of a person, checked: name, email, phone (optional) and consent. Shared by the lead form
+     * and the booking form.
+     *
+     * @param array<mixed> $data
+     *
+     * @return array{values: array<string, string>, errors: array<string, string>}
+     */
+    public function checkPerson(array $data): array
+    {
         $values = [];
         foreach ($data as $key => $value) {
             if (\is_string($key) && \is_scalar($value)) {
@@ -76,16 +107,6 @@ final class LeadIntake
         if ('' !== $phone && (1 !== preg_match(self::PHONE, $phone) || $digits < 7 || $digits > 15)) {
             $errors['phone'] = 'Escribe un teléfono de 7 a 15 dígitos.';
         }
-        foreach ($content['form']['fields'] as $field) {
-            $value = $values[$field['key']] ?? '';
-            if ($field['required'] && '' === $value) {
-                $errors[$field['key']] = 'checkbox' === $field['type'] ? 'Marca esta casilla para continuar.' : 'Completa este campo.';
-            } elseif ('select' === $field['type'] && '' !== $value && !\in_array($value, $field['options'], true)) {
-                $errors[$field['key']] = 'Elige una de las opciones.';
-            } elseif ('number' === $field['type'] && '' !== $value && !is_numeric($value)) {
-                $errors[$field['key']] = 'Escribe un número.';
-            }
-        }
         if ('1' !== ($values['consent'] ?? '')) {
             $errors['consent'] = 'Para enviar tus datos debes aceptar la política de privacidad.';
         }
@@ -94,13 +115,12 @@ final class LeadIntake
     }
 
     /**
-     * Records a checked form. The account must have been entered (AccountContext) by the caller.
+     * The contact these checked details belong to: the one with this email at this consultant (updated with what they
+     * wrote now), or a new prospecto. Persisted, not flushed.
      *
-     * @param array<string, mixed>  $content the published content the visitor saw
-     * @param array<string, string> $values  checked by check()
-     * @param array<string, string> $utm
+     * @param array<string, string> $values checked by checkPerson()
      */
-    public function record(Account $account, LandingPage $page, array $content, array $values, array $utm, ?string $referrer): Contact
+    public function person(Account $account, ?LandingPage $page, array $values): Contact
     {
         $policyHash = hash('sha256', '' !== $account->getPrivacyText() ? $account->getPrivacyText() : $this->settings->current()->getDefaultPrivacyText());
         $phone = '' === ($values['phone'] ?? '') ? null : $values['phone'];
@@ -112,6 +132,20 @@ final class LeadIntake
         } else {
             $contact->answeredAgain($values['name'], $phone, $policyHash);
         }
+
+        return $contact;
+    }
+
+    /**
+     * Records a checked form. The account must have been entered (AccountContext) by the caller.
+     *
+     * @param array<string, mixed>  $content the published content the visitor saw
+     * @param array<string, string> $values  checked by check()
+     * @param array<string, string> $utm
+     */
+    public function record(Account $account, LandingPage $page, array $content, array $values, array $utm, ?string $referrer): Contact
+    {
+        $contact = $this->person($account, $page, $values);
 
         $answers = [];
         $categoryId = $content['settings']['defaultCategoryId'];

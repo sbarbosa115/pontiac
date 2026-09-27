@@ -4,18 +4,16 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Doctrine\AccountContext;
 use App\Entity\Account;
 use App\Entity\LandingPage;
 use App\Enum\PageStatus;
 use App\Media\MediaStorage;
 use App\Page\LeadIntake;
 use App\Page\PageRenderer;
+use App\Page\PublicResolver;
 use App\Repository\AccountRepository;
-use App\Repository\AccountSlugRedirectRepository;
 use App\Repository\LandingPageRepository;
 use App\Repository\MediaAssetRepository;
-use App\Repository\PageSlugRedirectRepository;
 use App\Repository\PlatformSettingsRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -38,10 +36,8 @@ final class PublicController extends AbstractController
 
     public function __construct(
         private readonly AccountRepository $accounts,
-        private readonly AccountSlugRedirectRepository $accountRedirects,
         private readonly LandingPageRepository $pages,
-        private readonly PageSlugRedirectRepository $pageRedirects,
-        private readonly AccountContext $context,
+        private readonly PublicResolver $resolver,
         private readonly PageRenderer $renderer,
         #[Autowire('%env(APP_URL)%')]
         private readonly string $appUrl,
@@ -203,6 +199,11 @@ final class PublicController extends AbstractController
         }
 
         $sent = $request->query->has('enviado');
+        $booked = $request->query->has('reservado');
+        // A page with a booking section shows free slots, which change with every booking: not cached then.
+        if ($this->hasBooking($content)) {
+            return $this->renderer->render($account, $page, $content, sent: $sent, booking: ['booked' => $booked])->setPrivate();
+        }
         $etag = md5(implode('|', [$page->getId(), $page->getPublishedAt()?->format('U'), $page->isHome() ? 1 : 0, $account->getName(), $account->getSlug(), $sent ? 1 : 0]));
         $cached = (new Response())->setEtag($etag)->setPublic()->setMaxAge(300);
         if ($cached->isNotModified($request)) {
@@ -210,6 +211,20 @@ final class PublicController extends AbstractController
         }
 
         return $this->renderer->render($account, $page, $content, sent: $sent)->setEtag($etag)->setPublic()->setMaxAge(300);
+    }
+
+    /**
+     * @param array<string, mixed> $content
+     */
+    private function hasBooking(array $content): bool
+    {
+        foreach ($content['sections'] as $section) {
+            if ('booking' === $section['type'] && $section['enabled']) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function submit(Account $account, LandingPage $page, Request $request, LeadIntake $intake, RateLimiterFactoryInterface $limiter): Response
@@ -247,45 +262,13 @@ final class PublicController extends AbstractController
         return $done;
     }
 
-    /**
-     * The active consultant at this address, entered; a redirect when the address is a former one; else a 404.
-     */
     private function enter(string $slug, Request $request): Account|Response
     {
-        $account = $this->accounts->findActiveBySlug($slug);
-        if (null !== $account) {
-            $this->context->enterAccount($account);
-
-            return $account;
-        }
-
-        $redirect = $this->accountRedirects->findOneByOldSlug(Account::normalizeSlug($slug));
-        if (null !== $redirect && $redirect->getAccount()->isActive()) {
-            $path = '/'.$redirect->getAccount()->getSlug().substr($request->getPathInfo(), \strlen('/'.$slug));
-            $query = $request->getQueryString();
-
-            return new RedirectResponse($path.(null === $query ? '' : '?'.$query), 301);
-        }
-
-        throw $this->createNotFoundException();
+        return $this->resolver->enter($slug, $request);
     }
 
-    /**
-     * The page at this address; a redirect when it is a page's former address; else a 404.
-     */
     private function find(Account $account, string $slug): LandingPage|Response
     {
-        $page = $this->pages->findOneBySlug($slug);
-        if (null !== $page) {
-            return $page;
-        }
-        $redirect = $this->pageRedirects->findOneByOldSlug(Account::normalizeSlug($slug));
-        if (null !== $redirect) {
-            $target = $redirect->getPage();
-
-            return new RedirectResponse('/'.$account->getSlug().($target->isHome() ? '' : '/'.$target->getSlug()), 301);
-        }
-
-        throw $this->createNotFoundException();
+        return $this->resolver->page($account, $slug);
     }
 }

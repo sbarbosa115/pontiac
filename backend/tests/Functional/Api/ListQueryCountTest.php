@@ -51,6 +51,9 @@ final class ListQueryCountTest extends ApiTestCase
         yield 'categorías' => ['owner', '/api/admin/categories', 'category'];
         yield 'medios' => ['owner', '/api/admin/media', 'image'];
         yield 'prospectos' => ['owner', '/api/admin/contacts', 'contact'];
+        yield 'planes' => ['owner', '/api/admin/plans', 'plan'];
+        yield 'sesiones' => ['owner', '/api/admin/sessions', 'session'];
+        yield 'semana' => ['owner', '/api/admin/sessions/week', 'session'];
     }
 
     #[DataProvider('lists')]
@@ -163,5 +166,19 @@ final class ListQueryCountTest extends ApiTestCase
         $contact = (new Contact($this->account, 'Persona '.$this->row, sprintf('persona%d@demo.test', $this->row), null, $page, 'hash'))
             ->setCategory($this->createCategory($this->account, 'Cat '.$this->row));
         $this->save($contact);
+    }
+
+    private function plan(): void
+    {
+        $this->createPlan($this->account, 'Plan '.++$this->row);
+    }
+
+    private function session(): void
+    {
+        // Each with its own contact and plan (enrollment): the relations a session row shows. This week, on its own day and hour.
+        ++$this->row;
+        $contact = $this->createContact($this->account, 'Persona '.$this->row, sprintf('persona%d@demo.test', $this->row));
+        $startsAt = (new \DateTimeImmutable('monday this week', new \DateTimeZone('America/Bogota')))->setTime(8 + $this->row, 0);
+        $this->bookSession($contact, $this->createPlan($this->account, 'Plan '.$this->row), $startsAt);
     }
 }

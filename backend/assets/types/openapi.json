@@ -6,6 +6,67 @@
         "version": "1.0.0"
     },
     "paths": {
+        "/api/admin/availability": {
+            "get": {
+                "operationId": "get_api_admin_availability_show",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AvailabilityOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "operationId": "put_api_admin_availability_update",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AvailabilityOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/availability/slots": {
+            "get": {
+                "summary": "The free slots for a plan's session length (?planId=), or to move a session (?sessionId=: its own time counts\nas free), grouped by day.",
+                "operationId": "get_api_admin_availability_slots",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "days"
+                                    ],
+                                    "properties": {
+                                        "days": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/SlotDayOutput"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/admin/categories": {
             "get": {
                 "summary": "?q= searches the name; ?includeInactive=1 shows disabled ones too.",
@@ -775,6 +836,175 @@
                 }
             }
         },
+        "/api/admin/plans": {
+            "get": {
+                "summary": "?q= searches name and description; ?includeInactive=1 shows disabled ones too.",
+                "operationId": "get_api_admin_plan_list",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "items",
+                                        "total",
+                                        "page",
+                                        "perPage"
+                                    ],
+                                    "properties": {
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/PlanOutput"
+                                            }
+                                        },
+                                        "total": {
+                                            "type": "integer"
+                                        },
+                                        "page": {
+                                            "type": "integer"
+                                        },
+                                        "perPage": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "operationId": "post_api_admin_plan_create",
+                "responses": {
+                    "201": {
+                        "description": "Created.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlanOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/plans/all": {
+            "get": {
+                "summary": "Every plan, for pickers (active first).",
+                "operationId": "get_api_admin_plan_all",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "items"
+                                    ],
+                                    "properties": {
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/PlanOutput"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/plans/{id}": {
+            "put": {
+                "summary": "Enrollments keep the name, price and sessions they were made with: a change applies from now on.",
+                "operationId": "put_api_admin_plan_update",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlanOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "No longer offered: pages stop booking it; enrollments already made keep their sessions.",
+                "operationId": "delete_api_admin_plan_disable",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlanOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/plans/{id}/enable": {
+            "post": {
+                "operationId": "post_api_admin_plan_enable",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlanOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/admin/privacy": {
             "get": {
                 "operationId": "get_api_admin_privacy_show",
@@ -801,6 +1031,233 @@
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/PrivacyOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/sessions": {
+            "get": {
+                "summary": "?q= searches the contact's name and email; ?status=; ?from= and ?to= (Y-m-d, local days, inclusive).",
+                "operationId": "get_api_admin_session_list",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "items",
+                                        "total",
+                                        "page",
+                                        "perPage"
+                                    ],
+                                    "properties": {
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/SessionOutput"
+                                            }
+                                        },
+                                        "total": {
+                                            "type": "integer"
+                                        },
+                                        "page": {
+                                            "type": "integer"
+                                        },
+                                        "perPage": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "The consultant books a session for a contact, on an active free plan.",
+                "operationId": "post_api_admin_session_create",
+                "responses": {
+                    "201": {
+                        "description": "Created.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SessionOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/sessions/week": {
+            "get": {
+                "summary": "The scheduled sessions of the week that starts on ?start= (Y-m-d, local; this week's Monday by default).",
+                "operationId": "get_api_admin_session_week",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "items"
+                                    ],
+                                    "properties": {
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/SessionOutput"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/sessions/{id}/reschedule": {
+            "post": {
+                "operationId": "post_api_admin_session_reschedule",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SessionOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/sessions/{id}/cancel": {
+            "post": {
+                "operationId": "post_api_admin_session_cancel",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SessionOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/sessions/{id}/done": {
+            "post": {
+                "operationId": "post_api_admin_session_done",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SessionOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/sessions/{id}/no-show": {
+            "post": {
+                "operationId": "post_api_admin_session_no_show",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SessionOutput"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/sessions/{id}/reopen": {
+            "post": {
+                "summary": "Undoes \"done\" or \"no-show\" marked by mistake.",
+                "operationId": "post_api_admin_session_reopen",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[13-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SessionOutput"
                                 }
                             }
                         }
@@ -1679,6 +2136,137 @@
     },
     "components": {
         "schemas": {
+            "WeeklyRuleOutput": {
+                "required": [
+                    "weekday",
+                    "from",
+                    "to"
+                ],
+                "properties": {
+                    "weekday": {
+                        "title": "ISO: 1 Monday \u2026 7 Sunday.",
+                        "type": "integer"
+                    },
+                    "from": {
+                        "title": "\"09:00\"",
+                        "type": "string"
+                    },
+                    "to": {
+                        "title": "\"12:00\"",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "AvailabilityExceptionOutput": {
+                "required": [
+                    "date"
+                ],
+                "properties": {
+                    "date": {
+                        "title": "Y-m-d",
+                        "type": "string"
+                    },
+                    "from": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "to": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "AvailabilityOutput": {
+                "required": [
+                    "weeklyRules",
+                    "exceptions",
+                    "bufferMinutes",
+                    "minNoticeHours",
+                    "bookingWindowDays",
+                    "clientCancelHours",
+                    "reminderHours",
+                    "meetingLink",
+                    "timezone"
+                ],
+                "properties": {
+                    "weeklyRules": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/WeeklyRuleOutput"
+                        }
+                    },
+                    "exceptions": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AvailabilityExceptionOutput"
+                        }
+                    },
+                    "bufferMinutes": {
+                        "type": "integer"
+                    },
+                    "minNoticeHours": {
+                        "type": "integer"
+                    },
+                    "bookingWindowDays": {
+                        "type": "integer"
+                    },
+                    "clientCancelHours": {
+                        "type": "integer"
+                    },
+                    "reminderHours": {
+                        "title": "hours before a session, largest first",
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        }
+                    },
+                    "meetingLink": {
+                        "type": "string"
+                    },
+                    "timezone": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "SlotOutput": {
+                "required": [
+                    "startsAt",
+                    "label"
+                ],
+                "properties": {
+                    "startsAt": {
+                        "title": "ISO 8601 (UTC): what to send back to book it.",
+                        "type": "string"
+                    },
+                    "label": {
+                        "title": "\"10:00 a. m.\", local time.",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "SlotDayOutput": {
+                "required": [
+                    "label",
+                    "slots"
+                ],
+                "properties": {
+                    "label": {
+                        "title": "\"martes, 6 de octubre de 2026\"",
+                        "type": "string"
+                    },
+                    "slots": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SlotOutput"
+                        }
+                    }
+                },
+                "type": "object"
+            },
             "LeadCategoryOutput": {
                 "required": [
                     "id",
@@ -1873,6 +2461,77 @@
                 },
                 "type": "object"
             },
+            "ContactRefOutput": {
+                "required": [
+                    "id",
+                    "fullName",
+                    "email"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "fullName": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "SessionOutput": {
+                "required": [
+                    "id",
+                    "startsAt",
+                    "endsAt",
+                    "status",
+                    "contact",
+                    "planName",
+                    "durationMinutes",
+                    "meetingLink",
+                    "bookedBy"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "startsAt": {
+                        "title": "ISO 8601 (UTC).",
+                        "type": "string"
+                    },
+                    "endsAt": {
+                        "title": "ISO 8601 (UTC).",
+                        "type": "string"
+                    },
+                    "status": {
+                        "title": "\"scheduled\", \"done\", \"no_show\" or \"cancelled\".",
+                        "type": "string"
+                    },
+                    "contact": {
+                        "$ref": "#/components/schemas/ContactRefOutput"
+                    },
+                    "planName": {
+                        "title": "The plan's name as it was when they enrolled.",
+                        "type": "string"
+                    },
+                    "durationMinutes": {
+                        "type": "integer"
+                    },
+                    "meetingLink": {
+                        "type": "string"
+                    },
+                    "cancelReason": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "bookedBy": {
+                        "title": "\"visitor\" (from a page) or \"staff\".",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
             "ContactDetailOutput": {
                 "required": [
                     "id",
@@ -1883,7 +2542,8 @@
                     "lastActivityAt",
                     "consentAt",
                     "anonymized",
-                    "submissions"
+                    "submissions",
+                    "sessions"
                 ],
                 "properties": {
                     "id": {
@@ -1938,6 +2598,13 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/SubmissionOutput"
+                        }
+                    },
+                    "sessions": {
+                        "title": "the latest first",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SessionOutput"
                         }
                     }
                 },
@@ -2297,6 +2964,63 @@
                         "additionalProperties": {
                             "nullable": true
                         }
+                    }
+                },
+                "type": "object"
+            },
+            "MoneyOutput": {
+                "required": [
+                    "amount",
+                    "currency"
+                ],
+                "properties": {
+                    "amount": {
+                        "title": "\"250000.00\"",
+                        "type": "string"
+                    },
+                    "currency": {
+                        "title": "ISO 4217, e.g. \"COP\".",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "PlanOutput": {
+                "required": [
+                    "id",
+                    "name",
+                    "description",
+                    "price",
+                    "free",
+                    "sessions",
+                    "durationMinutes",
+                    "active"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "price": {
+                        "$ref": "#/components/schemas/MoneyOutput"
+                    },
+                    "free": {
+                        "title": "Price zero: booked straight from a page.",
+                        "type": "boolean"
+                    },
+                    "sessions": {
+                        "type": "integer"
+                    },
+                    "durationMinutes": {
+                        "type": "integer"
+                    },
+                    "active": {
+                        "type": "boolean"
                     }
                 },
                 "type": "object"
