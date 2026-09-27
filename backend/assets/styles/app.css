@@ -1957,3 +1957,117 @@ select.filter-select {
 .section-title {
     margin: 24px 0 12px;
 }
+
+/* Agenda */
+.section-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 24px 0 12px;
+}
+
+.section-title-row .section-title {
+    margin: 0;
+}
+
+.week-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.week-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.week-day {
+    min-width: 0;
+    padding: 10px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+}
+
+.week-day.is-today {
+    border-color: var(--color-accent);
+    box-shadow: inset 0 3px 0 var(--color-accent);
+}
+
+.week-day-title {
+    margin: 0 0 8px;
+    font-size: 0.85rem;
+    text-transform: capitalize;
+}
+
+.week-session {
+    padding: 8px;
+    margin-bottom: 8px;
+    border-radius: var(--radius-sm);
+    background: var(--color-info-soft);
+    box-shadow: inset 3px 0 0 var(--color-info);
+    overflow-wrap: anywhere;
+}
+
+.week-session p {
+    margin: 0 0 2px;
+}
+
+.week-session .row-actions {
+    margin-top: 6px;
+    flex-wrap: wrap;
+}
+
+.weekly-rules {
+    display: grid;
+    gap: 12px;
+}
+
+.weekly-day {
+    display: grid;
+    grid-template-columns: 110px 1fr auto;
+    align-items: start;
+    gap: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.weekly-day:last-child {
+    border-bottom: 0;
+}
+
+.weekly-day-name {
+    padding-top: 8px;
+    text-transform: capitalize;
+}
+
+.weekly-day-ranges {
+    display: grid;
+    gap: 8px;
+}
+
+.time-range {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 8px 12px;
+    margin-bottom: 8px;
+}
+
+.time-range .field {
+    margin: 0;
+}
+
+@media (max-width: 1100px) {
+    .week-grid {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    .weekly-day {
+        grid-template-columns: 1fr;
+    }
+}

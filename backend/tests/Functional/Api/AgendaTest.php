@@ -72,7 +72,7 @@ final class AgendaTest extends ApiTestCase
             ],
             'exceptions' => [['date' => '2026-02-30', 'from' => null, 'to' => null]],
             'bufferMinutes' => 0, 'minNoticeHours' => 0, 'bookingWindowDays' => 14, 'clientCancelHours' => 0, 'reminderHours' => [24],
-            'meetingLink' => '',
+            'meetingLink' => 'meet.google.com/abc',
         ]);
 
         self::assertSame(422, $this->responseStatus());
@@ -82,6 +82,7 @@ final class AgendaTest extends ApiTestCase
             'weeklyRules[2].to' => 'El final debe ser después del inicio.',
             'weeklyRules' => 'Dos franjas del mismo día se cruzan.',
             'exceptions[0].date' => 'Escribe una fecha válida.',
+            'meetingLink' => 'Escribe una dirección web que empiece por http:// o https://.',
         ], array_column($error['violations'], 'message', 'field'));
     }
 

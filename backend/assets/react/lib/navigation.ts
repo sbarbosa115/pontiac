@@ -39,7 +39,9 @@ export const MENU: MenuSection[] = [
         roles: [ROLE_OWNER, ROLE_ASSISTANT],
         items: [
             { to: '/admin', label: 'nav.home', icon: 'dashboard', end: true },
+            { to: '/admin/agenda', label: 'nav.agenda', icon: 'calendar', feature: 'booking' },
             { to: '/admin/prospectos', label: 'nav.contacts', icon: 'inbox' },
+            { to: '/admin/planes', label: 'nav.plans', icon: 'receipt' },
             { to: '/admin/paginas', label: 'nav.pages', icon: 'file' },
             { to: '/admin/ajustes', label: 'nav.settings', icon: 'settings' },
         ],

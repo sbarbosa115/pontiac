@@ -6,21 +6,28 @@ import { formatDateTime } from '../../lib/format';
 import { useApi } from '../../lib/hooks';
 import { errorMessage, t } from '../../lib/i18n';
 import type { Get, Schema } from '../../lib/types';
-import { ActionButton, Alert, Badge, DefinitionList, ErrorState, Field, Loading, PageHeader } from '../../components/ui';
+import { BookSessionModal, useSessionActions } from '../../components/SessionModals';
+import { ActionButton, Actions, Alert, Badge, Button, DataTable, DefinitionList, ErrorState, Field, Loading, PageHeader, Row } from '../../components/ui';
 
 type Contact = Schema<'ContactDetailOutput'>;
 
-/** A contact: who they are, how they consented, every form they sent. */
+/** A contact: who they are, how they consented, their sessions, every form they sent. */
 export default function ContactPage() {
     const { id = '' } = useParams();
-    const { roles } = useAuth();
+    const { roles, me } = useAuth();
     const { locale, timezone } = useLocaleSettings();
     const loaded = useApi(() => api.get<Contact>(`/api/admin/contacts/${id}`), [id]);
     const categories = useApi(() => api.get<Get<'/api/admin/categories/all'>>('/api/admin/categories/all'), []);
     const [changed, setChanged] = useState<Contact | null>(null);
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [booking, setBooking] = useState(false);
     const contact = changed?.id === id ? changed : loaded.data;
+    const hasBooking = (me?.account?.features ?? []).includes('booking');
+    const sessionActions = useSessionActions(() => {
+        setChanged(null);
+        loaded.reload();
+    });
 
     if (loaded.error) return <ErrorState error={loaded.error} onRetry={loaded.reload} />;
     if (!contact) return <Loading />;
@@ -87,6 +94,52 @@ export default function ContactPage() {
                     </select>
                 </Field>
             </section>
+            {hasBooking && (
+                <>
+                    <div className="section-title-row">
+                        <h2 className="section-title">{t('contacts.sessions', { count: contact.sessions.length })}</h2>
+                        {!contact.anonymized && (
+                            <Button size="sm" onClick={() => setBooking(true)}>
+                                {t('agenda.book')}
+                            </Button>
+                        )}
+                    </div>
+                    <Alert kind="error" onDismiss={sessionActions.clearError}>
+                        {sessionActions.error}
+                    </Alert>
+                    {contact.sessions.length === 0 ? (
+                        <p className="muted small">{t('contacts.noSessions')}</p>
+                    ) : (
+                        <DataTable
+                            columns={[t('agenda.startsAt'), t('agenda.plan'), t('agenda.bookedBy')]}
+                            rows={contact.sessions}
+                            renderRow={(session) => (
+                                <Row key={session.id} status={session.status} label={t(`agenda.statusName.${session.status}`)}>
+                                    <td className="strong">{formatDateTime(session.startsAt, locale, timezone)}</td>
+                                    <td>
+                                        {session.planName}
+                                        {session.cancelReason && <div className="small muted">{session.cancelReason}</div>}
+                                    </td>
+                                    <td>{t(`agenda.bookedByName.${session.bookedBy}`)}</td>
+                                    <Actions>{sessionActions.buttons(session)}</Actions>
+                                </Row>
+                            )}
+                        />
+                    )}
+                    {sessionActions.modals}
+                    {booking && (
+                        <BookSessionModal
+                            contact={contact}
+                            onClose={() => setBooking(false)}
+                            onBooked={() => {
+                                setBooking(false);
+                                setChanged(null);
+                                loaded.reload();
+                            }}
+                        />
+                    )}
+                </>
+            )}
             <h2 className="section-title">{t('contacts.submissions', { count: contact.submissions.length })}</h2>
             {contact.submissions.map((submission) => (
                 <section key={submission.id} className="card">

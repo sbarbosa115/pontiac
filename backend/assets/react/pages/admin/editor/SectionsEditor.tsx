@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { api } from '../../../lib/api';
+import { useApi } from '../../../lib/hooks';
+import type { Get } from '../../../lib/types';
 import { t } from '../../../lib/i18n';
 import { type Catalog, emptyItem, type FieldSpec, type FieldValue, move, type PageContent, setSectionField, updateSection } from '../../../lib/pages';
 import DateInput from '../../../components/DateInput';
@@ -121,6 +124,10 @@ function SpecField({ spec, value, path, errors, onChange }: SpecFieldProps) {
         );
     }
 
+    if (spec.kind === 'plan') {
+        return <PlanField label={label} error={error} value={typeof value === 'string' ? value : ''} onChange={onChange} />;
+    }
+
     if (spec.kind === 'date') {
         return (
             <Field label={label} error={error} optional>
@@ -141,6 +148,25 @@ function SpecField({ spec, value, path, errors, onChange }: SpecFieldProps) {
             value={typeof value === 'string' ? value : ''}
             onChange={onChange}
         />
+    );
+}
+
+/** The free plan a Reserva section books: only an active free plan can be booked straight from a page. */
+function PlanField({ label, error, value, onChange }: { label: string; error?: string; value: string; onChange: (value: FieldValue) => void }) {
+    const plans = useApi(() => api.get<Get<'/api/admin/plans/all'>>('/api/admin/plans/all'), []);
+    const bookable = (plans.data?.items ?? []).filter((plan) => plan.free && (plan.active || plan.id === value));
+
+    return (
+        <Field label={label} error={error} hint={plans.data && bookable.length === 0 ? t('pageEditor.hint.noFreePlan') : t('pageEditor.hint.planId')}>
+            <select value={value} onChange={(event) => onChange(event.target.value || null)}>
+                <option value="">{t('pageEditor.pickPlan')}</option>
+                {bookable.map((plan) => (
+                    <option key={plan.id} value={plan.id}>
+                        {plan.active ? plan.name : `${plan.name} (${t('common.inactive')})`}
+                    </option>
+                ))}
+            </select>
+        </Field>
     );
 }
 

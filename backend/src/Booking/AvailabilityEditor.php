@@ -11,7 +11,7 @@ use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * Saves Agenda › Disponibilidad: weekly hours and exceptions checked (real times, "from" before "to", no two ranges of
- * one day overlapping), every problem reported where it is.
+ * one day overlapping) and the meeting link, every problem reported where it is.
  */
 final class AvailabilityEditor
 {
@@ -26,6 +26,10 @@ final class AvailabilityEditor
         $violations = [];
         $rules = self::rules($input->weeklyRules ?? [], $violations);
         $exceptions = self::exceptions($input->exceptions ?? [], $violations);
+        $link = trim((string) $input->meetingLink);
+        if ('' !== $link && (false === filter_var($link, \FILTER_VALIDATE_URL) || !\in_array(parse_url($link, \PHP_URL_SCHEME), ['http', 'https'], true))) {
+            self::fail($violations, 'meetingLink', 'Enter a web address that starts with http:// or https://.');
+        }
         if ([] !== $violations) {
             throw new ApiValidationException($violations);
         }
@@ -38,7 +42,7 @@ final class AvailabilityEditor
             (int) $input->bookingWindowDays,
             (int) $input->clientCancelHours,
             array_map(intval(...), $input->reminderHours ?? []),
-            trim((string) $input->meetingLink),
+            $link,
         );
         $this->em->flush();
 

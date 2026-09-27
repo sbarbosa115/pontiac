@@ -205,6 +205,11 @@ const TONES: Record<string, string> = {
     lead: 'info',
     client: 'success',
     finished: 'muted',
+    // A session.
+    scheduled: 'info',
+    done: 'success',
+    no_show: 'warning',
+    cancelled: 'muted',
 };
 
 /** A status in its tone (`value`, via TONES), or any tone by name (`tone`: a lead category's colour). */

@@ -42,6 +42,7 @@ final class AvailabilityInput
     #[Assert\All([new Assert\Type('int'), new Assert\Range(min: 1, max: 168)])]
     public ?array $reminderHours = null;
 
+    /** Empty: none. Checked by AvailabilityEditor, with the hours. */
     #[Assert\NotNull]
     #[Assert\Length(max: 500)]
     public ?string $meetingLink = null;
