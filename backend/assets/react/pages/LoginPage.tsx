@@ -1,5 +1,5 @@
 import React, { type FormEvent, useState } from 'react';
-import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { homePathFor, ROLE_CLIENT, useAuth } from '../lib/auth';
 import { errorMessage, t } from '../lib/i18n';
 import AuthCard from '../components/AuthCard';
@@ -59,6 +59,9 @@ export default function LoginPage() {
                     {t('login.submit')}
                 </Button>
             </form>
+            <p className="small">
+                <Link to="/olvide">{t('forgot.link')}</Link>
+            </p>
             <p className="muted small">{t('login.clientHint')}</p>
         </AuthCard>
     );

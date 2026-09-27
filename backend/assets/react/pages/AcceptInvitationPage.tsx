@@ -2,13 +2,13 @@ import React, { type FormEvent, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { api, ApiError, validationError } from '../lib/api';
 import { portalPath, useAuth } from '../lib/auth';
+import { MIN_PASSWORD_LENGTH } from '../lib/validation';
 import { useApi, useSubmit } from '../lib/hooks';
 import { t } from '../lib/i18n';
 import type { Schema } from '../lib/types';
 import AuthCard from '../components/AuthCard';
 import { Alert, Button, Field, Loading } from '../components/ui';
 
-const MIN_PASSWORD_LENGTH = 12;
 
 /** Where someone signs in once their password is set: a client at their consultant's portal, everyone else at /login. */
 function signInPath(invitation: Schema<'InvitationOutput'>): string {

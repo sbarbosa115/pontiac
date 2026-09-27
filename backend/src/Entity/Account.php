@@ -30,8 +30,8 @@ class Account
      */
     public const RESERVED_SLUGS = [
         'admin', 'api', 'assets', 'build', 'bundles', 'favicon.ico', 'help', 'invitacion', 'login', 'logout', 'media',
-        'pago', 'plataforma', 'portal', 'pontiac', 'privacidad', 'public', 'reservar', 'robots.txt', 'sitemap.xml',
-        'soporte', 'static', 'terminos', 'uploads', 'www',
+        'olvide', 'pagar', 'pago', 'plataforma', 'portal', 'pontiac', 'privacidad', 'public', 'reservar', 'restablecer',
+        'robots.txt', 'sitemap.xml', 'soporte', 'static', 'terminos', 'uploads', 'webhooks', 'www',
     ];
 
     // What a consultant starts with when nobody says otherwise (the platform's defaults are these until changed).

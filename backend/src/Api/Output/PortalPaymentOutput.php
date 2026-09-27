@@ -13,6 +13,8 @@ final readonly class PortalPaymentOutput
         /** "pending", "approved", "declined", "voided" or "error". */
         public string $status,
         public ?string $method,
+        /** Recorded by the consultant (cash, transfer): known by its day only. */
+        public bool $manual,
         /** ISO 8601. */
         public string $createdAt,
         /** ISO 8601. */

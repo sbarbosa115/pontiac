@@ -2137,6 +2137,8 @@ export interface components {
             /** "pending", "approved", "declined", "voided" or "error". */
             status: string;
             method?: string | null;
+            /** Recorded by the consultant (cash, transfer): known by its day only. */
+            manual: boolean;
             /** ISO 8601. */
             createdAt: string;
             /** ISO 8601. */

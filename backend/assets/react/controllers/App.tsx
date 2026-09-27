@@ -27,6 +27,13 @@ const PlatformAccountPage = lazy(() => import('../pages/platform/AccountPage'));
 const PlatformSettingsPage = lazy(() => import('../pages/platform/SettingsPage'));
 const PlatformEmailsPage = lazy(() => import('../pages/platform/EmailsPage'));
 const PortalHomePage = lazy(() => import('../pages/portal/HomePage'));
+const PortalSessionsPage = lazy(() => import('../pages/portal/SessionsPage'));
+const PortalPlansPage = lazy(() => import('../pages/portal/PlansPage'));
+const PortalNotesPage = lazy(() => import('../pages/portal/NotesPage'));
+const PortalFilesPage = lazy(() => import('../pages/portal/FilesPage'));
+const PortalAccountPage = lazy(() => import('../pages/portal/AccountPage'));
+const ForgotPasswordPage = lazy(() => import('../pages/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('../pages/ResetPasswordPage'));
 
 /** The page Symfony serves at "/" is public (PublicController); inside the app, "/" means "my home". */
 function HomeRedirect() {
@@ -66,6 +73,8 @@ export default function App() {
                             <Route path="/" element={<HomeRedirect />} />
                             <Route path="/login" element={<LoginPage />} />
                             <Route path="/invitacion" element={<AcceptInvitationPage />} />
+                            <Route path="/olvide" element={<ForgotPasswordPage />} />
+                            <Route path="/restablecer" element={<ResetPasswordPage />} />
 
                             <Route
                                 path="/admin"
@@ -102,8 +111,14 @@ export default function App() {
                             </Route>
 
                             <Route path="/:slug/portal/ingresar" element={<PortalLoginPage />} />
+                            <Route path="/:slug/portal/olvide" element={<ForgotPasswordPage />} />
                             <Route path="/:slug/portal" element={<PortalGate />}>
                                 <Route index element={<PortalHomePage />} />
+                                <Route path="sesiones" element={<PortalSessionsPage />} />
+                                <Route path="planes" element={<PortalPlansPage />} />
+                                <Route path="notas" element={<PortalNotesPage />} />
+                                <Route path="archivos" element={<PortalFilesPage />} />
+                                <Route path="cuenta" element={<PortalAccountPage />} />
                             </Route>
 
                             <Route path="*" element={<NotFoundPage />} />

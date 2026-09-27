@@ -214,6 +214,9 @@ const TONES: Record<string, string> = {
     declined: 'danger',
     voided: 'muted',
     error: 'danger',
+    // A contact's file.
+    shared: 'success',
+    internal: 'info',
     // A session.
     scheduled: 'info',
     done: 'success',

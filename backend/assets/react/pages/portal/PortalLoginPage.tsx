@@ -1,5 +1,5 @@
 import React, { type FormEvent, useState } from 'react';
-import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { portalPath, ROLE_CLIENT, useAuth } from '../../lib/auth';
 import { errorMessage, t } from '../../lib/i18n';
 import AuthCard from '../../components/AuthCard';
@@ -54,6 +54,9 @@ export default function PortalLoginPage() {
                     {t('login.submit')}
                 </Button>
             </form>
+            <p className="small">
+                <Link to={`${home}/olvide`}>{t('forgot.link')}</Link>
+            </p>
             <p className="muted small">{t('portalLogin.noAccess')}</p>
         </AuthCard>
     );

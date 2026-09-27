@@ -50,7 +50,14 @@ export const MENU: MenuSection[] = [
     {
         title: 'nav.section.portal',
         roles: [ROLE_CLIENT],
-        items: [{ to: ':portal', label: 'nav.home', icon: 'home', end: true }],
+        items: [
+            { to: ':portal', label: 'nav.home', icon: 'home', end: true },
+            { to: ':portal/sesiones', label: 'nav.portalSessions', icon: 'calendar', feature: 'booking' },
+            { to: ':portal/planes', label: 'nav.portalPlans', icon: 'receipt' },
+            { to: ':portal/notas', label: 'nav.portalNotes', icon: 'chat' },
+            { to: ':portal/archivos', label: 'nav.portalFiles', icon: 'paperclip' },
+            { to: ':portal/cuenta', label: 'nav.portalAccount', icon: 'users' },
+        ],
     },
 ];
 

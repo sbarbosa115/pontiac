@@ -18,3 +18,6 @@ export function isValidPhone(value: string | null | undefined): boolean {
     const digits = phone.replace(/\D/g, '').length;
     return PHONE.test(phone) && digits >= 7 && digits <= 15;
 }
+
+/** As the API requires for every password (invitations, resets, changes). */
+export const MIN_PASSWORD_LENGTH = 12;

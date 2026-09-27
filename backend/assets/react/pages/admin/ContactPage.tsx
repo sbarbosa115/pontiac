@@ -8,6 +8,7 @@ import { errorMessage, t } from '../../lib/i18n';
 import type { Get, Schema } from '../../lib/types';
 import type { IconName } from '../../components/Icon';
 import { ActionButton, Alert, Badge, DefinitionList, ErrorState, Field, Loading, PageHeader, TabPanel, Tabs } from '../../components/ui';
+import ContactFiles from './contact/ContactFiles';
 import ContactPlans from './contact/ContactPlans';
 import ContactSessions from './contact/ContactSessions';
 
@@ -17,6 +18,7 @@ const TABS: { value: string; icon: IconName; feature?: string }[] = [
     { value: 'resumen', icon: 'users' },
     { value: 'planes', icon: 'receipt' },
     { value: 'sesiones', icon: 'calendar', feature: 'booking' },
+    { value: 'archivos', icon: 'paperclip' },
 ];
 
 /** A contact, in tabs: who they are and what they sent; their plans and payments; their sessions and notes. */
@@ -82,16 +84,17 @@ export default function ContactPage() {
                 options={tabs.map(({ value, icon }) => ({ value, icon, label: t(`contacts.tab.${value}`) }))}
             />
             <TabPanel id="contact" value={tab}>
-                {tab === 'resumen' && <Summary contact={contact} onChanged={setChanged} />}
+                {tab === 'resumen' && <Summary contact={contact} onChanged={setChanged} portal={features.includes('portal')} />}
                 {tab === 'planes' && <ContactPlans contact={contact} onChanged={setChanged} />}
                 {tab === 'sesiones' && <ContactSessions contact={contact} onChanged={reload} />}
+                {tab === 'archivos' && <ContactFiles contact={contact} />}
             </TabPanel>
         </>
     );
 }
 
 /** Resumen: who they are, how they consented, their category, every form they sent. */
-function Summary({ contact, onChanged }: { contact: Contact; onChanged: (contact: Contact) => void }) {
+function Summary({ contact, onChanged, portal }: { contact: Contact; onChanged: (contact: Contact) => void; portal: boolean }) {
     const { locale, timezone } = useLocaleSettings();
     const categories = useApi(() => api.get<Get<'/api/admin/categories/all'>>('/api/admin/categories/all'), []);
     const [busy, setBusy] = useState(false);
@@ -135,6 +138,7 @@ function Summary({ contact, onChanged }: { contact: Contact; onChanged: (contact
                     </select>
                 </Field>
             </section>
+            {portal && <PortalAccess contact={contact} onChanged={onChanged} />}
             <h2 className="section-title">{t('contacts.submissions', { count: contact.submissions.length })}</h2>
             {contact.submissions.map((submission) => (
                 <section key={submission.id} className="card">
@@ -150,5 +154,64 @@ function Summary({ contact, onChanged }: { contact: Contact; onChanged: (contact
                 </section>
             ))}
         </>
+    );
+}
+
+/** Their portal: whether they can sign in, and inviting them (again), taking the access away or giving it back. */
+function PortalAccess({ contact, onChanged }: { contact: Contact; onChanged: (contact: Contact) => void }) {
+    const { locale, timezone } = useLocaleSettings();
+    const [busy, setBusy] = useState(false);
+    const [notice, setNotice] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
+    const { status, lastSignInAt } = contact.portal;
+
+    const run = async (action: string, done?: string) => {
+        setBusy(true);
+        setError(null);
+        setNotice(null);
+        try {
+            onChanged(await api.post<Contact>(`/api/admin/contacts/${contact.id}/portal/${action}`));
+            if (done) setNotice(done);
+        } catch (err) {
+            setError(errorMessage(err));
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    return (
+        <section className="card">
+            <h2 className="section-title">{t('portalAccess.title')}</h2>
+            <p>
+                <Badge value={status === 'active' ? 'active' : status === 'invited' ? 'invited' : status === 'disabled' ? 'inactive' : 'none'}>{t(`portalAccess.status.${status}`)}</Badge>{' '}
+                {lastSignInAt && <span className="small muted">{t('portalAccess.lastSignIn', { when: formatDateTime(lastSignInAt, locale, timezone) })}</span>}
+            </p>
+            <p className="small muted">{t(`portalAccess.hint.${status}`)}</p>
+            <Alert kind="success" onDismiss={() => setNotice(null)}>
+                {notice}
+            </Alert>
+            <Alert kind="error" onDismiss={() => setError(null)}>
+                {error}
+            </Alert>
+            {!contact.anonymized && (
+                <div className="row-actions">
+                    {(status === 'none' || status === 'invited') && (
+                        <ActionButton action="contact" size="md" busy={busy} onClick={() => run('invitation', t('portalAccess.sent', { email: contact.email }))}>
+                            {status === 'none' ? t('portalAccess.invite') : t('portalAccess.resend')}
+                        </ActionButton>
+                    )}
+                    {status === 'disabled' && (
+                        <ActionButton action="confirm" size="md" busy={busy} onClick={() => run('enable')}>
+                            {t('portalAccess.enable')}
+                        </ActionButton>
+                    )}
+                    {(status === 'active' || status === 'invited') && (
+                        <ActionButton action="danger" size="md" busy={busy} onClick={() => run('disable')}>
+                            {t('portalAccess.disable')}
+                        </ActionButton>
+                    )}
+                </div>
+            )}
+        </section>
     );
 }

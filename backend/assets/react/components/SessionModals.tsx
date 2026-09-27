@@ -18,9 +18,22 @@ type Contact = Schema<'ContactSummaryOutput'>;
  * The free slots for a plan (to book) or for a session (to move it), as a day and then a time. The value is the
  * slot's ISO start, as the API takes it. Give it a `key` per plan or session, so another one starts on its first day.
  */
-function SlotPicker({ query, value, onChange, error }: { query: { planId: string } | { enrollmentId: string } | { sessionId: string }; value: string; onChange: (startsAt: string) => void; error?: string }) {
+export function SlotPicker({
+    query,
+    value,
+    onChange,
+    error,
+    endpoint = '/api/admin/availability/slots',
+}: {
+    query: { planId: string } | { enrollmentId: string } | { sessionId: string };
+    value: string;
+    onChange: (startsAt: string) => void;
+    error?: string;
+    /** The portal asks its own API. */
+    endpoint?: string;
+}) {
     const key = Object.values(query)[0] ?? '';
-    const slots = useApi(() => (key ? api.get<Get<'/api/admin/availability/slots'>>('/api/admin/availability/slots', query) : Promise.resolve({ days: [] as SlotDay[] })), [key]);
+    const slots = useApi(() => (key ? api.get<Get<'/api/admin/availability/slots'>>(endpoint, query) : Promise.resolve({ days: [] as SlotDay[] })), [key]);
     const days = slots.data?.days ?? [];
     const [dayIndex, setDayIndex] = useState(0);
     const day = days[dayIndex];

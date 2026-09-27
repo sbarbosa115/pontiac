@@ -289,7 +289,8 @@ export async function downloadFile(path: string, fallbackName = 'download'): Pro
     }
 
     const disposition = response.headers.get('Content-Disposition') || '';
-    const name = /filename\*?=(?:UTF-8'')?"?([^";]+)"?/i.exec(disposition)?.[1];
+    // The UTF-8 name (filename*) when there is one: the plain one replaces accents.
+    const name = /filename\*=UTF-8''([^;]+)/i.exec(disposition)?.[1] ?? /filename="?([^";]+)"?/i.exec(disposition)?.[1];
     const url = URL.createObjectURL(await response.blob());
     const link = document.createElement('a');
     link.href = url;

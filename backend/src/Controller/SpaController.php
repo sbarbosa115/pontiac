@@ -19,7 +19,7 @@ final class SpaController extends AbstractController
     #[Route(
         '/{section}/{path}',
         name: 'app_spa',
-        requirements: ['section' => 'login|invitacion|admin|plataforma', 'path' => '.*'],
+        requirements: ['section' => 'login|invitacion|olvide|restablecer|admin|plataforma', 'path' => '.*'],
         defaults: ['path' => ''],
         methods: ['GET'],
         priority: 10,

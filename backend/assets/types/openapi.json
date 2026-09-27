@@ -5103,6 +5103,7 @@
                     "reference",
                     "amount",
                     "status",
+                    "manual",
                     "createdAt"
                 ],
                 "properties": {
@@ -5119,6 +5120,10 @@
                     "method": {
                         "type": "string",
                         "nullable": true
+                    },
+                    "manual": {
+                        "title": "Recorded by the consultant (cash, transfer): known by its day only.",
+                        "type": "boolean"
                     },
                     "createdAt": {
                         "title": "ISO 8601.",

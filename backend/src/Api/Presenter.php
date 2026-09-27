@@ -491,6 +491,7 @@ final class Presenter
                 amount: new MoneyOutput(amount: $p->getAmount(), currency: $p->getCurrency()),
                 status: $p->getStatus()->value,
                 method: $p->getMethod(),
+                manual: $p->isManual(),
                 createdAt: (string) self::timestamp($p->getCreatedAt()),
                 paidAt: self::timestamp($p->getPaidAt()),
             ), $payments),
