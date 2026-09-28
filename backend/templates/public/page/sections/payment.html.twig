@@ -3,10 +3,10 @@
    Wompi. #}
 {% set plans = payments[section.id] %}
 {% set chosen = paymentValues.planId ?? (plans|first).plan.id %}
-<section id="{{ section.id }}">
-    <div class="wrap form-box">
-        {% if fields.heading %}<{{ first ? 'h1' : 'h2' }}>{{ fields.heading }}</{{ first ? 'h1' : 'h2' }}>{% endif %}
-        {% if fields.body %}<p>{{ fields.body }}</p>{% endif %}
+<section id="{{ section.id }}" class="convert{{ reveal ? ' reveal' }}">
+    <div class="wrap">
+        {{ include('public/page/_pitch.html.twig', {fields: fields, tag: first ? 'h1' : 'h2'}) }}
+        <div class="form-card">
         {% if paymentErrors['_form'] is defined %}<p class="notice notice-error" role="alert">{{ paymentErrors['_form'] }}</p>{% endif %}
         <form method="post" action="{{ preview ? '#' ~ section.id : paymentAction }}" novalidate{% if preview %} onsubmit="return false"{% endif %}>
             <fieldset class="price-cards">
@@ -22,17 +22,17 @@
                 {% endfor %}
                 {% if paymentErrors.planId is defined %}<p class="error">{{ paymentErrors.planId }}</p>{% endif %}
             </fieldset>
-            <div class="field">
+            <div class="field{{ paymentErrors.name is defined ? ' has-error' }}">
                 <label for="p-name">Nombre completo</label>
                 <input type="text" id="p-name" name="name" autocomplete="name" maxlength="180" value="{{ paymentValues.name ?? '' }}">
                 {% if paymentErrors.name is defined %}<p class="error">{{ paymentErrors.name }}</p>{% endif %}
             </div>
-            <div class="field">
+            <div class="field{{ paymentErrors.email is defined ? ' has-error' }}">
                 <label for="p-email">Correo electrónico</label>
                 <input type="email" id="p-email" name="email" autocomplete="email" maxlength="180" value="{{ paymentValues.email ?? '' }}">
                 {% if paymentErrors.email is defined %}<p class="error">{{ paymentErrors.email }}</p>{% endif %}
             </div>
-            <div class="field">
+            <div class="field{{ paymentErrors.phone is defined ? ' has-error' }}">
                 <label for="p-phone">Teléfono (opcional)</label>
                 <input type="tel" id="p-phone" name="phone" autocomplete="tel" maxlength="40" value="{{ paymentValues.phone ?? '' }}">
                 {% if paymentErrors.phone is defined %}<p class="error">{{ paymentErrors.phone }}</p>{% endif %}
@@ -47,8 +47,9 @@
             </div>
             <input type="hidden" name="section" value="{{ section.id }}">
             <input type="hidden" name="_t" value="{{ timeToken }}">
-            <button class="btn" type="submit">{{ fields.submitLabel }}</button>
+            <button class="btn btn-block" type="submit">{{ fields.submitLabel }} <span class="arrow" aria-hidden="true">→</span></button>
             {% if fields.note %}<p class="small">{{ fields.note }}</p>{% endif %}
         </form>
+        </div>
     </div>
 </section>

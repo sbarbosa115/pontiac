@@ -1,0 +1,13 @@
+{# The left of a form, booking or payment section: its title, its text, what the visitor gets, and that their data is
+   safe. Takes: fields, tag. #}
+{% import 'public/page/_icons.html.twig' as ui %}
+<div class="pitch">
+    {% if fields.heading %}<{{ tag }}>{{ fields.heading }}</{{ tag }}>{% endif %}
+    {% if fields.body %}<p>{{ fields.body }}</p>{% endif %}
+    {% if fields.highlights ?? [] %}
+        <ul class="checklist">
+            {% for item in fields.highlights %}<li>{{ ui.tick() }}<span>{{ item.text }}</span></li>{% endfor %}
+        </ul>
+    {% endif %}
+    <p class="safe">{{ ui.icon('lock') }}Tus datos están protegidos y solo los usa {{ account.name }}.</p>
+</div>

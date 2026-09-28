@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { api } from '../../../lib/api';
 import { useApi } from '../../../lib/hooks';
 import type { Get } from '../../../lib/types';
-import { t } from '../../../lib/i18n';
+import { messages, t } from '../../../lib/i18n';
 import { type Catalog, emptyItem, type FieldSpec, type FieldValue, move, type PageContent, setSectionField, updateSection } from '../../../lib/pages';
 import DateInput from '../../../components/DateInput';
 import { ImageField } from '../../../components/MediaPicker';
@@ -79,12 +79,14 @@ function SpecField({ spec, value, path, errors, onChange }: SpecFieldProps) {
     const label = t(`pageEditor.field.${spec.name}`);
     const error = errors[path];
     const optional = !spec.required;
+    const hint = hintOf(spec.name);
 
     if (spec.kind === 'items') {
         const items = Array.isArray(value) ? value.filter((item): item is Record<string, string> => typeof item === 'object') : [];
         return (
             <fieldset className="items-field">
                 <legend>{label}</legend>
+                {hint && <span className="field-hint">{hint}</span>}
                 {error && <span className="field-error">{error}</span>}
                 {items.map((item, index) => (
                     <div key={index} className="items-field-item">
@@ -147,12 +149,18 @@ function SpecField({ spec, value, path, errors, onChange }: SpecFieldProps) {
             type={spec.kind === 'url' ? 'url' : 'text'}
             max={spec.max ?? undefined}
             optional={optional}
-            hint={spec.kind === 'url' ? t(`pageEditor.hint.${spec.name}`) : undefined}
+            hint={hint}
             error={error}
             value={typeof value === 'string' ? value : ''}
             onChange={onChange}
         />
     );
+}
+
+/** A field's help line, for the fields that have one. */
+function hintOf(name: string): string | undefined {
+    const key = `pageEditor.hint.${name}`;
+    return key in messages ? t(key) : undefined;
 }
 
 /** The free plan a Reserva section books: only an active free plan can be booked straight from a page. */

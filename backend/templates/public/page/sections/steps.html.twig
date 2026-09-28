@@ -1,10 +1,11 @@
-<section id="{{ section.id }}">
+{% set tag = first ? 'h1' : 'h2' %}
+<section id="{{ section.id }}" class="{{ alt ? 'alt' }}{{ reveal ? ' reveal' }}">
     <div class="wrap">
-        {% if fields.heading %}<{{ first ? 'h1' : 'h2' }}>{{ fields.heading }}</{{ first ? 'h1' : 'h2' }}>{% endif %}
+        {% if fields.heading %}<div class="section-head"><{{ tag }}>{{ fields.heading }}</{{ tag }}></div>{% endif %}
         <ol class="steps">
             {% for item in fields.items %}
                 <li>
-                    <div>
+                    <div class="step-body">
                         <h3>{{ item.title }}</h3>
                         {% if item.body %}<p>{{ item.body }}</p>{% endif %}
                     </div>

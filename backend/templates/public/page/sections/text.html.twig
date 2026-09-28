@@ -1,6 +1,7 @@
-<section id="{{ section.id }}">
-    <div class="wrap">
-        {% if fields.heading %}<{{ first ? 'h1' : 'h2' }}>{{ fields.heading }}</{{ first ? 'h1' : 'h2' }}>{% endif %}
+{% set tag = first ? 'h1' : 'h2' %}
+<section id="{{ section.id }}" class="{{ alt ? 'alt' }}{{ reveal ? ' reveal' }}">
+    <div class="wrap narrow prose">
+        {% if fields.heading %}<{{ tag }}>{{ fields.heading }}</{{ tag }}>{% endif %}
         {% for paragraph in fields.body|split("\n\n") %}<p>{{ paragraph|nl2br }}</p>{% endfor %}
     </div>
 </section>

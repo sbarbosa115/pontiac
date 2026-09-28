@@ -1,0 +1,38 @@
+{# The page's only JavaScript, a few hundred bytes, all of it optional: without it every section shows at once and the
+   buttons are plain links. It brings sections in as they come into view, shadows the header once scrolled, and on
+   phones shows the sticky button while neither the hero nor the page's form is on screen. #}
+<script>
+(function () {
+    var io = 'IntersectionObserver' in window;
+    var reveal = document.querySelectorAll('.reveal');
+    if (!io) { reveal.forEach(function (el) { el.classList.add('is-in'); }); return; }
+    var seen = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('is-in'); seen.unobserve(e.target); } });
+    }, { rootMargin: '0px 0px -10% 0px' });
+    reveal.forEach(function (el) { seen.observe(el); });
+
+    var bar = document.querySelector('[data-bar]');
+    var onScroll = function () { bar && bar.classList.toggle('is-scrolled', window.scrollY > 8); };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+
+    var sticky = document.querySelector('[data-sticky]');
+    var link = sticky && sticky.querySelector('a');
+    var first = document.querySelector('main > section');
+    var target = link && document.getElementById(link.getAttribute('href').slice(1));
+    if (!sticky || !first || !target) return;
+    var inView = new Map();
+    var update = function () {
+        var show = !inView.get(first) && !inView.get(target);
+        sticky.classList.toggle('is-visible', show);
+        sticky.setAttribute('aria-hidden', show ? 'false' : 'true');
+        link.tabIndex = show ? 0 : -1;
+    };
+    var watch = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) { inView.set(e.target, e.isIntersecting); });
+        update();
+    });
+    watch.observe(first);
+    watch.observe(target);
+})();
+</script>

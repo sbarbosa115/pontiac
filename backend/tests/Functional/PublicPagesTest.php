@@ -42,7 +42,7 @@ final class PublicPagesTest extends ApiTestCase
     public function testASectionSwitchedOffIsNotShown(): void
     {
         $this->createPage($this->createAccount(), change: static function (array $content): array {
-            $content['sections'][4]['enabled'] = false;
+            $content['sections'][5]['enabled'] = false; // preguntas
 
             return $content;
         });
@@ -51,6 +51,69 @@ final class PublicPagesTest extends ApiTestCase
 
         self::assertSelectorNotExists('#preguntas');
         self::assertSame(['ProfessionalService'], array_column(json_decode($crawler->filter('script[type="application/ld+json"]')->text(), true)['@graph'], '@type'));
+    }
+
+    public function testEveryButtonLeadsToTheFirstWayToActWhereverItIs(): void
+    {
+        $account = $this->createAccount();
+        $planId = (string) $this->createPlan($account)->getId();
+        $this->createPage($account);
+        $this->createPage($account, 'con-reserva', change: static fn (array $content): array => self::changeSection($content, 'reserva', ['enabled' => true, 'planId' => $planId]));
+        $this->createPage($account, 'formulario-arriba', change: static function (array $content) use ($planId): array {
+            $content = self::changeSection($content, 'reserva', ['enabled' => true, 'planId' => $planId]);
+            $form = array_values(array_filter($content['sections'], static fn (array $s) => 'formulario' === $s['id']));
+            $content['sections'] = [...$form, ...array_values(array_filter($content['sections'], static fn (array $s) => 'formulario' !== $s['id']))];
+
+            return $content;
+        });
+        $this->createPage($account, 'sin-formulario', change: static fn (array $content): array => self::changeSection($content, 'formulario', ['enabled' => false]));
+
+        $this->assertButtonsLeadTo('/finanzas-claras/diagnostico', '#formulario', 'booking is off: the form');
+        $this->assertButtonsLeadTo('/finanzas-claras/con-reserva', '#reserva', 'the booking comes before the form');
+        $crawler = $this->assertButtonsLeadTo('/finanzas-claras/formulario-arriba', '#formulario', 'moved above the booking');
+        self::assertCount(1, $crawler->filter('h1'), 'one h1, whatever comes first');
+        self::assertSame('Agenda tu diagnóstico gratuito', $crawler->filter('#formulario h1')->text(), 'the first section holds it');
+
+        $crawler = $this->client->request('GET', '/finanzas-claras/sin-formulario');
+        self::assertCount(0, $crawler->filter('a.btn'), 'nothing to send people to: no buttons');
+        self::assertSelectorExists('#llamado h2', 'the band still says its words');
+        self::assertSelectorNotExists('[data-sticky]');
+    }
+
+    public function testTheHeroAndTheFormReassureTheVisitor(): void
+    {
+        $this->createPage($this->createAccount());
+
+        $crawler = $this->client->request('GET', '/finanzas-claras/diagnostico');
+
+        self::assertSelectorTextContains('#portada .eyebrow', 'Diagnóstico financiero gratuito');
+        self::assertSame(['Sin costo', '45 minutos', '100 % confidencial'], $crawler->filter('#portada .trust li')->each(static fn ($li) => $li->text()));
+        self::assertSame('Da el primer paso hoy', $crawler->filter('#llamado h2')->text());
+        self::assertCount(3, $crawler->filter('#formulario .checklist li'));
+        self::assertSelectorTextContains('#formulario .safe', 'Finanzas Claras');
+        self::assertSelectorExists('link[rel="preload"][href="/fonts/plus-jakarta-sans.woff2"]', 'the font is ours, not a third party\'s');
+    }
+
+    public function testAPagePublishedBeforeTheNewFieldsStillShowsWhole(): void
+    {
+        $this->createPage($this->createAccount(), change: static function (array $content): array {
+            // As published before: no band, no eyebrow, trust points or highlights.
+            $content['sections'] = array_values(array_filter($content['sections'], static fn (array $s) => 'cta' !== $s['type']));
+            foreach ($content['sections'] as &$section) {
+                unset($section['fields']['eyebrow'], $section['fields']['trustPoints'], $section['fields']['highlights']);
+            }
+
+            return $content;
+        });
+
+        $crawler = $this->client->request('GET', '/finanzas-claras/diagnostico');
+
+        self::assertSame(200, $this->responseStatus());
+        self::assertSelectorNotExists('.eyebrow');
+        self::assertSelectorNotExists('.trust');
+        self::assertSelectorNotExists('#llamado');
+        self::assertSelectorExists('#formulario form');
+        self::assertSame('#formulario', $crawler->filter('#portada a.btn')->attr('href'));
     }
 
     public function testOnlyWhatIsPublishedIsServed(): void
@@ -155,5 +218,38 @@ final class PublicPagesTest extends ApiTestCase
         $this->signOut();
         $this->client->request('GET', '/finanzas-claras/privacidad');
         self::assertSelectorTextContains('main', 'Mi propia política.');
+    }
+
+    /**
+     * @param array<string, mixed> $content
+     * @param array<string, mixed> $change  `enabled`, or fields
+     *
+     * @return array<string, mixed>
+     */
+    private static function changeSection(array $content, string $id, array $change): array
+    {
+        foreach ($content['sections'] as &$section) {
+            if ($id === $section['id']) {
+                if (\array_key_exists('enabled', $change)) {
+                    $section['enabled'] = $change['enabled'];
+                    unset($change['enabled']);
+                }
+                $section['fields'] = $change + $section['fields'];
+            }
+        }
+
+        return $content;
+    }
+
+    /** The hero's button, the header's, the band's and the sticky bar's all lead to the same place. */
+    private function assertButtonsLeadTo(string $path, string $target, string $why): \Symfony\Component\DomCrawler\Crawler
+    {
+        $crawler = $this->client->request('GET', $path);
+        self::assertSame(200, $this->responseStatus(), $why);
+        foreach (['#portada a.btn', 'header.bar a.btn', '#llamado a.btn', '[data-sticky] a.btn'] as $selector) {
+            self::assertSame($target, $crawler->filter($selector)->attr('href'), "$why: $selector");
+        }
+
+        return $crawler;
     }
 }

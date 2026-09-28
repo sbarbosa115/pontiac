@@ -1,11 +1,14 @@
-<section id="{{ section.id }}">
+{% set tag = first ? 'h1' : 'h2' %}
+<section id="{{ section.id }}" class="{{ alt ? 'alt' }}{{ reveal ? ' reveal' }}">
     <div class="wrap">
-        {% if fields.heading %}<{{ first ? 'h1' : 'h2' }}>{{ fields.heading }}</{{ first ? 'h1' : 'h2' }}>{% endif %}
-        {% for item in fields.items %}
-            <details>
-                <summary>{{ item.question }}</summary>
-                <p>{{ item.answer|nl2br }}</p>
-            </details>
-        {% endfor %}
+        {% if fields.heading %}<div class="section-head"><{{ tag }}>{{ fields.heading }}</{{ tag }}></div>{% endif %}
+        <div class="faq">
+            {% for item in fields.items %}
+                <details{{ loop.first ? ' open' }}>
+                    <summary>{{ item.question }}</summary>
+                    <p>{{ item.answer|nl2br }}</p>
+                </details>
+            {% endfor %}
+        </div>
     </div>
 </section>
