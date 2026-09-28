@@ -1,8 +1,14 @@
 {# The page's only JavaScript, a few hundred bytes, all of it optional: without it every section shows at once and the
-   buttons are plain links. It brings sections in as they come into view, shadows the header once scrolled, and on
-   phones shows the sticky button while neither the hero nor the page's form is on screen. #}
+   buttons are plain links. After a refused send it brings the form into view with the cursor in the first field to
+   fix; it brings sections in as they come into view, shadows the header once scrolled, and on phones shows the sticky
+   button while nothing else on screen offers it (the hero, a cta band, the form itself). #}
 <script>
 (function () {
+    window.addEventListener('load', function () { document.documentElement.classList.add('loaded'); });
+    var wrong = document.querySelector('.has-error input, .has-error select, .has-error textarea');
+    var mistake = wrong || document.querySelector('.error, .notice-error');
+    if (mistake) mistake.closest('section').scrollIntoView({ block: 'start', behavior: 'instant' });
+    if (wrong) wrong.focus({ preventScroll: true });
     var io = 'IntersectionObserver' in window;
     var reveal = document.querySelectorAll('.reveal');
     if (!io) { reveal.forEach(function (el) { el.classList.add('is-in'); }); return; }
@@ -21,9 +27,11 @@
     var first = document.querySelector('main > section');
     var target = link && document.getElementById(link.getAttribute('href').slice(1));
     if (!sticky || !first || !target) return;
+    // Hidden while something on screen already offers the same button: the hero, a cta band, the form itself.
+    var offers = [first, target].concat(Array.prototype.slice.call(document.querySelectorAll('.cta-band')));
     var inView = new Map();
     var update = function () {
-        var show = !inView.get(first) && !inView.get(target);
+        var show = offers.every(function (el) { return !inView.get(el); });
         sticky.classList.toggle('is-visible', show);
         sticky.setAttribute('aria-hidden', show ? 'false' : 'true');
         link.tabIndex = show ? 0 : -1;
@@ -32,7 +40,6 @@
         entries.forEach(function (e) { inView.set(e.target, e.isIntersecting); });
         update();
     });
-    watch.observe(first);
-    watch.observe(target);
+    offers.forEach(function (el) { watch.observe(el); });
 })();
 </script>

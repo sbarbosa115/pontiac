@@ -204,7 +204,7 @@ final class PublicController extends AbstractController
         if ($this->hasBooking($content)) {
             return $this->renderer->render($account, $page, $content, sent: $sent, booking: ['booked' => $booked])->setPrivate();
         }
-        $etag = md5(implode('|', [$page->getId(), $page->getPublishedAt()?->format('U'), $page->isHome() ? 1 : 0, $account->getName(), $account->getSlug(), $sent ? 1 : 0]));
+        $etag = md5(implode('|', [PageRenderer::DESIGN, $page->getId(), $page->getPublishedAt()?->format('U'), $page->isHome() ? 1 : 0, $account->getName(), $account->getSlug(), $sent ? 1 : 0]));
         $cached = (new Response())->setEtag($etag)->setPublic()->setMaxAge(300);
         if ($cached->isNotModified($request)) {
             return $cached;

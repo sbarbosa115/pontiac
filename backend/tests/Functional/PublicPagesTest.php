@@ -92,6 +92,7 @@ final class PublicPagesTest extends ApiTestCase
         self::assertCount(3, $crawler->filter('#formulario .checklist li'));
         self::assertSelectorTextContains('#formulario .safe', 'Finanzas Claras');
         self::assertSelectorExists('link[rel="preload"][href="/fonts/plus-jakarta-sans.woff2"]', 'the font is ours, not a third party\'s');
+        self::assertStringContainsString('--accent: #1e3a5f;', (string) $this->client->getResponse()->getContent(), 'the accent as a colour, not CSS-escaped');
     }
 
     public function testAPagePublishedBeforeTheNewFieldsStillShowsWhole(): void
@@ -139,7 +140,7 @@ final class PublicPagesTest extends ApiTestCase
         $this->client->request('GET', '/finanzas-claras');
         self::assertSame(200, $this->responseStatus());
         self::assertSelectorExists('link[rel="canonical"][href="http://localhost:8080/finanzas-claras"]');
-        self::assertSelectorExists('form[action="/finanzas-claras/enviar"]');
+        self::assertSelectorExists('form[action="/finanzas-claras/enviar#formulario"]');
         $this->client->request('GET', '/finanzas-claras/inicio');
         self::assertResponseRedirects('/finanzas-claras', 301);
     }

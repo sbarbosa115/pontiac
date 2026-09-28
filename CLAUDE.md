@@ -104,6 +104,9 @@ filtered: every query that lists them names the account itself.
   Dates through `DateInput` and `formatDate()`, in the account's locale and timezone (`useLocaleSettings()`).
 - A missing import in a page is **a blank screen, not a build error**: open the page and every modal it owns.
 - Public pages (a consultant's landing pages, `/`) are Twig, not React, for search engines; they stay light.
+- Changing how landing pages look (`templates/public/page`) means bumping `PageRenderer::DESIGN`: it is in each page's
+  ETag, and without it browsers keep the old page. Their buttons lead to `cta.target` (the first form, booking or
+  payment shown), never to a hard-coded `#formulario`. A `.css.twig` escapes `{{ }}` for CSS (`#` becomes `\23 `).
 
 ## Flows
 

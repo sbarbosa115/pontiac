@@ -209,7 +209,14 @@ a page's) answers 301; a disabled page 410; a draft 404.
   sections. `ContentValidator` checks every save against the template (images and categories must be the
   consultant's own). MySQL returns JSON with its keys sorted, so drafts are compared as content, not as text.
 - Public pages are Twig, CSS inline, no framework JavaScript: Lighthouse on mobile, production mode: performance 100,
-  accessibility 100, SEO 100 (best practices 79 locally only because the stack is plain HTTP).
+  accessibility 100, SEO 100 (best practices 79 locally only because the stack is plain HTTP) — measured before the
+  redesign below, not re-measured since.
+- Landing pages are built to convert: every button on a page (hero, header, cta band, the sticky bar on phones) leads
+  to its first visible form, booking or payment section, wherever the consultant put it (`PageRenderer::cta()`); with
+  none of them on, the page shows no buttons. The look lives in `templates/public/page/_styles.css.twig` (inline) with
+  one self-hosted font (Plus Jakarta Sans, OFL, 27 KB, preloaded) and one small inline script that is optional:
+  without it every section shows and the buttons are plain links. `PageRenderer::DESIGN` is part of each page's
+  ETag, so a change of look reaches browsers that hold a page from before.
 - The page form is a plain HTML form (post, redirect, get). Bots are stopped by a trap field and a signed time token
   (at least 3 s to fill), and answered as if it worked. One contact per email and consultant; every form is a
   `lead_submission` with the answers labelled as they were asked. Consent is stored with a hash of the policy text.
@@ -271,6 +278,8 @@ consultant pastes their events URL (Ajustes › Pagos Wompi) in Wompi's dashboar
   until payments (milestone 3); changing the meeting link does not change sessions already booked; the person may
   move a session into a slot inside the cancellation limit.
 - Template previews in Configuración › Plantillas (the page editor's preview covers the consultant's side).
+- Landing pages: the consultant picks an accent colour but not fonts or a layout variant; no A/B tests, no
+  stats or logo sections; sections are reordered with up/down buttons, not dragged.
 - EXIF orientation of uploaded photos is not applied (a phone photo taken sideways stays sideways).
 - The page limit counts published pages; a consultant can keep any number of drafts.
 - No export of prospectos yet; no custom domains.

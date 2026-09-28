@@ -28,6 +28,12 @@ use Twig\Environment;
  */
 final class PageRenderer
 {
+    /**
+     * The look of the pages (templates/public/page). Part of every page's ETag: change it with the templates, or a
+     * browser holding a page from before goes on being told it has not changed.
+     */
+    public const DESIGN = '2026-09-warm';
+
     public function __construct(
         private readonly Environment $twig,
         private readonly MediaAssetRepository $media,

@@ -1,8 +1,10 @@
 {# The landing pages' look, inline in each page (no extra request before the first paint). Light only. The consultant's
-   accent colour tints the hero, the buttons and the cta band; everything else is neutral so any accent works. #}
+   accent colour tints the hero, the buttons and the cta band; everything else is neutral so any accent works.
+   The accent is printed raw: it is one of TemplateCatalog::ACCENTS, and this template's CSS escaping would turn "#"
+   into "\23 ", which is no colour. #}
 @font-face { font-family: 'Jakarta'; src: url('/fonts/plus-jakarta-sans.woff2') format('woff2'); font-weight: 200 800; font-style: normal; font-display: swap; }
 :root {
-    --accent: {{ accent.color }}; --on-accent: {{ accent.on }}; --soft: {{ accent.soft }};
+    --accent: {{ accent.color|raw }}; --on-accent: {{ accent.on|raw }}; --soft: {{ accent.soft|raw }};
     --accent-deep: color-mix(in srgb, var(--accent) 78%, #000);
     --ring: color-mix(in srgb, var(--accent) 28%, transparent);
     --ink: #152033; --muted: #556070; --line: #e4e7ec; --field: #cbd2dc; --bg: #ffffff; --alt: #f7f8fa; --error: #b3261e;
@@ -11,7 +13,10 @@
     --font: 'Jakarta', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 *, *::before, *::after { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+/* Smooth only once loaded: on load, a smooth jump to #formulario is cut short when the font swaps in. */
+html.loaded { scroll-behavior: smooth; }
+/* What the sticky header would cover (a focused field, an #anchor) stops below it. */
+html { scroll-padding-top: 68px; }
 body { margin: 0; font-family: var(--font); color: var(--ink); background: var(--bg); line-height: 1.65; font-size: 17px; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
 img { max-width: 100%; height: auto; display: block; }
 a { color: var(--accent); }
@@ -46,7 +51,7 @@ header.bar .wrap { display: flex; align-items: center; justify-content: space-be
 @media (max-width: 639px) { header.bar .btn { display: none; } }
 
 /* Sections */
-section { padding: clamp(64px, 9vw, 104px) 0; scroll-margin-top: 68px; }
+section { padding: clamp(64px, 9vw, 104px) 0; }
 section.alt { background: var(--alt); }
 
 /* Hero */
@@ -177,7 +182,7 @@ fieldset.slots { border: 0; padding: 0; margin: 0 0 22px; }
 fieldset.slots legend { font-weight: 700; padding: 0; margin-bottom: 10px; }
 .slot-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .slot { position: relative; display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; border: 1.5px solid var(--field); border-radius: 12px; font-weight: 600; cursor: pointer; transition: border-color .15s ease, background-color .15s ease; margin: 0; }
-.slot input { position: absolute; opacity: 0; pointer-events: none; }
+.slot input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
 .slot:hover { border-color: var(--accent); }
 .slot:has(input:focus-visible) { box-shadow: 0 0 0 4px var(--ring); }
 .slot:has(input:checked) { border-color: var(--accent); background: var(--accent); color: var(--on-accent); }
@@ -212,6 +217,6 @@ footer.site p { margin: 0; }
     {% endfor %}
 }
 @keyframes rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { transition: none !important; animation: none !important; } }
+@media (prefers-reduced-motion: reduce) { html.loaded { scroll-behavior: auto; } *, *::before, *::after { transition: none !important; animation: none !important; } }
 
 .preview-note { background: #fdf1d8; color: #6b4600; text-align: center; padding: 8px; font-size: .9rem; }

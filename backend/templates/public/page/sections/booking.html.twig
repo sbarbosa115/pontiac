@@ -12,7 +12,7 @@
             <p class="notice">En este momento no hay horarios disponibles. Escríbenos con el formulario y te contactamos.</p>
         {% else %}
             {% if bookingErrors['_form'] is defined %}<p class="notice notice-error" role="alert">{{ bookingErrors['_form'] }}</p>{% endif %}
-            <form method="post" action="{{ preview ? '#reserva' : bookingAction }}" novalidate{% if preview %} onsubmit="return false"{% endif %}>
+            <form method="post" action="{{ preview ? '' : bookingAction }}#reserva" novalidate{% if preview %} onsubmit="return false"{% endif %}>
                 <fieldset class="slots">
                     <legend>Elige el día y la hora ({{ booking.plan.durationMinutes }} minutos)</legend>
                     {% include 'public/_slot_calendar.html.twig' with {calendar: booking, id: 'cal-' ~ section.id, selected: bookingValues.slot ?? ''} only %}
@@ -23,6 +23,7 @@
                     <input type="text" id="b-name" name="name" autocomplete="name" maxlength="180" value="{{ bookingValues.name ?? '' }}">
                     {% if bookingErrors.name is defined %}<p class="error">{{ bookingErrors.name }}</p>{% endif %}
                 </div>
+                <div class="row">
                 <div class="field{{ bookingErrors.email is defined ? ' has-error' }}">
                     <label for="b-email">Correo electrónico</label>
                     <input type="email" id="b-email" name="email" autocomplete="email" maxlength="180" value="{{ bookingValues.email ?? '' }}">
@@ -32,6 +33,7 @@
                     <label for="b-phone">Teléfono (opcional)</label>
                     <input type="tel" id="b-phone" name="phone" autocomplete="tel" maxlength="40" value="{{ bookingValues.phone ?? '' }}">
                     {% if bookingErrors.phone is defined %}<p class="error">{{ bookingErrors.phone }}</p>{% endif %}
+                </div>
                 </div>
                 <div class="field">
                     <label class="check"><input type="checkbox" name="consent" value="1"{{ (bookingValues.consent ?? '') ? ' checked' }}> <span>Autorizo el tratamiento de mis datos según la <a href="{{ privacyUrl }}" target="_blank" rel="noopener">política de privacidad</a>.</span></label>
