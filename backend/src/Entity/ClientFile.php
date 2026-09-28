@@ -10,7 +10,7 @@ use Symfony\Component\Uid\Uuid;
 
 /**
  * A file of a contact's (Archivos): uploaded by the consultant's team, shared with the client or kept internal, or
- * uploaded by the client from the portal (the team always sees those). Stored under UPLOADS_DIR, served only through
+ * uploaded by the client from the portal (the team always sees those). Stored under var/uploads, served only through
  * the API. Never deleted: turned off.
  */
 #[ORM\Entity(repositoryClass: ClientFileRepository::class)]

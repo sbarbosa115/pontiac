@@ -345,18 +345,10 @@ fi
 step "Writable directories"
 mkdir -p "$BACKEND/var/log"
 chmod -R u+rwX "$BACKEND/var"
-# UPLOADS_DIR holds the consultants' page images and their clients' files; it must live outside the document root
-# and survive every deploy.
-UPLOADS_DIR="$(local_value UPLOADS_DIR)"
-if [[ -z "$UPLOADS_DIR" || "$UPLOADS_DIR" == *'%kernel.project_dir%'* ]]; then
-    fail "Set UPLOADS_DIR in backend/.env.local to a folder outside the code, e.g. $HOME/pontiac-uploads: uploads must survive deploys."
-fi
-case "$UPLOADS_DIR" in
-    "$BACKEND/public"|"$BACKEND/public"/*) fail "UPLOADS_DIR is inside public/: clients' files would be downloadable by anyone. Move it." ;;
-esac
-mkdir -p "$UPLOADS_DIR"
-chmod u+rwX "$UPLOADS_DIR"
-note "Uploads: $UPLOADS_DIR (back it up with the database)"
+# Page images and clients' files live in var/uploads (the app.uploads_dir parameter), outside the document root.
+# This clone is updated in place and var/ is never pulled over, so they survive every deploy.
+mkdir -p "$BACKEND/var/uploads"
+note "Uploads: $BACKEND/var/uploads (back it up with the database)"
 
 step "Queue and reminders"
 # A worker started by the cron before this deploy would keep running the old code until its time limit; this asks it

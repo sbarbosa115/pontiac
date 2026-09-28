@@ -238,7 +238,7 @@ a page's) answers 301; a disabled page 410; a draft 404.
 - A client login belongs to one contact (`app_user.contact_id`); the portal reads everything from it, never from the
   request. A first paid plan invites the person; the team can invite anyone, take the access away or give it back;
   erasing the person's data turns the login off. Client bookings follow the visitor's rules.
-- Contacts' files live at `UPLOADS_DIR/<account>/files/<id>`, type detected from content (PDF, JPG, PNG, WebP, XLSX,
+- Contacts' files live at `backend/var/uploads/<account>/files/<id>`, type detected from content (PDF, JPG, PNG, WebP, XLSX,
   CSV, DOCX), counted in the storage limit with the images, downloaded only through the API. What the client uploads
   is always shared with them.
 - Password resets email a one-hour, single-use link; asking answers the same whether the email exists or not.
@@ -266,11 +266,11 @@ HTTPS, a MySQL 8 database, `backend/.env.local` from `deploy/env.local.example`,
 Each run pulls, installs the PHP dependencies without dev packages, and builds the UI (or uses the
 `public/build/` already there when the account has no npm). It dumps the database before any pending migration,
 then migrates and warms the production cache. It refuses to go on while a secret is still the development value
-from `backend/.env`, `APP_URL` is not HTTPS, the mailer is not real or `UPLOADS_DIR` is not outside the code. It
+from `backend/.env`, `APP_URL` is not HTTPS, or the mailer is not real. It
 also prints the two cron lines the account needs, every minute: `messenger:consume async` (every email is sent
 from the queue) and `app:send-due-reminders`.
 
-Keep `APP_ENCRYPTION_KEY` with the backups (database dumps and `UPLOADS_DIR`): the stored Wompi secrets cannot
+Keep `APP_ENCRYPTION_KEY` with the backups (database dumps and `backend/var/uploads`): the stored Wompi secrets cannot
 be read without it. Each consultant pastes their events URL (Ajustes › Pagos Wompi) in Wompi's dashboard.
 
 ## Known gaps

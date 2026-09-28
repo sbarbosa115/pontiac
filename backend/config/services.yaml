@@ -1,5 +1,8 @@
 # Files in the packages/ subdirectory configure the dependencies; this one, the app's own services.
 parameters:
+    # Page images and clients' files: backend/var/uploads, outside the web root (public/). In-place deploys
+    # (deploy/cpanel-update.sh) never touch var/, so they survive; back this folder up with the database.
+    app.uploads_dir: '%kernel.project_dir%/var/uploads'
 
 services:
     _defaults:

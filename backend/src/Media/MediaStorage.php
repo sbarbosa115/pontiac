@@ -9,14 +9,14 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Uid\Uuid;
 
 /**
- * Where uploads live on disk: images at UPLOADS_DIR/<account id>/media/<asset id>/original.<ext> and <width>.webp,
- * contacts' files at UPLOADS_DIR/<account id>/files/<file id>. Outside the web
+ * Where uploads live on disk: images at var/uploads/<account id>/media/<asset id>/original.<ext> and <width>.webp,
+ * contacts' files at var/uploads/<account id>/files/<file id> (parameter app.uploads_dir). Outside the web
  * root: the public controller streams them (a cPanel account serves nothing else from there).
  */
 final class MediaStorage
 {
     public function __construct(
-        #[Autowire('%env(resolve:UPLOADS_DIR)%')]
+        #[Autowire('%app.uploads_dir%')]
         private readonly string $root,
     ) {
     }
@@ -26,7 +26,7 @@ final class MediaStorage
         return sprintf('%s/%s/media/%s', rtrim($this->root, '/'), $accountId->toRfc4122(), $assetId->toRfc4122());
     }
 
-    /** A contact's file: UPLOADS_DIR/<account id>/files/<file id>. */
+    /** A contact's file: var/uploads/<account id>/files/<file id>. */
     public function filePath(Uuid $accountId, Uuid $fileId): string
     {
         return sprintf('%s/%s/files/%s', rtrim($this->root, '/'), $accountId->toRfc4122(), $fileId->toRfc4122());

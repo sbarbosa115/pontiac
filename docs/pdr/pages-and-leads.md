@@ -35,7 +35,7 @@ templates, and the people who answer them become prospectos.
 ## Model
 
 - `MediaAsset` (owned): original name, type (JPEG/PNG/WebP, detected), size, dimensions, WebP variants 480/960/1600,
-  alt text, active. Files under `UPLOADS_DIR/<account>/media/`; served at `/<consultant>/media/<id>-<width>.webp` (page
+  alt text, active. Files under `backend/var/uploads/<account>/media/`; served at `/<consultant>/media/<id>-<width>.webp` (page
   images are public by nature). Upload checks the file-size and storage limits.
 - `LeadCategory` (owned): name, colour (one of the UI tones), active.
 - `LandingPage` (owned): title, slug (unique per account), template, home flag, status draft → published ⇄ disabled,
