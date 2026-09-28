@@ -1,0 +1,299 @@
+import React, { type ReactNode, useState } from 'react';
+import { api } from '../lib/api';
+import { type Session, sessionActions } from '../lib/agenda';
+import { sessionsLeft } from '../lib/payments';
+import { SessionNotesModal } from './SessionNotes';
+import { useLocaleSettings } from '../lib/auth';
+import { formatDate, formatDateTime } from '../lib/format';
+import { useApi, useSubmit } from '../lib/hooks';
+import { rowErrorMessage, t } from '../lib/i18n';
+import type { Get, Schema } from '../lib/types';
+import { useNavigate } from 'react-router-dom';
+import { ActionButton, actionClass, Alert, Field, FormModal, IconButton, Loading } from './ui';
+
+type SlotDay = Schema<'SlotDayOutput'>;
+type Contact = Schema<'ContactSummaryOutput'>;
+
+/**
+ * The free slots for a plan (to book) or for a session (to move it), as a day and then a time. The value is the
+ * slot's ISO start, as the API takes it. Give it a `key` per plan or session, so another one starts on its first day.
+ */
+export function SlotPicker({
+    query,
+    value,
+    onChange,
+    error,
+    endpoint = '/api/admin/availability/slots',
+}: {
+    query: { planId: string } | { enrollmentId: string } | { sessionId: string };
+    value: string;
+    onChange: (startsAt: string) => void;
+    error?: string;
+    /** The portal asks its own API. */
+    endpoint?: string;
+}) {
+    const key = Object.values(query)[0] ?? '';
+    const slots = useApi(() => (key ? api.get<Get<'/api/admin/availability/slots'>>(endpoint, query) : Promise.resolve({ days: [] as SlotDay[] })), [key]);
+    const days = slots.data?.days ?? [];
+    const [dayIndex, setDayIndex] = useState(0);
+    const day = days[dayIndex];
+
+    if (slots.loading && !slots.data) return <Loading />;
+    if (key && days.length === 0)
+        return (
+            <div className="span-2">
+                <Alert kind="warning">{t('agenda.noSlots')}</Alert>
+            </div>
+        );
+
+    return (
+        <>
+            <Field label={t('agenda.day')}>
+                <select
+                    value={dayIndex}
+                    disabled={days.length === 0}
+                    onChange={(event) => {
+                        setDayIndex(Number(event.target.value));
+                        onChange('');
+                    }}
+                >
+                    {days.map((option, index) => (
+                        <option key={option.label} value={index}>
+                            {option.label}
+                        </option>
+                    ))}
+                </select>
+            </Field>
+            <Field label={t('agenda.time')} error={error}>
+                <select value={value} disabled={!day} onChange={(event) => onChange(event.target.value)}>
+                    <option value="">{t('agenda.pickTime')}</option>
+                    {(day?.slots ?? []).map((slot) => (
+                        <option key={slot.startsAt} value={slot.startsAt}>
+                            {slot.label}
+                        </option>
+                    ))}
+                </select>
+            </Field>
+        </>
+    );
+}
+
+/**
+ * "Agendar sesión": one of the person's plans with sessions left (a paid one, once paid), or a free plan (a new
+ * enrollment), at one of the consultant's free slots.
+ */
+export function BookSessionModal({ contact, onClose, onBooked }: { contact?: { id: string; fullName: string }; onClose: () => void; onBooked: (session: Session) => void }) {
+    const { locale } = useLocaleSettings();
+    const plans = useApi(() => api.get<Get<'/api/admin/plans/all'>>('/api/admin/plans/all'), []);
+    const [contactId, setContactId] = useState(contact?.id ?? '');
+    const detail = useApi(() => (contactId ? api.get<Schema<'ContactDetailOutput'>>(`/api/admin/contacts/${contactId}`) : Promise.resolve(null)), [contactId]);
+    const options = [
+        // The oldest plan first: its sessions are used before a newer one's.
+        ...(detail.data?.enrollments ?? [])
+            .filter((enrollment) => enrollment.status === 'active' && sessionsLeft(enrollment) > 0)
+            .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+            .map((enrollment) => ({
+                value: `enrollment:${enrollment.id}`,
+                label: t('agenda.enrollmentOption', { name: enrollment.planName, since: formatDate(enrollment.createdAt.slice(0, 10), locale), left: sessionsLeft(enrollment), minutes: enrollment.durationMinutes }),
+            })),
+        ...(plans.data?.items ?? []).filter((plan) => plan.active && plan.free).map((plan) => ({ value: `plan:${plan.id}`, label: t('agenda.planOption', { name: plan.name, minutes: plan.durationMinutes }) })),
+    ];
+    const [choice, setChoice] = useState('');
+    const [startsAt, setStartsAt] = useState('');
+    const submit = useSubmit();
+    const chosen = options.some((option) => option.value === choice) ? choice : (options[0]?.value ?? '');
+    const [kind, id = ''] = chosen.split(':');
+
+    const save = async () => {
+        const body = { contactId, startsAt, ...(kind === 'enrollment' ? { enrollmentId: id } : { planId: id }) };
+        const result = await submit.run(() => api.post<Session>('/api/admin/sessions', body));
+        if (result.ok) onBooked(result.value);
+    };
+
+    return (
+        <FormModal title={t('agenda.book')} onClose={onClose} onSubmit={save} submit={submit} submitLabel={t('agenda.bookSubmit')}>
+            {contact ? (
+                <Field className="span-2" label={t('agenda.contact')}>
+                    <input value={contact.fullName} readOnly />
+                </Field>
+            ) : (
+                <ContactSearch value={contactId} onChange={setContactId} error={submit.errors.contactId} />
+            )}
+            {plans.data && options.length === 0 ? (
+                <div className="span-2">
+                    <Alert kind="warning">{t('agenda.noFreePlans')}</Alert>
+                </div>
+            ) : (
+                <>
+                    <Field className="span-2" label={t('agenda.plan')} error={submit.errors.planId ?? submit.errors.enrollmentId} hint={t('agenda.planHint')}>
+                        <select
+                            value={chosen}
+                            onChange={(event) => {
+                                setChoice(event.target.value);
+                                setStartsAt('');
+                            }}
+                        >
+                            {options.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                    {option.label}
+                                </option>
+                            ))}
+                        </select>
+                    </Field>
+                    <SlotPicker key={chosen} query={kind === 'enrollment' ? { enrollmentId: id } : { planId: id }} value={startsAt} onChange={setStartsAt} error={submit.errors.startsAt} />
+                </>
+            )}
+        </FormModal>
+    );
+}
+
+/** A contact picked by name or email among the consultant's. */
+function ContactSearch({ value, onChange, error }: { value: string; onChange: (id: string) => void; error?: string }) {
+    const [q, setQ] = useState('');
+    const found = useApi(() => api.get<Get<'/api/admin/contacts'>>('/api/admin/contacts', { q, perPage: 8 }), [q]);
+    const options: Contact[] = found.data?.items ?? [];
+
+    return (
+        <>
+            <Field label={t('agenda.findContact')}>
+                <input type="search" value={q} placeholder={t('agenda.findContactPlaceholder')} onChange={(event) => setQ(event.target.value)} />
+            </Field>
+            <Field label={t('agenda.contact')} error={error}>
+                <select value={value} onChange={(event) => onChange(event.target.value)}>
+                    <option value="">{options.length === 0 ? t('agenda.noContacts') : t('agenda.pickContact')}</option>
+                    {options.map((contact) => (
+                        <option key={contact.id} value={contact.id}>
+                            {contact.fullName} · {contact.email}
+                        </option>
+                    ))}
+                </select>
+            </Field>
+        </>
+    );
+}
+
+/** "Reprogramar": the session to another free slot. The person gets the new time and a new link. */
+export function RescheduleModal({ session, onClose, onDone }: { session: Session; onClose: () => void; onDone: (session: Session) => void }) {
+    const { locale, timezone } = useLocaleSettings();
+    const [startsAt, setStartsAt] = useState('');
+    const submit = useSubmit();
+
+    const save = async () => {
+        const result = await submit.run(() => api.post<Session>(`/api/admin/sessions/${session.id}/reschedule`, { startsAt }));
+        if (result.ok) onDone(result.value);
+    };
+
+    return (
+        <FormModal title={t('agenda.reschedule')} onClose={onClose} onSubmit={save} submit={submit} submitLabel={t('agenda.rescheduleSubmit')}>
+            <p className="small muted span-2">{t('agenda.rescheduleIntro', { name: session.contact.fullName, when: formatDateTime(session.startsAt, locale, timezone) })}</p>
+            <SlotPicker query={{ sessionId: session.id }} value={startsAt} onChange={setStartsAt} error={submit.errors.startsAt} />
+        </FormModal>
+    );
+}
+
+/** "Cancelar sesión", with a reason the person reads in the email. */
+export function CancelSessionModal({ session, onClose, onDone }: { session: Session; onClose: () => void; onDone: (session: Session) => void }) {
+    const { locale, timezone } = useLocaleSettings();
+    const [reason, setReason] = useState('');
+    const submit = useSubmit();
+
+    const save = async () => {
+        const result = await submit.run(() => api.post<Session>(`/api/admin/sessions/${session.id}/cancel`, { reason }));
+        if (result.ok) onDone(result.value);
+    };
+
+    return (
+        <FormModal title={t('agenda.cancel')} onClose={onClose} onSubmit={save} submit={submit} submitLabel={t('agenda.cancelSubmit')}>
+            <p className="small muted span-2">{t('agenda.cancelIntro', { name: session.contact.fullName, when: formatDateTime(session.startsAt, locale, timezone) })}</p>
+            <Field className="span-2" label={t('agenda.cancelReason')} error={submit.errors.reason} optional hint={t('agenda.cancelReasonHint')}>
+                <textarea value={reason} maxLength={500} rows={3} onChange={(event) => setReason(event.target.value)} />
+            </Field>
+        </FormModal>
+    );
+}
+
+/**
+ * A session's row actions and the modals they open, for any list of sessions: move, cancel, done, no-show, reopen.
+ * `onChanged` gets the session as it is now; `error` says why the last action failed.
+ */
+export function useSessionActions(onChanged: (session: Session) => void) {
+    const [moving, setMoving] = useState<Session | null>(null);
+    const [cancelling, setCancelling] = useState<Session | null>(null);
+    const [noting, setNoting] = useState<Session | null>(null);
+    const [busy, setBusy] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
+    const navigate = useNavigate();
+
+    const post = async (session: Session, action: 'done' | 'no-show' | 'reopen') => {
+        setBusy(`${session.id}:${action}`);
+        setError(null);
+        try {
+            onChanged(await api.post<Session>(`/api/admin/sessions/${session.id}/${action}`));
+        } catch (err) {
+            setError(rowErrorMessage(err));
+        } finally {
+            setBusy(null);
+        }
+    };
+
+    /**
+     * Worded actions first, then "Ver" (the person, unless we are on their page), cancelling last (CLAUDE.md, "Tables").
+     */
+    const buttons = (session: Session, { withContact = true } = {}): ReactNode => {
+        const can = sessionActions(session);
+        return (
+            <>
+                {can.close && (
+                    <ActionButton action="confirm" busy={busy === `${session.id}:done`} onClick={() => post(session, 'done')}>
+                        {t('agenda.markDone')}
+                    </ActionButton>
+                )}
+                {can.close && (
+                    <ActionButton action="revert" busy={busy === `${session.id}:no-show`} onClick={() => post(session, 'no-show')}>
+                        {t('agenda.markNoShow')}
+                    </ActionButton>
+                )}
+                {can.reopen && (
+                    <ActionButton action="revert" busy={busy === `${session.id}:reopen`} onClick={() => post(session, 'reopen')}>
+                        {t('agenda.reopen')}
+                    </ActionButton>
+                )}
+                {can.reschedule && (
+                    <ActionButton action="edit" onClick={() => setMoving(session)}>
+                        {t('agenda.reschedule')}
+                    </ActionButton>
+                )}
+                <ActionButton action="file" onClick={() => setNoting(session)}>
+                    {t('notes.action')}
+                </ActionButton>
+                {session.meetingLink && session.status === 'scheduled' && (
+                    <a className={actionClass('open')} href={session.meetingLink} target="_blank" rel="noopener noreferrer">
+                        {t('agenda.openMeeting')}
+                    </a>
+                )}
+                {withContact && <IconButton icon="eye" label={t('agenda.viewContact')} onClick={() => navigate(`/admin/prospectos/${session.contact.id}`)} />}
+                {can.cancel && (
+                    <ActionButton action="danger" onClick={() => setCancelling(session)}>
+                        {t('agenda.cancelShort')}
+                    </ActionButton>
+                )}
+            </>
+        );
+    };
+
+    const done = (session: Session) => {
+        setMoving(null);
+        setCancelling(null);
+        onChanged(session);
+    };
+
+    const modals = (
+        <>
+            {moving && <RescheduleModal session={moving} onClose={() => setMoving(null)} onDone={done} />}
+            {cancelling && <CancelSessionModal session={cancelling} onClose={() => setCancelling(null)} onDone={done} />}
+            {noting && <SessionNotesModal session={noting} onClose={() => setNoting(null)} />}
+        </>
+    );
+
+    return { buttons, modals, error, clearError: () => setError(null) };
+}

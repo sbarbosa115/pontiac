@@ -1,0 +1,17 @@
+layout:
+    footer: 'Sent by Pontiac.'
+
+invitation:
+    subject:
+        super_admin: 'You were invited to run {platform}'
+        owner: 'Your consultant account on {platform} is ready'
+        assistant: '{inviter} invited you to Pontiac'
+        client: '{inviter} gave you access to your client portal'
+    greeting: 'Hi {name},'
+    body:
+        super_admin: 'You were invited to run Pontiac.'
+        owner: 'Your consultant account on Pontiac is ready. Set your password to publish your pages and serve your clients.'
+        assistant: '{inviter} invited you to their team on Pontiac.'
+        client: '{inviter} gave you access to your client portal, with your sessions, plans and payments.'
+    cta: 'Set my password'
+    expiry: 'This link expires in {days} days and works once.'

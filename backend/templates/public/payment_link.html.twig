@@ -1,0 +1,32 @@
+{% extends 'public/base.html.twig' %}
+
+{% block title %}Tu plan · {{ account.name }}{% endblock %}
+
+{% block meta %}
+    <meta name="robots" content="noindex">
+    {# The link carries the token that opens this page: it must not travel to other sites in a Referer. #}
+    <meta name="referrer" content="no-referrer">
+{% endblock %}
+
+{% block body %}
+    <p><a href="/{{ account.slug }}">← {{ account.name }}</a></p>
+    <h1>{{ enrollment.planName }}</h1>
+    {% if error %}<p class="notice notice-error" role="alert">{{ error }}</p>{% endif %}
+
+    <dl class="summary">
+        <dt>Para</dt><dd>{{ enrollment.contact.fullName }}</dd>
+        <dt>Incluye</dt><dd>{{ enrollment.sessionsIncluded }} {{ enrollment.sessionsIncluded == 1 ? 'sesión' : 'sesiones' }} de {{ enrollment.durationMinutes }} minutos</dd>
+        <dt>Valor</dt><dd><strong>{{ price }}</strong></dd>
+    </dl>
+
+    {% if not payable %}
+        <p class="notice" role="status">{{ enrollment.status.value == 'cancelled' ? 'Este plan ya no está disponible. Escríbele a ' ~ account.name ~ '.' : 'Este plan ya está pagado. ¡Gracias!' }}</p>
+    {% elseif not available %}
+        <p class="notice" role="status">Por ahora no es posible pagar en línea. Escríbele a {{ account.name }}.</p>
+    {% else %}
+        <form method="post" action="/{{ account.slug }}/pagar/{{ token }}">
+            <button class="btn" type="submit">Pagar con Wompi</button>
+        </form>
+        <p>Pago seguro con Wompi: tarjeta, PSE o Nequi. Te enviamos el comprobante a tu correo.</p>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends 'public/base.html.twig' %}
+
+{% block title %}Política de privacidad · {{ account.name }}{% endblock %}
+
+{% block meta %}
+    <meta name="robots" content="noindex, follow">
+{% endblock %}
+
+{% block body %}
+    <p><a href="/{{ account.slug }}">← {{ account.name }}</a></p>
+    <h1>Política de privacidad</h1>
+    {% if text %}
+        {% for paragraph in text|split("\n\n") %}<p>{{ paragraph|nl2br }}</p>{% endfor %}
+    {% else %}
+        <p>{{ account.name }} trata tus datos personales únicamente para responder tu solicitud y acompañarte en su asesoría, de acuerdo con la Ley 1581 de 2012. Puedes conocer, actualizar, rectificar o pedir que se eliminen tus datos escribiendo al asesor.</p>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends 'public/base.html.twig' %}
+
+{% block title %}Tu sesión · {{ account.name }}{% endblock %}
+
+{% block meta %}
+    <meta name="robots" content="noindex">
+    {# The link carries the token that opens this page: it must not travel to other sites in a Referer. #}
+    <meta name="referrer" content="no-referrer">
+{% endblock %}
+
+{% block body %}
+    <p><a href="/{{ account.slug }}">← {{ account.name }}</a></p>
+    <h1>Tu sesión con {{ account.name }}</h1>
+    {% if notice %}<p class="notice" role="status">{{ notice }}</p>{% endif %}
+    {% if error %}<p class="notice notice-error" role="alert">{{ error }}</p>{% endif %}
+
+    <dl class="summary">
+        <dt>Estado</dt><dd>{{ {scheduled: 'Reservada', done: 'Realizada', no_show: 'No asistió', cancelled: 'Cancelada'}[session.status.value] }}</dd>
+        <dt>Fecha</dt><dd>{{ date|capitalize }}</dd>
+        <dt>Hora</dt><dd>{{ time }} ({{ session.enrollment.durationMinutes }} minutos)</dd>
+        <dt>Sesión</dt><dd>{{ session.enrollment.planName }}</dd>
+        {% if session.meetingLink and session.status.value == 'scheduled' %}<dt>Dónde</dt><dd>{% if session.meetingLink starts with 'http' %}<a href="{{ session.meetingLink }}" rel="noreferrer">{{ session.meetingLink }}</a>{% else %}{{ session.meetingLink }}{% endif %}</dd>{% endif %}
+    </dl>
+
+    {% if canChange %}
+        <h2>Cambiar la hora</h2>
+        {% if calendar.days is empty %}
+            <p>No hay otros horarios disponibles por ahora.</p>
+        {% else %}
+            <form method="post" action="/{{ account.slug }}/reservar/{{ token }}/cambiar">
+                <fieldset class="slots">
+                    <legend>Elige el nuevo día y la hora</legend>
+                    {% include 'public/_slot_calendar.html.twig' with {calendar: calendar, id: 'cal-cambiar', selected: ''} only %}
+                </fieldset>
+                <p><button class="btn" type="submit">Cambiar a esta hora</button></p>
+            </form>
+        {% endif %}
+
+        <h2>Cancelar</h2>
+        <form method="post" action="/{{ account.slug }}/reservar/{{ token }}/cancelar">
+            <p><label for="reason">¿Quieres contarnos por qué? (opcional)</label><br>
+            <textarea id="reason" name="reason" rows="3" maxlength="500" style="width:100%"></textarea></p>
+            <p><button class="btn btn-danger" type="submit">Cancelar mi sesión</button></p>
+        </form>
+    {% elseif session.status.value == 'scheduled' %}
+        <p>Ya no es posible cambiarla o cancelarla en línea. Si lo necesitas, responde el correo de confirmación para escribirle a {{ account.name }}.</p>
+    {% endif %}
+{% endblock %}

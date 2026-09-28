@@ -1,0 +1,33 @@
+{% extends 'emails/layout.html.twig' %}
+
+{# The emails about money: a payment link, a receipt, a new payment for the consultant. `kind` says which. #}
+{% block content %}
+<p>{{ audience == 'contact' ? 'Hola, ' ~ contactName ~ ':' : 'Hola:' }}</p>
+
+<p>
+{% if kind == 'payment_link' %}<strong>{{ consultant }}</strong> te preparó este plan. Cuando quieras empezar, págalo en línea con Wompi (tarjeta, PSE o Nequi).
+{% elseif kind == 'payment_received' %}Recibimos tu pago. Gracias por confiar en <strong>{{ consultant }}</strong>: te escribiremos para agendar tus sesiones.
+{% elseif kind == 'payment_new' %}<strong>{{ contactName }}</strong> ({{ contactEmail }}) pagó un plan.
+{% endif %}
+</p>
+
+<table style="border-collapse:collapse;margin:0 0 16px;">
+    <tr><td style="padding:4px 12px 4px 0;color:#5b6576;">Plan</td><td style="padding:4px 0;"><strong>{{ plan }}</strong></td></tr>
+    <tr><td style="padding:4px 12px 4px 0;color:#5b6576;">Incluye</td><td style="padding:4px 0;">{{ sessions }} {{ sessions == 1 ? 'sesión' : 'sesiones' }} de {{ minutes }} minutos</td></tr>
+    {% if kind == 'payment_link' %}
+    <tr><td style="padding:4px 12px 4px 0;color:#5b6576;">Valor</td><td style="padding:4px 0;"><strong>{{ price }}</strong></td></tr>
+    {% else %}
+    <tr><td style="padding:4px 12px 4px 0;color:#5b6576;">Pagado</td><td style="padding:4px 0;"><strong>{{ amount }}</strong>, {{ paidOn }}</td></tr>
+    <tr><td style="padding:4px 12px 4px 0;color:#5b6576;">Referencia</td><td style="padding:4px 0;">{{ reference }}</td></tr>
+    {% endif %}
+</table>
+
+{% if kind == 'payment_link' and payUrl %}
+<p>
+    <a href="{{ payUrl }}" style="display:inline-block;padding:12px 20px;background:#1e3a5f;color:#ffffff;text-decoration:none;border-radius:6px;">Pagar mi plan</a>
+</p>
+{% endif %}
+{% if contactUrl is defined %}
+<p><a href="{{ contactUrl }}">Ver a {{ contactName }} en Pontiac</a></p>
+{% endif %}
+{% endblock %}

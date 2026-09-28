@@ -1,0 +1,12 @@
+{% extends 'public/base.html.twig' %}
+
+{% block title %}{{ account.name }}{% endblock %}
+
+{% block meta %}
+    <meta name="robots" content="noindex">
+{% endblock %}
+
+{% block body %}
+    <h1>Esta página ya no está disponible</h1>
+    <p><a href="/{{ account.slug }}">Ir a {{ account.name }}</a></p>
+{% endblock %}

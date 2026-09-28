@@ -1,0 +1,28 @@
+# see https://symfony.com/doc/current/reference/configuration/framework.html
+framework:
+    serializer:
+        default_context:
+            # An empty (object) stays {} in the JSON instead of becoming [], as the Output DTOs and schemas say.
+            preserve_empty_objects: true
+    secret: '%env(APP_SECRET)%'
+    http_method_override: false
+    handle_all_throwables: true
+
+    # The UI sends Accept-Language from the account's locale; validation messages follow it.
+    enabled_locales: ['es', 'en']
+    set_locale_from_accept_language: true
+
+    # Sessions are never started by the API (stateless JWT); kept for the profiler.
+    session:
+        handler_id: null
+        cookie_secure: auto
+        cookie_samesite: lax
+
+    php_errors:
+        log: true
+
+when@test:
+    framework:
+        test: true
+        session:
+            storage_factory_id: session.storage.factory.mock_file

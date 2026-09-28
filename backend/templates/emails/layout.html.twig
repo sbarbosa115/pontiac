@@ -1,0 +1,10 @@
+{# Every HTML email. Emails stay light whatever theme the person uses: mail clients do not know about it. #}
+<div style="font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;font-size:15px;line-height:1.5;color:#1b2330;max-width:560px;">
+    <p style="margin:0 0 20px;">
+        <strong style="font-size:18px;color:#1e3a5f;">{{ sender|default('Pontiac') }}</strong>
+    </p>
+
+    {% block content %}{% endblock %}
+
+    <p style="margin-top:28px;color:#5b6576;font-size:13px;">{{ 'layout.footer'|trans({}, 'emails', locale) }}</p>
+</div>

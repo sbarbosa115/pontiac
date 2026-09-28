@@ -1,0 +1,115 @@
+{# A landing page. Server-rendered, CSS inline, no framework JavaScript: fast on a phone and read as-is by search
+   engines. Always light: visitors never chose a theme. `preview` is the editor's live preview: never indexed, its
+   form does not submit. #}
+<!DOCTYPE html>
+<html lang="{{ account.locale|replace({'_': '-'}) }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ content.seo.title }}</title>
+    {% if content.seo.description %}<meta name="description" content="{{ content.seo.description }}">{% endif %}
+    {% if preview or not content.seo.index %}<meta name="robots" content="noindex">{% endif %}
+    <link rel="canonical" href="{{ url }}">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{{ content.seo.title }}">
+    {% if content.seo.description %}<meta property="og:description" content="{{ content.seo.description }}">{% endif %}
+    <meta property="og:url" content="{{ url }}">
+    <meta property="og:site_name" content="{{ account.name }}">
+    <meta property="og:locale" content="{{ account.locale }}">
+    {% if socialImage %}<meta property="og:image" content="{{ socialImage }}">{% endif %}
+    <meta name="twitter:card" content="{{ socialImage ? 'summary_large_image' : 'summary' }}">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <script type="application/ld+json">{{ jsonLd|raw }}</script>
+    <style>
+        :root { --accent: {{ accent.color }}; --on-accent: {{ accent.on }}; --soft: {{ accent.soft }}; --ink: #1b2330; --muted: #515b6b; --line: #dde1e7; --bg: #ffffff; --alt: #f6f7f9; --error: #b3261e; }
+        *, *::before, *::after { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { margin: 0; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; color: var(--ink); background: var(--bg); line-height: 1.6; font-size: 17px; -webkit-font-smoothing: antialiased; }
+        img { max-width: 100%; height: auto; display: block; }
+        a { color: var(--accent); }
+        .wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+        header.bar { border-bottom: 1px solid var(--line); }
+        header.bar .wrap { display: flex; align-items: center; justify-content: space-between; min-height: 60px; gap: 16px; }
+        .brand { font-weight: 700; color: var(--ink); text-decoration: none; }
+        section { padding: 64px 0; }
+        section:nth-of-type(even) { background: var(--alt); }
+        h1 { font-size: clamp(2rem, 5vw, 3rem); line-height: 1.15; margin: 0 0 16px; letter-spacing: -0.01em; }
+        h2 { font-size: clamp(1.5rem, 3.5vw, 2rem); line-height: 1.2; margin: 0 0 24px; }
+        h3 { font-size: 1.1rem; margin: 0 0 6px; }
+        p { margin: 0 0 14px; }
+        .lead { font-size: 1.2rem; color: var(--muted); max-width: 60ch; }
+        .btn { display: inline-block; background: var(--accent); color: var(--on-accent); padding: 14px 26px; border-radius: 8px; font-weight: 600; text-decoration: none; border: 0; font-size: 1rem; cursor: pointer; }
+        .btn:hover { filter: brightness(1.08); }
+        .hero { padding: 72px 0; background: var(--soft); }
+        .hero .wrap { display: grid; gap: 40px; align-items: center; }
+        .hero img { border-radius: 12px; }
+        @media (min-width: 820px) { .hero .wrap.has-image { grid-template-columns: 1.1fr 0.9fr; } }
+        .grid { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); }
+        .card { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 22px; }
+        .card p { color: var(--muted); margin: 0; }
+        ol.steps { list-style: none; counter-reset: step; padding: 0; margin: 0; display: grid; gap: 20px; }
+        ol.steps li { counter-increment: step; display: grid; grid-template-columns: 44px 1fr; gap: 16px; }
+        ol.steps li::before { content: counter(step); width: 44px; height: 44px; border-radius: 50%; background: var(--accent); color: var(--on-accent); display: grid; place-items: center; font-weight: 700; }
+        ol.steps p { color: var(--muted); margin: 0; }
+        details { border-bottom: 1px solid var(--line); padding: 16px 0; }
+        summary { font-weight: 600; cursor: pointer; }
+        details p { margin: 10px 0 0; color: var(--muted); }
+        blockquote { margin: 0; }
+        blockquote p { font-size: 1.05rem; }
+        blockquote footer { color: var(--muted); font-size: 0.95rem; }
+        .profile { display: grid; gap: 32px; align-items: start; }
+        @media (min-width: 820px) { .profile.has-image { grid-template-columns: 280px 1fr; } }
+        .profile img { border-radius: 12px; }
+        ul.checks { padding-left: 1.2em; }
+        dl.event { display: grid; grid-template-columns: max-content 1fr; gap: 8px 20px; margin: 0; }
+        dl.event dt { font-weight: 600; }
+        dl.event dd { margin: 0; }
+        .form-box { max-width: 620px; }
+        form label { display: block; font-weight: 600; margin: 0 0 6px; }
+        form .field { margin-bottom: 16px; }
+        form input[type=text], form input[type=email], form input[type=tel], form input[type=number], form select, form textarea { width: 100%; padding: 12px; border: 1px solid #8a93a1; border-radius: 8px; font: inherit; background: #fff; color: var(--ink); }
+        form textarea { min-height: 110px; }
+        form .check { display: flex; gap: 10px; align-items: flex-start; font-weight: 400; }
+        form .check input { margin-top: 5px; }
+        .error { color: var(--error); font-size: 0.92rem; margin-top: 4px; }
+        .notice { padding: 16px; border-radius: 8px; background: var(--soft); border-left: 4px solid var(--accent); }
+        .notice-error { background: #fbe9e7; border-left-color: var(--error); }
+        .hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+        footer.site { padding: 32px 0; color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--line); }
+        fieldset.slots { border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; margin: 0 0 16px; }
+        fieldset.slots legend { font-weight: 600; padding: 0 6px; }
+        .slot-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+        .slot { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border: 1px solid #8a93a1; border-radius: 8px; font-weight: 400; cursor: pointer; }
+        .slot:has(input:checked) { border-color: var(--accent); background: var(--soft); font-weight: 600; }
+        fieldset.price-cards { border: 0; padding: 0; margin: 0 0 16px; display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+        fieldset.price-cards legend { font-weight: 600; margin-bottom: 8px; }
+        .price-card { display: grid; grid-template-columns: auto 1fr; column-gap: 10px; row-gap: 4px; align-items: center; padding: 16px; border: 1px solid #8a93a1; border-radius: 8px; cursor: pointer; font-weight: 400; }
+        .price-card input { margin: 0; grid-row: 1; }
+        .price-card > span { grid-column: 2; }
+        .price-card:has(input:checked) { border-color: var(--accent); background: var(--soft); box-shadow: inset 0 0 0 1px var(--accent); }
+        .price-card-name { font-weight: 600; }
+        .price-card-price { font-size: 1.4rem; font-weight: 700; color: var(--accent); }
+        .price-card-detail { font-size: .9rem; color: var(--muted); }
+        .small { font-size: .9rem; color: var(--muted); margin-top: 12px; }
+        .preview-note { background: #fdf1d8; color: #6b4600; text-align: center; padding: 8px; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    {% if preview %}<div class="preview-note">Vista previa: así se verá la página al publicarla.</div>{% endif %}
+    <header class="bar">
+        <div class="wrap">
+            <a class="brand" href="/{{ account.slug }}">{{ account.name }}</a>
+        </div>
+    </header>
+    <main>
+        {% for section in sections %}
+            {{ include('public/page/sections/' ~ section.type ~ '.html.twig', {section: section, fields: section.fields, first: loop.first}) }}
+        {% endfor %}
+    </main>
+    <footer class="site">
+        <div class="wrap">
+            <p>© {{ 'now'|date('Y') }} {{ account.name }} · <a href="{{ privacyUrl }}">Política de privacidad</a></p>
+        </div>
+    </footer>
+</body>
+</html>

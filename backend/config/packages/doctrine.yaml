@@ -1,0 +1,54 @@
+doctrine:
+    dbal:
+        url: '%env(resolve:DATABASE_URL)%'
+
+        # utf8mb4 (real four-byte UTF-8: emoji in a message, accents everywhere). utf8mb4_unicode_ci exists on both
+        # MySQL and MariaDB, so the schema is the same on either.
+        charset: utf8mb4
+        default_table_options:
+            charset: utf8mb4
+            collation: utf8mb4_unicode_ci
+
+        profiling_collect_backtrace: '%kernel.debug%'
+    orm:
+        validate_xml_mapping: true
+        naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+        auto_mapping: true
+        mappings:
+            App:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Entity'
+                prefix: 'App\Entity'
+                alias: App
+        # No automatic {id} → entity loading (controller_resolver.auto_mapping, off since DoctrineBundle 3): it uses
+        # find(), which can bypass the account filter through the identity map. Repositories' findOneById() instead.
+        filters:
+            # Enabled by default and fail-closed; see App\Doctrine\AccountContext.
+            account_scope:
+                class: App\Doctrine\AccountScopeFilter
+                enabled: true
+
+when@test:
+    doctrine:
+        dbal:
+            # "TEST_TOKEN" is typically set by ParaTest
+            dbname_suffix: '_test%env(default::TEST_TOKEN)%'
+
+when@prod:
+    doctrine:
+        orm:
+            query_cache_driver:
+                type: pool
+                pool: doctrine.system_cache_pool
+            result_cache_driver:
+                type: pool
+                pool: doctrine.result_cache_pool
+
+    framework:
+        cache:
+            pools:
+                doctrine.result_cache_pool:
+                    adapter: cache.app
+                doctrine.system_cache_pool:
+                    adapter: cache.system

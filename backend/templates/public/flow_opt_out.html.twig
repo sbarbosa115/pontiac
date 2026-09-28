@@ -1,0 +1,21 @@
+{% extends 'public/base.html.twig' %}
+
+{% block title %}Correos · {{ account.name }}{% endblock %}
+
+{% block meta %}
+    <meta name="robots" content="noindex">
+    <meta name="referrer" content="no-referrer">
+{% endblock %}
+
+{% block body %}
+    <p><a href="/{{ account.slug }}">← {{ account.name }}</a></p>
+    <h1>Correos de {{ account.name }}</h1>
+    {% if stopped %}
+        <p class="notice" role="status">Listo: no te enviaremos más correos de seguimiento. Seguirás recibiendo las confirmaciones de tus sesiones y tus pagos.</p>
+    {% else %}
+        <p>¿Quieres dejar de recibir los correos de seguimiento de {{ account.name }}? Seguirás recibiendo las confirmaciones de tus sesiones y tus pagos.</p>
+        <form method="post">
+            <button class="btn" type="submit">No quiero recibir más correos</button>
+        </form>
+    {% endif %}
+{% endblock %}

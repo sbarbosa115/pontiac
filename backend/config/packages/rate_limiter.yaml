@@ -1,0 +1,68 @@
+framework:
+    rate_limiter:
+        # Client sign-in (PortalLoginController), per client IP and per consultant + email.
+        portal_login_ip:
+            policy: sliding_window
+            limit: 20
+            interval: '15 minutes'
+        portal_login_email:
+            policy: sliding_window
+            limit: 5
+            interval: '15 minutes'
+        # Setting a password from an invitation link, per client IP.
+        invitation_accept:
+            policy: sliding_window
+            limit: 10
+            interval: '15 minutes'
+        # Plataforma › Correos › Enviar correo de prueba, per super admin.
+        platform_test_email:
+            policy: sliding_window
+            limit: 10
+            interval: '1 hour'
+        # A landing page's form, per page and client IP.
+        lead_form:
+            policy: sliding_window
+            limit: 10
+            interval: '10 minutes'
+        # "¿Olvidaste tu contraseña?" and changing one's password, per client IP.
+        password_reset:
+            policy: sliding_window
+            limit: 10
+            interval: '15 minutes'
+        # Starting a payment (a page's payment section, a payment link), per client IP.
+        payment_start:
+            policy: sliding_window
+            limit: 10
+            interval: '10 minutes'
+
+when@test:
+    framework:
+        rate_limiter:
+            portal_login_ip:
+                policy: sliding_window
+                limit: 1000
+                interval: '15 minutes'
+            portal_login_email:
+                policy: sliding_window
+                limit: 1000
+                interval: '15 minutes'
+            invitation_accept:
+                policy: sliding_window
+                limit: 1000
+                interval: '15 minutes'
+            platform_test_email:
+                policy: sliding_window
+                limit: 1000
+                interval: '1 hour'
+            lead_form:
+                policy: sliding_window
+                limit: 1000
+                interval: '10 minutes'
+            payment_start:
+                policy: sliding_window
+                limit: 1000
+                interval: '10 minutes'
+            password_reset:
+                policy: sliding_window
+                limit: 1000
+                interval: '15 minutes'

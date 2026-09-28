@@ -1,0 +1,11 @@
+<section class="hero" id="{{ section.id }}">
+    <div class="wrap{{ fields.image ? ' has-image' }}">
+        <div>
+            {# The page's one h1: the first section's heading when it is the hero, an h2 otherwise. #}
+            <{{ first ? 'h1' : 'h2' }}>{{ fields.heading }}</{{ first ? 'h1' : 'h2' }}>
+            {% if fields.subheading %}<p class="lead">{{ fields.subheading }}</p>{% endif %}
+            {% if fields.ctaLabel %}<a class="btn" href="#formulario">{{ fields.ctaLabel }}</a>{% endif %}
+        </div>
+        {% if fields.image %}{{ include('public/page/_image.html.twig', {id: fields.image, eager: first}) }}{% endif %}
+    </div>
+</section>

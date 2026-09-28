@@ -1,2 +1,3 @@
 /.idea/
+# Host ports of this checkout's stack (HTTP_PORT, DB_PORT, MAILPIT_PORT): each checkout has its own.
 /.env

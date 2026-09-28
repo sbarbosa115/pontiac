@@ -1,0 +1,13 @@
+{% extends 'emails/layout.html.twig' %}
+
+{% block content %}
+<p>Hola, {{ name }}:</p>
+
+<p>Gracias por tu interés en «{{ pageTitle }}». Aquí está lo que pediste:</p>
+
+<p>
+    <a href="{{ resourceUrl }}" style="display:inline-block;padding:12px 20px;background:#1e3a5f;color:#ffffff;text-decoration:none;border-radius:6px;">Descargar</a>
+</p>
+
+<p style="color:#5b6576;font-size:13px;">Si el botón no funciona, copia este enlace en tu navegador: {{ resourceUrl }}</p>
+{% endblock %}
