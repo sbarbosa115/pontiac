@@ -1,11 +1,21 @@
-<section class="hero" id="{{ section.id }}">
+{% import 'public/page/_icons.html.twig' as ui %}
+{% set tag = first ? 'h1' : 'h2' %}
+<section class="hero{{ reveal ? ' reveal' }}" id="{{ section.id }}">
     <div class="wrap{{ fields.image ? ' has-image' }}">
         <div>
+            {% if fields.eyebrow ?? '' %}<p class="eyebrow">{{ fields.eyebrow }}</p>{% endif %}
             {# The page's one h1: the first section's heading when it is the hero, an h2 otherwise. #}
-            <{{ first ? 'h1' : 'h2' }}>{{ fields.heading }}</{{ first ? 'h1' : 'h2' }}>
+            <{{ tag }}>{{ fields.heading }}</{{ tag }}>
             {% if fields.subheading %}<p class="lead">{{ fields.subheading }}</p>{% endif %}
-            {% if fields.ctaLabel %}<a class="btn" href="#formulario">{{ fields.ctaLabel }}</a>{% endif %}
+            {% if fields.ctaLabel and cta %}
+                <div class="hero-actions"><a class="btn" href="#{{ cta.target }}">{{ fields.ctaLabel }} <span class="arrow" aria-hidden="true">→</span></a></div>
+            {% endif %}
+            {% if fields.trustPoints ?? [] %}
+                <ul class="trust">
+                    {% for item in fields.trustPoints %}<li>{{ ui.tick() }}{{ item.text }}</li>{% endfor %}
+                </ul>
+            {% endif %}
         </div>
-        {% if fields.image %}{{ include('public/page/_image.html.twig', {id: fields.image, eager: first}) }}{% endif %}
+        {% if fields.image %}<div class="hero-media">{{ include('public/page/_image.html.twig', {id: fields.image, eager: first}) }}</div>{% endif %}
     </div>
 </section>

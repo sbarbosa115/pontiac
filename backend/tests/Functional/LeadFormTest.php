@@ -136,14 +136,14 @@ final class LeadFormTest extends ApiTestCase
 
         $this->client->request('GET', '/finanzas-claras/diagnostico?enviado=1');
 
-        self::assertSelectorTextContains('#formulario .notice', '¡Gracias! Te escribiremos muy pronto');
+        self::assertSelectorTextContains('#formulario [role="status"]', '¡Gracias! Te escribiremos muy pronto');
         self::assertSelectorNotExists('#formulario form');
     }
 
     public function testALeadMagnetEmailsTheResource(): void
     {
         $this->createPage($this->createAccount(), 'plantilla', PageTemplate::LeadMagnet, change: static function (array $content): array {
-            $content['sections'][2]['fields']['resourceUrl'] = 'https://example.com/plantilla.xlsx';
+            $content['sections'][3]['fields']['resourceUrl'] = 'https://example.com/plantilla.xlsx';
 
             return $content;
         });

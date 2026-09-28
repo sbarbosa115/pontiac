@@ -34,7 +34,7 @@ The manual browser pass, one case per use case. Run it on a fresh stack with the
 | PLAT-13 | super admin | Correos › Enviar correo de prueba | Notice, and the email appears first in the list as "Prueba" |
 | PLAT-14 | consultant | With the assistant limit reached, Invitar asistente | "Llegaste al máximo de asistentes activos de tu plan…" in the dialog |
 | PLAT-15 | client | The consultant's portal turned off, sign in at the portal | "Esta función no está activa para este asesor." |
-| PAGE-01 | visitor | `/finanzas-claras` | The published home page: one h1, the form, a footer link to the privacy policy; no framework JavaScript |
+| PAGE-01 | visitor | `/finanzas-claras` | The published home page: one h1, the form, a footer link to the privacy policy; no framework JavaScript (one small inline script) |
 | PAGE-02 | visitor | Send the form without consent | "Para enviar tus datos debes aceptar…" under the checkbox; what was typed stays; reloading goes back to the page |
 | PAGE-03 | visitor | Send it with consent (after a few seconds) | The page says thanks; the owner gets "Nuevo prospecto" in Mailpit with the answers |
 | PAGE-04 | consultant | Prospectos | The new contact, in the category their answer mapped to; filters by category and page; the contact's page shows consent and answers |
@@ -48,6 +48,13 @@ The manual browser pass, one case per use case. Run it on a fresh stack with the
 | PAGE-12 | owner | Páginas › Retirar | Visitors get "Esta página ya no está disponible" (410); "Volver a publicar" brings it back |
 | PAGE-13 | owner | A contact › Eliminar sus datos | Name, email, phone and answers erased; assistants do not see the button |
 | PAGE-14 | consultant | Ajustes › Categorías, Medios, Privacidad | Each lists and edits; privacy says when the default text is used |
+| LAND-01 | consultant | Páginas › Nueva › each of the 5 templates, publish, open it (desktop) | Hero in the accent colour with its tag, title, button and trust points; cards, numbered steps, FAQ cards with +/−, the cta band, the form in a card beside its points; sections come in as you scroll |
+| LAND-02 | visitor | Same pages at phone width (390 px) | Nothing wider than the screen; the header button hides; past the hero a bottom bar shows the page's button, and hides while the hero, the cta band or the form is on screen |
+| LAND-03 | visitor | Every button of a page (header, hero, band, bottom bar) | All lead to the same section: the booking when it is on and above the form, else the form (or the payment) |
+| LAND-04 | visitor | Send the form with mistakes | The page opens at the form, errors in red under their fields, the cursor in the first one |
+| LAND-05 | consultant | Editor › Contenido: fill Etiqueta and Puntos de confianza (a 5th is refused), turn on Llamado a la acción and move it first, save, Vista previa | The hints show under the fields; the preview follows the new order with one h1; the band's button leads to the form |
+| LAND-06 | consultant | Editor › Contenido: turn off Formulario and Reserva | The preview shows no buttons at all; the band keeps its words |
+| LAND-07 | visitor | `/finanzas-claras/plan-2-sesiones#precios` straight from an email link | Opens at the plans, just below the header |
 | BOOK-01 | visitor | `/finanzas-claras`, Reserva: the calendar opens on the first free day; "›" to the next month, pick a day, then a time, name, email, consent, "Reservar mi diagnóstico" | "¡Listo! Tu sesión quedó reservada."; Mailpit: the confirmation with `sesion.ics` and a manage link, and "Nueva sesión agendada" to the owner |
 | BOOK-02 | visitor | The same slot again from another browser | "Esa hora ya no está disponible. Elige otra." and what was typed stays |
 | BOOK-03 | visitor | The manage link, a session more than 24 h ahead: pick another time, "Cambiar a esta hora" | "Listo: tu sesión quedó en la nueva hora"; the old link answers 404; both get "cambió de hora" |

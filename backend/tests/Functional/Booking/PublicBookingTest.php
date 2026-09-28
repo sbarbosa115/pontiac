@@ -36,7 +36,7 @@ final class PublicBookingTest extends ApiTestCase
         $slot = $this->freeSlots($this->account)[0];
 
         $crawler = $this->client->request('GET', '/finanzas-claras/diagnostico');
-        self::assertSelectorExists('#reserva form[action="/finanzas-claras/diagnostico/reservar"]');
+        self::assertSelectorExists('#reserva form[action="/finanzas-claras/diagnostico/reservar#reserva"]');
         self::assertCount(1, $crawler->filter(sprintf('input[name="slot"][value="%s"]', $slot->format(\DATE_ATOM))), 'the first free slot is offered');
         // A date picker: the first open day chosen, the days with nothing free shown but not choosable.
         $day = $slot->setTimezone(new \DateTimeZone('America/Bogota'))->format('Y-m-d');

@@ -1,11 +1,22 @@
-<section id="{{ section.id }}">
+{% import 'public/page/_icons.html.twig' as ui %}
+{% set tag = first ? 'h1' : 'h2' %}
+<section id="{{ section.id }}" class="{{ alt ? 'alt' }}{{ reveal ? ' reveal' }}">
     <div class="wrap">
-        {% if fields.heading %}<{{ first ? 'h1' : 'h2' }}>{{ fields.heading }}</{{ first ? 'h1' : 'h2' }}>{% endif %}
-        <dl class="event">
-            {% if eventDates[section.id] is defined %}<dt>Fecha</dt><dd>{{ eventDates[section.id] }}</dd>{% endif %}
-            {% if fields.time %}<dt>Hora</dt><dd>{{ fields.time }}</dd>{% endif %}
-            {% if fields.place %}<dt>Lugar</dt><dd>{{ fields.place }}</dd>{% endif %}
-            {% if fields.seats %}<dt>Cupos</dt><dd>{{ fields.seats }}</dd>{% endif %}
+        {% if fields.heading %}<div class="section-head"><{{ tag }}>{{ fields.heading }}</{{ tag }}></div>{% endif %}
+        <dl class="facts">
+            {% for fact in [
+                {icon: 'calendar', label: 'Fecha', value: eventDates[section.id] ?? ''},
+                {icon: 'clock', label: 'Hora', value: fields.time},
+                {icon: 'pin', label: 'Lugar', value: fields.place},
+                {icon: 'users', label: 'Cupos', value: fields.seats},
+            ] %}
+                {% if fact.value %}
+                    <div class="fact">
+                        <dt><span class="card-icon">{{ ui.icon(fact.icon) }}</span><span>{{ fact.label }}</span></dt>
+                        <dd>{{ fact.value }}</dd>
+                    </div>
+                {% endif %}
+            {% endfor %}
         </dl>
     </div>
 </section>

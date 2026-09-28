@@ -1,0 +1,12 @@
+{# A band in the accent colour that sends the visitor to the page's form, booking or payment. Nothing to send them to
+   (all three off): the band says its words without a button. #}
+{% set tag = first ? 'h1' : 'h2' %}
+<section id="{{ section.id }}" class="cta-band{{ reveal ? ' reveal' }}">
+    <div class="wrap">
+        <div class="cta-box">
+            <{{ tag }}>{{ fields.heading }}</{{ tag }}>
+            {% if fields.body %}<p>{{ fields.body }}</p>{% endif %}
+            {% if cta %}<a class="btn btn-light" href="#{{ cta.target }}">{{ fields.buttonLabel }} <span class="arrow" aria-hidden="true">→</span></a>{% endif %}
+        </div>
+    </div>
+</section>

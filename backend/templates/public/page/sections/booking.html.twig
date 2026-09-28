@@ -1,36 +1,39 @@
 {# Booking a free plan's session: a calendar of the days with free times (then that day's times), and who is booking. A plain
    HTML form, like the lead form: `website` is the bots' trap, `_t` when the form was drawn. #}
 {% set booking = bookings[section.id] %}
-<section id="reserva">
-    <div class="wrap form-box">
-        {% if fields.heading %}<{{ first ? 'h1' : 'h2' }}>{{ fields.heading }}</{{ first ? 'h1' : 'h2' }}>{% endif %}
+{% import 'public/page/_icons.html.twig' as ui %}
+<section id="reserva" class="convert{{ reveal ? ' reveal' }}">
+    <div class="wrap">
+        {{ include('public/page/_pitch.html.twig', {fields: fields, tag: first ? 'h1' : 'h2'}) }}
+        <div class="form-card">
         {% if booked %}
-            <p class="notice" role="status">{{ fields.successMessage }}</p>
+            <div class="done" role="status">{{ ui.tick() }}<p>{{ fields.successMessage }}</p></div>
         {% elseif booking.days is empty %}
             <p class="notice">En este momento no hay horarios disponibles. Escríbenos con el formulario y te contactamos.</p>
         {% else %}
-            {% if fields.body %}<p>{{ fields.body }}</p>{% endif %}
             {% if bookingErrors['_form'] is defined %}<p class="notice notice-error" role="alert">{{ bookingErrors['_form'] }}</p>{% endif %}
-            <form method="post" action="{{ preview ? '#reserva' : bookingAction }}" novalidate{% if preview %} onsubmit="return false"{% endif %}>
+            <form method="post" action="{{ preview ? '' : bookingAction }}#reserva" novalidate{% if preview %} onsubmit="return false"{% endif %}>
                 <fieldset class="slots">
                     <legend>Elige el día y la hora ({{ booking.plan.durationMinutes }} minutos)</legend>
                     {% include 'public/_slot_calendar.html.twig' with {calendar: booking, id: 'cal-' ~ section.id, selected: bookingValues.slot ?? ''} only %}
                     {% if bookingErrors.slot is defined %}<p class="error">{{ bookingErrors.slot }}</p>{% endif %}
                 </fieldset>
-                <div class="field">
+                <div class="field{{ bookingErrors.name is defined ? ' has-error' }}">
                     <label for="b-name">Nombre completo</label>
                     <input type="text" id="b-name" name="name" autocomplete="name" maxlength="180" value="{{ bookingValues.name ?? '' }}">
                     {% if bookingErrors.name is defined %}<p class="error">{{ bookingErrors.name }}</p>{% endif %}
                 </div>
-                <div class="field">
+                <div class="row">
+                <div class="field{{ bookingErrors.email is defined ? ' has-error' }}">
                     <label for="b-email">Correo electrónico</label>
                     <input type="email" id="b-email" name="email" autocomplete="email" maxlength="180" value="{{ bookingValues.email ?? '' }}">
                     {% if bookingErrors.email is defined %}<p class="error">{{ bookingErrors.email }}</p>{% endif %}
                 </div>
-                <div class="field">
+                <div class="field{{ bookingErrors.phone is defined ? ' has-error' }}">
                     <label for="b-phone">Teléfono (opcional)</label>
                     <input type="tel" id="b-phone" name="phone" autocomplete="tel" maxlength="40" value="{{ bookingValues.phone ?? '' }}">
                     {% if bookingErrors.phone is defined %}<p class="error">{{ bookingErrors.phone }}</p>{% endif %}
+                </div>
                 </div>
                 <div class="field">
                     <label class="check"><input type="checkbox" name="consent" value="1"{{ (bookingValues.consent ?? '') ? ' checked' }}> <span>Autorizo el tratamiento de mis datos según la <a href="{{ privacyUrl }}" target="_blank" rel="noopener">política de privacidad</a>.</span></label>
@@ -42,8 +45,9 @@
                 </div>
                 <input type="hidden" name="section" value="{{ section.id }}">
                 <input type="hidden" name="_t" value="{{ timeToken }}">
-                <button class="btn" type="submit">{{ fields.submitLabel }}</button>
+                <button class="btn btn-block" type="submit">{{ fields.submitLabel }} <span class="arrow" aria-hidden="true">→</span></button>
             </form>
         {% endif %}
+        </div>
     </div>
 </section>

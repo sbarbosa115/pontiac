@@ -33,7 +33,7 @@ final class PagesTest extends ApiTestCase
 
         self::assertSame(201, $this->responseStatus());
         self::assertSame(['diagnostico', 'draft', true, '/finanzas-claras', false], [$page['slug'], $page['status'], $page['home'], $page['path'], null !== $page['publishedAt']]);
-        self::assertSame(['portada', 'problema', 'como-funciona', 'reserva', 'preguntas', 'formulario'], array_column($page['draft']['sections'], 'id'));
+        self::assertSame(['portada', 'problema', 'como-funciona', 'reserva', 'llamado', 'preguntas', 'formulario'], array_column($page['draft']['sections'], 'id'));
         self::assertFalse($page['draft']['sections'][3]['enabled'], 'booking waits for a free plan');
         self::assertSame('Diagnóstico', $page['draft']['seo']['title']);
 
@@ -118,7 +118,7 @@ final class PagesTest extends ApiTestCase
         $draft['sections'][1]['fields']['items'] = [['question' => '', 'answer' => '']];
         $saved = $this->api('PATCH', '/api/admin/pages/'.$page->getId(), ['draft' => $draft]);
         self::assertSame(200, $this->responseStatus(), 'a section switched off may be left half written');
-        self::assertSame(['formulario', 'preguntas', 'reserva', 'como-funciona', 'problema', 'portada'], array_column($saved['draft']['sections'], 'id'));
+        self::assertSame(['formulario', 'preguntas', 'llamado', 'reserva', 'como-funciona', 'problema', 'portada'], array_column($saved['draft']['sections'], 'id'));
 
         $draft['sections'][] = ['id' => 'extra', 'type' => 'text', 'enabled' => true, 'fields' => []];
         $error = $this->api('PATCH', '/api/admin/pages/'.$page->getId(), ['draft' => $draft]);
@@ -138,7 +138,46 @@ final class PagesTest extends ApiTestCase
         $saved = $this->api('PATCH', '/api/admin/pages/'.$page->getId(), ['draft' => $page->getDraft()]);
 
         self::assertSame(200, $this->responseStatus());
-        self::assertSame(['reserva', false], [$saved['draft']['sections'][5]['id'], $saved['draft']['sections'][5]['enabled']]);
+        self::assertSame(['reserva', false], [$saved['draft']['sections'][6]['id'], $saved['draft']['sections'][6]['enabled']]);
+    }
+
+    public function testADraftFromBeforeTheRedesignGetsTheBandSwitchedOffAndEmptyNewFields(): void
+    {
+        $page = $this->createPage($this->account, published: false, change: static function (array $content): array {
+            $content['sections'] = array_values(array_filter($content['sections'], static fn (array $s) => 'llamado' !== $s['id']));
+            unset($content['sections'][0]['fields']['eyebrow'], $content['sections'][0]['fields']['trustPoints']);
+
+            return $content;
+        });
+        $this->actAs($this->owner);
+
+        $saved = $this->api('PATCH', '/api/admin/pages/'.$page->getId(), ['draft' => $page->getDraft()]);
+
+        self::assertSame(200, $this->responseStatus());
+        self::assertSame(['llamado', 'cta', false], [$saved['draft']['sections'][6]['id'], $saved['draft']['sections'][6]['type'], $saved['draft']['sections'][6]['enabled']]);
+        self::assertSame(['', []], [$saved['draft']['sections'][0]['fields']['eyebrow'], $saved['draft']['sections'][0]['fields']['trustPoints']]);
+    }
+
+    public function testTrustPointsHighlightsAndTheBandHaveTheirLimits(): void
+    {
+        $page = $this->createPage($this->account, published: false);
+        $this->actAs($this->owner);
+        $draft = $page->getDraft();
+        $draft['sections'][0]['fields']['eyebrow'] = str_repeat('x', 61);
+        $draft['sections'][0]['fields']['trustPoints'] = array_fill(0, 5, ['text' => 'Sin costo']);
+        $draft['sections'][4]['fields']['buttonLabel'] = '';
+        $draft['sections'][6]['fields']['highlights'] = [['text' => ''], ['text' => str_repeat('x', 101)]];
+
+        $error = $this->api('PATCH', '/api/admin/pages/'.$page->getId(), ['draft' => $draft]);
+
+        self::assertSame(422, $this->responseStatus());
+        self::assertEqualsCanonicalizing([
+            'sections[0].fields.eyebrow',
+            'sections[0].fields.trustPoints',
+            'sections[4].fields.buttonLabel',
+            'sections[6].fields.highlights[0].text',
+            'sections[6].fields.highlights[1].text',
+        ], array_column($error['violations'], 'field'));
     }
 
     public function testABookingSectionBooksAFreePlanAndAPaymentSectionSellsPaidOnes(): void
@@ -208,10 +247,10 @@ final class PagesTest extends ApiTestCase
 
         $error = $this->api('POST', '/api/admin/pages/'.$draft->getId().'/publish');
         self::assertSame(422, $this->responseStatus());
-        self::assertSame('sections[2].fields.resourceUrl', $error['violations'][0]['field']);
+        self::assertSame('sections[3].fields.resourceUrl', $error['violations'][0]['field']);
 
         $content = $draft->getDraft();
-        $content['sections'][2]['fields']['resourceUrl'] = 'https://example.com/plantilla.xlsx';
+        $content['sections'][3]['fields']['resourceUrl'] = 'https://example.com/plantilla.xlsx';
         $this->api('PATCH', '/api/admin/pages/'.$draft->getId(), ['draft' => $content]);
         $error = $this->api('POST', '/api/admin/pages/'.$draft->getId().'/publish');
         self::assertSame(409, $this->responseStatus());

@@ -53,7 +53,7 @@ final class PublicPaymentTest extends ApiTestCase
     public function testAVisitorIsSentToWompisCheckoutWithASignedPayment(): void
     {
         $crawler = $this->client->request('GET', '/finanzas-claras/plan');
-        self::assertSelectorExists('#precios form[action="/finanzas-claras/plan/pagar"]');
+        self::assertSelectorExists('#precios form[action="/finanzas-claras/plan/pagar#precios"]');
         self::assertStringContainsString('250.000', $crawler->filter('#precios .price-card-price')->text());
         $offers = array_values(array_filter(json_decode($crawler->filter('script[type="application/ld+json"]')->text(), true)['@graph'], static fn (array $n) => 'Offer' === $n['@type']));
         self::assertSame([['Plan A', '250000.00', 'COP']], array_map(static fn (array $o) => [$o['name'], $o['price'], $o['priceCurrency']], $offers));

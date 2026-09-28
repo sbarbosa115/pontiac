@@ -28,6 +28,12 @@ use Twig\Environment;
  */
 final class PageRenderer
 {
+    /**
+     * The look of the pages (templates/public/page). Part of every page's ETag: change it with the templates, or a
+     * browser holding a page from before goes on being told it has not changed.
+     */
+    public const DESIGN = '2026-09-warm';
+
     public function __construct(
         private readonly Environment $twig,
         private readonly MediaAssetRepository $media,
@@ -58,15 +64,18 @@ final class PageRenderer
         $accent = TemplateCatalog::ACCENTS[$content['settings']['accent'] ?? 'navy'] ?? TemplateCatalog::ACCENTS['navy'];
         $seoImage = $images[$content['seo']['imageId'] ?? ''] ?? $this->firstImage($content, $images);
 
+        // A booking section shows only while it has something to book (the feature on, its free plan active); a
+        // payment section while it has something to sell (payments on, Wompi set up, an active paid plan).
+        $sections = array_values(array_filter($content['sections'], static fn (array $s) => $s['enabled']
+            && ('booking' !== $s['type'] || isset($bookings[$s['id']]))
+            && ('payment' !== $s['type'] || isset($payments[$s['id']]))));
+
         $html = $this->twig->render('public/page/page.html.twig', [
             'account' => $account,
             'page' => $page,
             'content' => $content,
-            // A booking section shows only while it has something to book (the feature on, its free plan active); a
-            // payment section while it has something to sell (payments on, Wompi set up, an active paid plan).
-            'sections' => array_values(array_filter($content['sections'], static fn (array $s) => $s['enabled']
-                && ('booking' !== $s['type'] || isset($bookings[$s['id']]))
-                && ('payment' !== $s['type'] || isset($payments[$s['id']])))),
+            'sections' => $sections,
+            'cta' => $this->cta($sections),
             'payments' => $payments,
             'paymentValues' => $payment['values'] ?? [],
             'paymentErrors' => $payment['errors'] ?? [],
@@ -98,6 +107,29 @@ final class PageRenderer
         }
 
         return $response;
+    }
+
+    /**
+     * Where the page's buttons lead (the hero's, the cta band's, the header's and the sticky bar's): the first form,
+     * booking or payment section shown, in the order the consultant put them; with the words of the hero's button,
+     * or else that section's. Null when the page shows none of them: then there are no buttons.
+     *
+     * @param list<array{id: string, type: string, enabled: bool, fields: array<string, mixed>}> $sections the sections shown
+     *
+     * @return array{target: string, label: string}|null
+     */
+    private function cta(array $sections): ?array
+    {
+        foreach ($sections as $section) {
+            if (\in_array($section['type'], ['form', 'booking', 'payment'], true)) {
+                $hero = array_values(array_filter($sections, static fn (array $s) => 'hero' === $s['type']))[0] ?? null;
+                $label = (string) ($hero['fields']['ctaLabel'] ?? '');
+
+                return ['target' => $section['id'], 'label' => '' !== $label ? $label : (string) $section['fields']['submitLabel']];
+            }
+        }
+
+        return null;
     }
 
     /**

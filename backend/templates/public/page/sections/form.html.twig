@@ -1,32 +1,35 @@
 {# The page's form: name, email, phone, the page's extra fields, consent. A plain HTML form that works without
    JavaScript. `website` is a trap left empty by people and filled by bots; `_t` says when the form was drawn. #}
-<section id="formulario">
-    <div class="wrap form-box">
-        {% if fields.heading %}<{{ first ? 'h1' : 'h2' }}>{{ fields.heading }}</{{ first ? 'h1' : 'h2' }}>{% endif %}
+{% import 'public/page/_icons.html.twig' as ui %}
+<section id="formulario" class="convert{{ reveal ? ' reveal' }}">
+    <div class="wrap">
+        {{ include('public/page/_pitch.html.twig', {fields: fields, tag: first ? 'h1' : 'h2'}) }}
+        <div class="form-card">
         {% if sent %}
-            <p class="notice" role="status">{{ fields.successMessage }}</p>
+            <div class="done" role="status">{{ ui.tick() }}<p>{{ fields.successMessage }}</p></div>
         {% else %}
-            {% if fields.body %}<p>{{ fields.body }}</p>{% endif %}
             {% if errors['_form'] is defined %}<p class="notice notice-error" role="alert">{{ errors['_form'] }}</p>{% endif %}
-            <form method="post" action="{{ preview ? '#formulario' : action }}" novalidate{% if preview %} onsubmit="return false"{% endif %}>
-                <div class="field">
+            <form method="post" action="{{ preview ? '' : action }}#formulario" novalidate{% if preview %} onsubmit="return false"{% endif %}>
+                <div class="field{{ errors.name is defined ? ' has-error' }}">
                     <label for="f-name">Nombre completo</label>
                     <input type="text" id="f-name" name="name" autocomplete="name" required maxlength="180" value="{{ values.name ?? '' }}">
                     {% if errors.name is defined %}<p class="error">{{ errors.name }}</p>{% endif %}
                 </div>
-                <div class="field">
+                <div class="row">
+                <div class="field{{ errors.email is defined ? ' has-error' }}">
                     <label for="f-email">Correo electrónico</label>
                     <input type="email" id="f-email" name="email" autocomplete="email" required maxlength="180" value="{{ values.email ?? '' }}">
                     {% if errors.email is defined %}<p class="error">{{ errors.email }}</p>{% endif %}
                 </div>
-                <div class="field">
+                <div class="field{{ errors.phone is defined ? ' has-error' }}">
                     <label for="f-phone">Teléfono (opcional)</label>
                     <input type="tel" id="f-phone" name="phone" autocomplete="tel" maxlength="40" value="{{ values.phone ?? '' }}">
                     {% if errors.phone is defined %}<p class="error">{{ errors.phone }}</p>{% endif %}
                 </div>
+                </div>
                 {% for field in content.form.fields %}
                     {% set id = 'f-' ~ field.key %}
-                    <div class="field">
+                    <div class="field{{ errors[field.key] is defined ? ' has-error' }}">
                         {% if field.type == 'checkbox' %}
                             <label class="check"><input type="checkbox" id="{{ id }}" name="{{ field.key }}" value="1"{{ (values[field.key] ?? '') ? ' checked' }}> <span>{{ field.label }}{{ not field.required ? ' (opcional)' }}</span></label>
                         {% else %}
@@ -54,8 +57,9 @@
                     <input type="text" id="f-website" name="website" tabindex="-1" autocomplete="off">
                 </div>
                 <input type="hidden" name="_t" value="{{ timeToken }}">
-                <button class="btn" type="submit">{{ fields.submitLabel }}</button>
+                <button class="btn btn-block" type="submit">{{ fields.submitLabel }} <span class="arrow" aria-hidden="true">→</span></button>
             </form>
         {% endif %}
+        </div>
     </div>
 </section>
