@@ -24,20 +24,14 @@
 
     {% if canChange %}
         <h2>Cambiar la hora</h2>
-        {% if days is empty %}
+        {% if calendar.days is empty %}
             <p>No hay otros horarios disponibles por ahora.</p>
         {% else %}
             <form method="post" action="/{{ account.slug }}/reservar/{{ token }}/cambiar">
-                {% for day in days %}
-                    <details{{ loop.first ? ' open' }}>
-                        <summary>{{ day.label|capitalize }}</summary>
-                        <p class="slots">
-                            {% for slot in day.slots %}
-                                <label class="slot"><input type="radio" name="slot" value="{{ slot.value }}"> {{ slot.label }}</label>
-                            {% endfor %}
-                        </p>
-                    </details>
-                {% endfor %}
+                <fieldset class="slots">
+                    <legend>Elige el nuevo día y la hora</legend>
+                    {% include 'public/_slot_calendar.html.twig' with {calendar: calendar, id: 'cal-cambiar', selected: ''} only %}
+                </fieldset>
                 <p><button class="btn" type="submit">Cambiar a esta hora</button></p>
             </form>
         {% endif %}

@@ -9,10 +9,15 @@ test('a visitor books a free session, cancels it from the emailed link, and the 
 
     await page.goto('/finanzas-claras');
     const booking = page.locator('#reserva');
-    // A day a few days ahead: well before the cancellation limit.
-    const day = booking.locator('details').nth(4);
-    await day.locator('summary').click();
-    await day.getByRole('radio').first().check();
+    // A day a few days ahead, well before the cancellation limit: in the next month when this one is ending.
+    const days = booking.locator('.cal-month:visible .cal-day');
+    if ((await days.count()) < 5) {
+        await booking.locator('.cal-month:visible label[title="Mes siguiente"]').click();
+        await days.nth(2).click();
+    } else {
+        await days.nth(4).click();
+    }
+    await booking.locator('.cal-times:visible').getByRole('radio').first().check();
     await booking.getByLabel('Nombre completo').fill('Reserva de Prueba');
     await booking.getByLabel('Correo electrónico').fill(email);
     await booking.getByLabel(/Autorizo el tratamiento de mis datos/).check();

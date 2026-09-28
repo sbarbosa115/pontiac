@@ -48,7 +48,7 @@ The manual browser pass, one case per use case. Run it on a fresh stack with the
 | PAGE-12 | owner | Páginas › Retirar | Visitors get "Esta página ya no está disponible" (410); "Volver a publicar" brings it back |
 | PAGE-13 | owner | A contact › Eliminar sus datos | Name, email, phone and answers erased; assistants do not see the button |
 | PAGE-14 | consultant | Ajustes › Categorías, Medios, Privacidad | Each lists and edits; privacy says when the default text is used |
-| BOOK-01 | visitor | `/finanzas-claras`, Reserva: pick a day and time, name, email, consent, "Reservar mi diagnóstico" | "¡Listo! Tu sesión quedó reservada."; Mailpit: the confirmation with `sesion.ics` and a manage link, and "Nueva sesión agendada" to the owner |
+| BOOK-01 | visitor | `/finanzas-claras`, Reserva: the calendar opens on the first free day; "›" to the next month, pick a day, then a time, name, email, consent, "Reservar mi diagnóstico" | "¡Listo! Tu sesión quedó reservada."; Mailpit: the confirmation with `sesion.ics` and a manage link, and "Nueva sesión agendada" to the owner |
 | BOOK-02 | visitor | The same slot again from another browser | "Esa hora ya no está disponible. Elige otra." and what was typed stays |
 | BOOK-03 | visitor | The manage link, a session more than 24 h ahead: pick another time, "Cambiar a esta hora" | "Listo: tu sesión quedó en la nueva hora"; the old link answers 404; both get "cambió de hora" |
 | BOOK-04 | visitor | The manage link: cancel with a reason | "Tu sesión quedó cancelada"; no forms left; the owner gets "Sesión cancelada por el cliente" |

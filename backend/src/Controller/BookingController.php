@@ -7,6 +7,7 @@ namespace App\Controller;
 use App\Api\ApiException;
 use App\Booking\Booker;
 use App\Booking\SessionTime;
+use App\Booking\SlotCalendar;
 use App\Booking\SlotFinder;
 use App\Entity\Account;
 use App\Entity\BookingSession;
@@ -185,13 +186,12 @@ final class BookingController extends AbstractController
     private function renderManage(Account $account, BookingSession $session, string $token, AvailabilityRepository $availability, SlotFinder $slots, string $notice = '', string $error = '', int $status = 200): Response
     {
         $canChange = $this->booker->visitorMayChange($account, $session);
-        $days = [];
+        $free = [];
         if ($canChange) {
             foreach ($slots->slots($account, $availability->forAccount($account), $session->getEnrollment()->getDurationMinutes(), new \DateTimeImmutable(), $session) as $slot) {
-                if ($slot == $session->getStartsAt()) {
-                    continue;
+                if ($slot != $session->getStartsAt()) {
+                    $free[] = $slot;
                 }
-                $days[SessionTime::date($account, $slot)][] = ['value' => $slot->format(\DATE_ATOM), 'label' => SessionTime::time($account, $slot)];
             }
         }
 
@@ -202,7 +202,7 @@ final class BookingController extends AbstractController
             'date' => SessionTime::date($account, $session->getStartsAt()),
             'time' => SessionTime::time($account, $session->getStartsAt()),
             'canChange' => $canChange,
-            'days' => array_map(static fn (string $label, array $s) => ['label' => $label, 'slots' => $s], array_keys($days), array_values($days)),
+            'calendar' => SlotCalendar::build($account, $free),
             'notice' => match ($notice) {
                 'cambiada' => 'Listo: tu sesión quedó en la nueva hora. Te enviamos la confirmación.',
                 'cancelada' => 'Tu sesión quedó cancelada. Le avisamos a '.$account->getName().'.',

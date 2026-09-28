@@ -38,6 +38,11 @@ final class PublicBookingTest extends ApiTestCase
         $crawler = $this->client->request('GET', '/finanzas-claras/diagnostico');
         self::assertSelectorExists('#reserva form[action="/finanzas-claras/diagnostico/reservar"]');
         self::assertCount(1, $crawler->filter(sprintf('input[name="slot"][value="%s"]', $slot->format(\DATE_ATOM))), 'the first free slot is offered');
+        // A date picker: the first open day chosen, the days with nothing free shown but not choosable.
+        $day = $slot->setTimezone(new \DateTimeZone('America/Bogota'))->format('Y-m-d');
+        self::assertSame($day, $crawler->filter('#cal-reserva .cal-grid input[type="radio"]:checked')->attr('value'));
+        self::assertGreaterThan(0, $crawler->filter('#cal-reserva .cal-off')->count(), 'weekends have no hours');
+        self::assertCount(1, $crawler->filter(sprintf('#cal-reserva-t%s input[name="slot"][value="%s"]', $day, $slot->format(\DATE_ATOM))), 'the time is under its day');
         self::assertStringContainsString('private', (string) $this->client->getResponse()->headers->get('Cache-Control'), 'free slots change: never cached');
 
         $this->book($slot);
@@ -70,6 +75,7 @@ final class PublicBookingTest extends ApiTestCase
         self::assertSame(409, $this->responseStatus());
         self::assertStringContainsString('Esa hora ya no está disponible', $crawler->filter('#reserva .error')->text());
         self::assertSame('Laura Gómez', $crawler->filter('#b-name')->attr('value'), 'what they typed is kept');
+        self::assertCount(1, $crawler->filter('#cal-reserva .cal-grid input[type="radio"]:checked'), 'a day is chosen again');
         self::assertCount(1, $this->sessions());
     }
 

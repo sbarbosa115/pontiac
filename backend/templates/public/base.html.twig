@@ -24,6 +24,9 @@
             details { border-bottom: 1px solid #dde1e7; padding: 10px 0; }
             summary { font-weight: 600; cursor: pointer; }
             .slot { display: inline-block; padding: 8px 12px; border: 1px solid #8a93a1; border-radius: 8px; margin: 4px 6px 4px 0; cursor: pointer; }
+            .slot:has(input:checked) { border-color: var(--primary); background: #e6edf5; font-weight: 600; }
+            fieldset.slots { border: 1px solid #dde1e7; border-radius: 8px; padding: 12px 16px; margin: 0 0 16px; }
+            fieldset.slots legend { font-weight: 600; padding: 0 6px; }
             h2 { margin-top: 32px; }
             .mark { display: inline-block; width: 12px; height: 12px; border-radius: 3px; background: var(--accent); margin-right: 8px; }
         </style>

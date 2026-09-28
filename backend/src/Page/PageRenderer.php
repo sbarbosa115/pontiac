@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Page;
 
 use App\Booking\SessionTime;
+use App\Booking\SlotCalendar;
 use App\Booking\SlotFinder;
 use App\Payment\Checkout;
 use App\Payment\MoneyText;
@@ -142,11 +143,11 @@ final class PageRenderer
     }
 
     /**
-     * For each enabled booking section: its plan and the free slots, grouped by the day they fall on (local time).
+     * For each enabled booking section: its plan and its free slots as a calendar (SlotCalendar).
      *
      * @param array<string, mixed> $content
      *
-     * @return array<string, array{plan: Plan, days: list<array{label: string, slots: list<array{value: string, label: string}>}>}>
+     * @return array<string, array{plan: Plan, months: list<mixed>, days: array<string, array{label: string, slots: list<array{value: string, label: string}>}>, weekdays: list<array{short: string, long: string}>}>
      */
     private function bookings(Account $account, array $content): array
     {
@@ -162,15 +163,7 @@ final class PageRenderer
             if (null === $plan || !$plan->isActive() || !$plan->isFree()) {
                 continue;
             }
-            $days = [];
-            foreach ($this->slots->slots($account, $this->availability->forAccount($account), $plan->getDurationMinutes(), new \DateTimeImmutable()) as $slot) {
-                $label = SessionTime::date($account, $slot);
-                $days[$label][] = ['value' => $slot->format(\DATE_ATOM), 'label' => SessionTime::time($account, $slot)];
-            }
-            $bookings[$section['id']] = [
-                'plan' => $plan,
-                'days' => array_map(static fn (string $label, array $slots) => ['label' => $label, 'slots' => $slots], array_keys($days), array_values($days)),
-            ];
+            $bookings[$section['id']] = ['plan' => $plan] + SlotCalendar::build($account, $this->slots->slots($account, $this->availability->forAccount($account), $plan->getDurationMinutes(), new \DateTimeImmutable()));
         }
 
         return $bookings;

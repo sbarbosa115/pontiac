@@ -1,4 +1,4 @@
-{# Booking a free plan's session: the free slots of the coming days (the first day open), and who is booking. A plain
+{# Booking a free plan's session: a calendar of the days with free times (then that day's times), and who is booking. A plain
    HTML form, like the lead form: `website` is the bots' trap, `_t` when the form was drawn. #}
 {% set booking = bookings[section.id] %}
 <section id="reserva">
@@ -14,16 +14,7 @@
             <form method="post" action="{{ preview ? '#reserva' : bookingAction }}" novalidate{% if preview %} onsubmit="return false"{% endif %}>
                 <fieldset class="slots">
                     <legend>Elige el día y la hora ({{ booking.plan.durationMinutes }} minutos)</legend>
-                    {% for day in booking.days %}
-                        <details{{ loop.first ? ' open' }}>
-                            <summary>{{ day.label|capitalize }}</summary>
-                            <div class="slot-list">
-                                {% for slot in day.slots %}
-                                    <label class="slot"><input type="radio" name="slot" value="{{ slot.value }}"{{ (bookingValues.slot ?? '') == slot.value ? ' checked' }}> <span>{{ slot.label }}</span></label>
-                                {% endfor %}
-                            </div>
-                        </details>
-                    {% endfor %}
+                    {% include 'public/_slot_calendar.html.twig' with {calendar: booking, id: 'cal-' ~ section.id, selected: bookingValues.slot ?? ''} only %}
                     {% if bookingErrors.slot is defined %}<p class="error">{{ bookingErrors.slot }}</p>{% endif %}
                 </fieldset>
                 <div class="field">

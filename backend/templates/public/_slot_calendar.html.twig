@@ -1,0 +1,82 @@
+{# A date picker for free slots (App\Booking\SlotCalendar), with no JavaScript: a month is a radio, a day is a radio,
+   and CSS (:has) shows the chosen month and the chosen day's times. Only `slot` is read by the server; the month and
+   day radios have names starting with "_" and are ignored.
+   Takes: calendar, id (unique on the page), selected (the slot to keep chosen, after an error). #}
+{% set selectedDay = null %}
+{% for date, day in calendar.days %}
+    {% for slot in day.slots %}{% if slot.value == selected %}{% set selectedDay = date %}{% endif %}{% endfor %}
+{% endfor %}
+{% set selectedDay = selectedDay ?? calendar.days|keys|first %}
+<div class="cal" id="{{ id }}">
+    {% for month in calendar.months %}
+        {% set holds = false %}
+        {% for week in month.weeks %}{% for d in week %}{% if d and d.date == selectedDay %}{% set holds = true %}{% endif %}{% endfor %}{% endfor %}
+        <input class="cal-radio" type="radio" name="_{{ id }}_month" id="{{ id }}-m{{ loop.index0 }}" aria-label="{{ month.label }}"{{ holds ? ' checked' }}>
+    {% endfor %}
+    {% for month in calendar.months %}
+        <div class="cal-month" id="{{ id }}-month{{ loop.index0 }}">
+            <div class="cal-head">
+                {% if not loop.first %}<label class="cal-nav" for="{{ id }}-m{{ loop.index0 - 1 }}" title="Mes anterior"><span aria-hidden="true">‹</span><span class="cal-sr">Mes anterior</span></label>{% else %}<span class="cal-nav" aria-hidden="true"></span>{% endif %}
+                <span class="cal-title">{{ month.label }}</span>
+                {% if not loop.last %}<label class="cal-nav" for="{{ id }}-m{{ loop.index0 + 1 }}" title="Mes siguiente"><span aria-hidden="true">›</span><span class="cal-sr">Mes siguiente</span></label>{% else %}<span class="cal-nav" aria-hidden="true"></span>{% endif %}
+            </div>
+            <table class="cal-grid">
+                <thead><tr>{% for wd in calendar.weekdays %}<th scope="col" abbr="{{ wd.long }}">{{ wd.short }}</th>{% endfor %}</tr></thead>
+                <tbody>
+                    {% for week in month.weeks %}
+                        <tr>
+                            {% for d in week %}
+                                <td>
+                                    {%- if d and d.open -%}
+                                        <input class="cal-radio" type="radio" name="_{{ id }}_day" id="{{ id }}-d{{ d.date }}" value="{{ d.date }}" aria-label="{{ calendar.days[d.date].label|capitalize }}"{{ d.date == selectedDay ? ' checked' }}><label class="cal-day" for="{{ id }}-d{{ d.date }}">{{ d.number }}</label>
+                                    {%- elseif d -%}
+                                        <span class="cal-off" aria-hidden="true">{{ d.number }}</span>
+                                    {%- endif -%}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endfor %}
+    {% for date, day in calendar.days %}
+        <div class="cal-times" id="{{ id }}-t{{ date }}">
+            <p class="cal-when">{{ day.label|capitalize }}</p>
+            <div class="slot-list">
+                {% for slot in day.slots %}
+                    <label class="slot"><input type="radio" name="slot" value="{{ slot.value }}"{{ selected == slot.value ? ' checked' }}> <span>{{ slot.label }}</span></label>
+                {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
+</div>
+<style>
+    #{{ id }} { --cal-accent: var(--accent, #1e3a5f); --cal-soft: var(--soft, #e6edf5); --cal-line: var(--line, #dde1e7); }
+    #{{ id }} .cal-radio { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    #{{ id }} .cal-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    #{{ id }} .cal-month, #{{ id }} .cal-times { display: none; }
+    #{{ id }} .cal-month { max-width: 380px; }
+    #{{ id }} .cal-head { display: flex; align-items: center; justify-content: space-between; margin: 4px 0 8px; }
+    #{{ id }} .cal-title { font-weight: 600; }
+    #{{ id }} .cal-nav { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 8px; font-size: 1.4rem; cursor: pointer; }
+    #{{ id }} label.cal-nav { border: 1px solid var(--cal-line); }
+    #{{ id }} label.cal-nav:hover { background: var(--cal-soft); }
+    #{{ id }} .cal-grid { width: 100%; border-collapse: collapse; table-layout: fixed; text-align: center; }
+    #{{ id }} .cal-grid th { font-size: .8rem; font-weight: 600; padding: 4px 0; opacity: .75; }
+    #{{ id }} .cal-grid td { padding: 2px; height: 44px; }
+    #{{ id }} .cal-day, #{{ id }} .cal-off { display: flex; align-items: center; justify-content: center; width: 100%; height: 40px; border-radius: 8px; }
+    #{{ id }} .cal-day { border: 1px solid var(--cal-accent); color: var(--cal-accent); font-weight: 600; cursor: pointer; }
+    #{{ id }} .cal-day:hover { background: var(--cal-soft); }
+    #{{ id }} .cal-off { opacity: .4; text-decoration: line-through; }
+    #{{ id }} .cal-radio:checked + .cal-day { background: var(--cal-accent); color: #fff; }
+    #{{ id }} .cal-radio:focus-visible + .cal-day { outline: 3px solid var(--cal-accent); outline-offset: 2px; }
+    #{{ id }} .cal-when { font-weight: 600; margin: 16px 0 0; }
+    {% for month in calendar.months %}
+    #{{ id }}:has(#{{ id }}-m{{ loop.index0 }}:checked) #{{ id }}-month{{ loop.index0 }} { display: block; }
+    {% endfor %}
+    {% for date, day in calendar.days %}
+    #{{ id }}:has(#{{ id }}-d{{ date }}:checked) #{{ id }}-t{{ date }} { display: block; }
+    #{{ id }}:has(#{{ id }}-t{{ date }} input:checked) label[for="{{ id }}-d{{ date }}"] { box-shadow: inset 0 -4px 0 var(--cal-soft); }
+    {% endfor %}
+</style>
