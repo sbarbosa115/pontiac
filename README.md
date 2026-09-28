@@ -259,9 +259,19 @@ a page's) answers 301; a disabled page 410; a draft 404.
 
 ## Deploying to cPanel
 
-Not written yet: it comes with the release milestone (PRD, "Delivery plan"). Already known: production needs its own
-`APP_ENCRYPTION_KEY` (32 bytes in base64, kept forever: changing it makes stored Wompi secrets unreadable), and each
-consultant pastes their events URL (Ajustes › Pagos Wompi) in Wompi's dashboard.
+`deploy/cpanel-update.sh` installs and updates Pontiac on a cPanel account over SSH (`cd ~/pontiac &&
+./deploy/cpanel-update.sh`). Its header lists the first-time steps: clone, document root at `backend/public`,
+HTTPS, a MySQL 8 database, `backend/.env.local` from `deploy/env.local.example`, then the first super admin.
+
+Each run pulls, installs the PHP dependencies without dev packages, and builds the UI (or uses the
+`public/build/` already there when the account has no npm). It dumps the database before any pending migration,
+then migrates and warms the production cache. It refuses to go on while a secret is still the development value
+from `backend/.env`, `APP_URL` is not HTTPS, the mailer is not real or `UPLOADS_DIR` is not outside the code. It
+also prints the two cron lines the account needs, every minute: `messenger:consume async` (every email is sent
+from the queue) and `app:send-due-reminders`.
+
+Keep `APP_ENCRYPTION_KEY` with the backups (database dumps and `UPLOADS_DIR`): the stored Wompi secrets cannot
+be read without it. Each consultant pastes their events URL (Ajustes › Pagos Wompi) in Wompi's dashboard.
 
 ## Known gaps
 
